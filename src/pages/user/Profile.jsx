@@ -5,7 +5,7 @@ import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award } from 'lucide-
 import { calculateServiceDuration } from '../../utils/dateUtils'
 
 export default function UserProfile() {
-  const { session } = useAuth()
+  const { session, loading: authLoading } = useAuth()
   const [employee, setEmployee] = useState(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -18,8 +18,13 @@ export default function UserProfile() {
   const userId = session?.user?.id
 
   useEffect(() => {
-    if (userId) fetchProfile()
-  }, [userId])
+    if (authLoading) return
+    if (!userId) {
+        setLoading(false)
+        return
+    }
+    fetchProfile()
+  }, [userId, authLoading])
 
   const fetchProfile = async () => {
     try {
@@ -38,7 +43,7 @@ export default function UserProfile() {
     }
   }
 
-  if (loading) {
+  if (loading || authLoading) {
     return <div className="p-8 text-center text-slate-500">جاري تحميل الملف الشخصي...</div>
   }
 

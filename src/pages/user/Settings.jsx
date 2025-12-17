@@ -5,15 +5,42 @@ import { useAuth } from '../../context/AuthContext'
 import { Camera, Lock, Save, User, Loader } from 'lucide-react'
 
 export default function Settings() {
-  const { session, signOut } = useAuth() // Get signOut
-  const navigate = useNavigate() // Get navigate
+  const { session, signOut, loading: authLoading } = useAuth() 
+  const navigate = useNavigate()
   const [employee, setEmployee] = useState(null)
-  // ... (keep state)
+  const [loading, setLoading] = useState(true)
+  const [uploading, setUploading] = useState(false)
+  
+  // Password State
+  const [newPassword, setNewPassword] = useState('')
+  const [changingPassword, setChangingPassword] = useState(false)
 
-  // ... (keep useEffect)
+  const userId = session?.user?.id
+
+  useEffect(() => {
+    if (authLoading) return
+    if (!userId) {
+        setLoading(false)
+        return
+    }
+    fetchProfile()
+  }, [userId, authLoading])
 
   const fetchProfile = async () => {
-    // ... (keep logic)
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (error) throw error
+      setEmployee(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleAvatarUpload = async (event) => {
@@ -32,6 +59,7 @@ export default function Settings() {
       const fileName = `${targetId}/${Math.random()}.${fileExt}`
       const filePath = `${fileName}`
 
+      // 1. Upload to Storage (Buckets must be public or allowed for anon)
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(filePath, file)
@@ -40,18 +68,19 @@ export default function Settings() {
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
+      // 2. Update DB via RPC (Bypasses RLS)
       const { error: updateError } = await supabase
-        .from('employees')
-        .update({ avatar_url: publicUrl })
-        .eq('id', targetId)
+        .rpc('update_employee_settings', {
+            p_employee_id: targetId,
+            p_avatar_url: publicUrl
+        })
 
       if (updateError) throw updateError
 
       setEmployee(prev => ({ ...prev, avatar_url: publicUrl }))
       alert('تم تحديث الصورة الشخصية بنجاح')
-      // Removed window.location.reload()
     } catch (error) {
-      alert(error.message)
+      alert('فشل تحديث الصورة: ' + error.message)
     } finally {
       setUploading(false)
     }
@@ -64,10 +93,12 @@ export default function Settings() {
         const targetId = employee?.id || userId
         if (!targetId) throw new Error('User ID missing')
 
+        // Update via RPC
         const { error } = await supabase
-            .from('employees')
-            .update({ visible_password: newPassword })
-            .eq('id', targetId)
+            .rpc('update_employee_settings', {
+                p_employee_id: targetId,
+                p_visible_password: newPassword
+            })
 
         if (error) throw error
         
@@ -82,7 +113,15 @@ export default function Settings() {
     }
   }
 
-  if (loading) return <div className="p-10 text-center">جاري التحميل...</div>
+  if (loading || authLoading) return <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
+
+  if (!employee) {
+    return (
+        <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg">
+            عذراً، لم يتم العثور على بيانات الموظف. يرجى تسجيل الدخول مجدداً.
+        </div>
+    )
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
