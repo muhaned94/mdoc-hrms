@@ -1,39 +1,19 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Camera, Lock, Save, User, Loader } from 'lucide-react'
 
 export default function Settings() {
-  const { session } = useAuth()
+  const { session, signOut } = useAuth() // Get signOut
+  const navigate = useNavigate() // Get navigate
   const [employee, setEmployee] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
-  
-  // Password State
-  const [newPassword, setNewPassword] = useState('')
-  const [changingPassword, setChangingPassword] = useState(false)
+  // ... (keep state)
 
-  const userId = session?.user?.id
-
-  useEffect(() => {
-    if (userId) fetchProfile()
-  }, [userId])
+  // ... (keep useEffect)
 
   const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setEmployee(data)
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
-    }
+    // ... (keep logic)
   }
 
   const handleAvatarUpload = async (event) => {
@@ -56,9 +36,7 @@ export default function Settings() {
         .from('avatars')
         .upload(filePath, file)
 
-      if (uploadError) {
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
@@ -67,13 +45,11 @@ export default function Settings() {
         .update({ avatar_url: publicUrl })
         .eq('id', targetId)
 
-      if (updateError) {
-        throw updateError
-      }
+      if (updateError) throw updateError
 
       setEmployee(prev => ({ ...prev, avatar_url: publicUrl }))
       alert('تم تحديث الصورة الشخصية بنجاح')
-      window.location.reload() // Reload to update other components if needed
+      // Removed window.location.reload()
     } catch (error) {
       alert(error.message)
     } finally {
@@ -95,7 +71,9 @@ export default function Settings() {
 
         if (error) throw error
         
-        alert('تم تغيير كلمة المرور بنجاح')
+        alert('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.')
+        await signOut() // Force logout
+        navigate('/login')
         setNewPassword('')
     } catch (err) {
         alert('فشل تغيير كلمة المرور: ' + err.message)
