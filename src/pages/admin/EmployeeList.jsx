@@ -9,6 +9,10 @@ export default function EmployeeList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('all') // 'all', 'morning', 'shift'
   
+  // Selection State
+  const [selectedIds, setSelectedIds] = useState([])
+  const [deleting, setDeleting] = useState(false)
+  
   useEffect(() => {
     fetchEmployees()
   }, [])
@@ -30,6 +34,43 @@ export default function EmployeeList() {
     }
   }
 
+  const handleSelectAll = (e) => {
+      if (e.target.checked) {
+          setSelectedIds(filteredEmployees.map(emp => emp.id))
+      } else {
+          setSelectedIds([])
+      }
+  }
+
+  const handleSelectOne = (id) => {
+      setSelectedIds(prev => {
+          if (prev.includes(id)) return prev.filter(x => x !== id)
+          return [...prev, id]
+      })
+  }
+
+  const handleBulkDelete = async () => {
+      if (!confirm(`هل أنت متأكد من حذف ${selectedIds.length} موظف؟ لا يمكن التراجع عن هذا الإجراء.`)) return
+
+      setDeleting(true)
+      try {
+          const { error } = await supabase
+              .from('employees')
+              .delete()
+              .in('id', selectedIds)
+          
+          if (error) throw error
+          
+          setEmployees(prev => prev.filter(emp => !selectedIds.includes(emp.id)))
+          setSelectedIds([])
+          alert('تم الحذف بنجاح')
+      } catch (err) {
+          alert('فشل الحذف: ' + err.message)
+      } finally {
+          setDeleting(false)
+      }
+  }
+
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = 
       emp.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,13 +86,25 @@ export default function EmployeeList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-2xl font-bold text-slate-800">إدارة الموظفين</h1>
-        <Link 
-          to="/admin/add-employee"
-          className="flex items-center gap-2 bg-primary hover:bg-sky-600 text-white px-4 py-2 rounded-lg transition-colors"
-        >
-          <Plus size={20} />
-          <span>إضافة موظف</span>
-        </Link>
+        <div className="flex gap-2">
+            {selectedIds.length > 0 && (
+                <button 
+                    onClick={handleBulkDelete}
+                    disabled={deleting}
+                    className="flex items-center gap-2 bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-4 py-2 rounded-lg transition-colors"
+                >
+                    <Trash2 size={20} />
+                    <span>حذف المحدد ({selectedIds.length})</span>
+                </button>
+            )}
+            <Link 
+            to="/admin/add-employee"
+            className="flex items-center gap-2 bg-primary hover:bg-sky-600 text-white px-4 py-2 rounded-lg transition-colors"
+            >
+            <Plus size={20} />
+            <span>إضافة موظف</span>
+            </Link>
+        </div>
       </div>
 
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -88,6 +141,14 @@ export default function EmployeeList() {
           <table className="w-full text-right">
             <thead className="bg-slate-50 text-slate-600 font-medium text-sm">
               <tr>
+                <th className="px-6 py-4 w-4">
+                    <input 
+                        type="checkbox" 
+                        className="rounded border-slate-300 transform scale-125 cursor-pointer accent-primary"
+                        checked={filteredEmployees.length > 0 && selectedIds.length === filteredEmployees.length}
+                        onChange={handleSelectAll}
+                    />
+                </th>
                 <th className="px-6 py-4">رقم الشركة</th>
                 <th className="px-6 py-4">الاسم</th>
                 <th className="px-6 py-4">العنوان الوظيفي</th>
@@ -99,20 +160,28 @@ export default function EmployeeList() {
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-slate-500">جاري التحميل...</td>
+                  <td colSpan="7" className="px-6 py-8 text-center text-slate-500">جاري التحميل...</td>
                 </tr>
               ) : filteredEmployees.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-slate-500">لا يوجد موظفين مطابقين</td>
+                  <td colSpan="7" className="px-6 py-8 text-center text-slate-500">لا يوجد موظفين مطابقين</td>
                 </tr>
               ) : (
                 filteredEmployees.map(emp => (
-                  <tr key={emp.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={emp.id} className={`hover:bg-slate-50 transition-colors group ${selectedIds.includes(emp.id) ? 'bg-sky-50' : ''}`}>
+                    <td className="px-6 py-4">
+                        <input 
+                            type="checkbox" 
+                            className="rounded border-slate-300 transform scale-125 cursor-pointer accent-primary"
+                            checked={selectedIds.includes(emp.id)}
+                            onChange={() => handleSelectOne(emp.id)}
+                        />
+                    </td>
                     <td className="px-6 py-4 font-medium text-slate-900">{emp.company_id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                          {emp.full_name.charAt(0)}
+                          {emp.full_name?.charAt(0)}
                         </div>
                         <span>{emp.full_name}</span>
                       </div>
@@ -131,7 +200,6 @@ export default function EmployeeList() {
                         <Link to={`/admin/employees/${emp.id}`} className="p-1.5 text-slate-500 hover:bg-slate-100 hover:text-primary rounded-lg" title="عرض التفاصيل">
                           <Eye size={18} />
                         </Link>
-                        {/* Add delete/edit logic later if needed */}
                       </div>
                     </td>
                   </tr>
