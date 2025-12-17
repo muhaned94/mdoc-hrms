@@ -17,7 +17,6 @@ export default function AddEmployee() {
     full_name: '',
     birth_date: '',
     hire_date: '',
-    hire_date: '',
     leave_balance: 0,
     job_title: '',
     certificate: '',
@@ -115,7 +114,6 @@ export default function AddEmployee() {
         'مكان العمل': 'المقر العام',
         'الراتب الاسمي': 1000000,
         'الراتب الكلي': 1500000,
-        'الحافز الشهري': 250000,
         'الحافز الشهري': 250000,
         'رصيد الإجازات': 30
       }
