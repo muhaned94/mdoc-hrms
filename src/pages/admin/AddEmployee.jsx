@@ -115,7 +115,9 @@ export default function AddEmployee() {
         'الراتب الاسمي': 1000000,
         'الراتب الكلي': 1500000,
         'الحافز الشهري': 250000,
-        'رصيد الإجازات': 30
+        'رصيد الإجازات': 30,
+        'كلمة المرور': '123456',
+        'الدورات': 'دورة سلامة:2023-01-01، دورة إدارة:2024-05-20'
       }
     ]
     const ws = XLSX.utils.json_to_sheet(headers)
@@ -126,17 +128,10 @@ export default function AddEmployee() {
 
   const excelDateToJSDate = (serial) => {
      if (!serial) return null
-     // If it's already a string like "2020-01-01", return it
      if (typeof serial === 'string' && serial.includes('-')) return serial
-     
-     // Excel serial date to JS Date
-     // 25569 is the difference between Excel epoch (1900) and JS epoch (1970) in days
-     // 86400 * 1000 is milliseconds per day
      const utc_days  = Math.floor(serial - 25569);
      const utc_value = utc_days * 86400 * 1000;
      const date_info = new Date(utc_value);
-
-     // Format to YYYY-MM-DD
      return date_info.toISOString().split('T')[0]
   }
 
@@ -146,6 +141,7 @@ export default function AddEmployee() {
 
     setLoading(true)
     setError(null)
+    setSuccess(null)
 
     const reader = new FileReader()
     reader.onload = async (evt) => {
@@ -156,42 +152,80 @@ export default function AddEmployee() {
         const ws = wb.Sheets[wsname]
         const data = XLSX.utils.sheet_to_json(ws)
 
-        const mappedData = data.map(row => ({
-            id: crypto.randomUUID(),
-            company_id: row['رقم الشركة'] || row['Company ID'] || '',
-            full_name: row['الاسم الرباعي'] || row['Full Name'] || '',
-            birth_date: excelDateToJSDate(row['تاريخ الميلاد']) || null,
-            hire_date: excelDateToJSDate(row['تاريخ التعيين']) || null,
-            job_title: row['العنوان الوظيفي'] || '',
-            certificate: row['التحصيل الدراسي'] || '',
-            specialization: row['الاختصاص'] || '',
-            position: row['المنصب'] || '',
-            work_schedule: (row['نظام الدوام'] === 'shift' || row['نظام الدوام'] === 'مناوب') ? 'shift' : 'morning',
-            work_location: row['مكان العمل'] || '',
-            nominal_salary: row['الراتب الاسمي'] || 0,
-            total_salary: row['الراتب الكلي'] || 0,
-            incentive: row['الحافز الشهري'] || 0,
-            years_of_service: 0, // Legacy/Ignored
-            leave_balance: row['رصيد الإجازات'] || 0,
-            visible_password: '123456',
-            role: 'user'
-        }))
+        if (data.length === 0) throw new Error('الملف فارغ')
 
-        if (mappedData.length === 0) throw new Error('No data found in Excel')
+        const employees = []
+        const courses = []
 
+        data.forEach(row => {
+            const empId = crypto.randomUUID()
+            const rawPassword = row['كلمة المرور'] || '123456'
+            
+            // Employee Data
+            employees.push({
+                id: empId,
+                company_id: row['رقم الشركة'] || row['Company ID'] || '',
+                full_name: row['الاسم الرباعي'] || row['Full Name'] || '',
+                birth_date: excelDateToJSDate(row['تاريخ الميلاد']) || null,
+                hire_date: excelDateToJSDate(row['تاريخ التعيين']) || null,
+                job_title: row['العنوان الوظيفي'] || '',
+                certificate: row['التحصيل الدراسي'] || '',
+                specialization: row['الاختصاص'] || '',
+                position: row['المنصب'] || '',
+                work_schedule: (row['نظام الدوام'] === 'shift' || row['نظام الدوام'] === 'مناوب') ? 'shift' : 'morning',
+                work_location: row['مكان العمل'] || '',
+                nominal_salary: row['الراتب الاسمي'] || 0,
+                total_salary: row['الراتب الكلي'] || 0,
+                incentive: row['الحافز الشهري'] || 0,
+                years_of_service: 0, 
+                leave_balance: row['رصيد الإجازات'] || 0,
+                visible_password: String(rawPassword),
+                role: 'user'
+            })
+
+            // Courses Data parsing
+            // Expected format: "Name:Date, Name2:Date" or "Name, Name"
+            const coursesRaw = row['الدورات'] || ''
+            if (coursesRaw) {
+                // Split by comma or Arabic comma
+                const list = coursesRaw.split(/,|،/)
+                list.forEach(item => {
+                    const [name, date] = item.split(':')
+                    if (name && name.trim()) {
+                        courses.push({
+                            employee_id: empId,
+                            course_name: name.trim(),
+                            course_date: date ? date.trim() : new Date().toISOString().split('T')[0] // Default to today if no date
+                        })
+                    }
+                })
+            }
+        })
+
+        // 1. Insert Employees
         const { error: insertError } = await supabase
             .from('employees')
-            .insert(mappedData)
+            .insert(employees)
         
         if (insertError) throw insertError
 
-        setSuccess(`تم استيراد ${mappedData.length} موظف بنجاح`)
-        setTimeout(() => navigate('/admin/employees'), 1500)
+        // 2. Insert Courses (if any)
+        if (courses.length > 0) {
+            const { error: coursesError } = await supabase
+                .from('courses')
+                .insert(courses)
+            
+            if (coursesError) console.warn('Courses upload warning:', coursesError)
+        }
+
+        setSuccess(`تم استيراد ${employees.length} موظف و ${courses.length} دورة تدريبية بنجاح`)
+        setTimeout(() => navigate('/admin/employees'), 2000)
 
       } catch (err) {
         setError('فشل استيراد الملف: ' + err.message)
       } finally {
         setLoading(false)
+        e.target.value = null // Reset input
       }
     }
     reader.readAsBinaryString(file)
