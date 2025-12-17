@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award } from 'lucide-react'
+import { calculateServiceDuration } from '../../utils/dateUtils'
 
 export default function UserProfile() {
   const { session } = useAuth()
@@ -123,9 +124,9 @@ export default function UserProfile() {
       {/* Stats Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">سنوات الخدمة</p>
-                <p className="text-2xl font-bold text-primary">{employee.years_of_service}</p>
-                <p className="text-xs text-slate-400">سنة</p>
+                <p className="text-slate-400 text-xs mb-1">مدة الخدمة</p>
+                <p className="text-xl font-bold text-primary">{employee.hire_date ? calculateServiceDuration(employee.hire_date).display : '0'}</p>
+                <p className="text-xs text-slate-400">محسوبة من تاريخ التعيين</p>
             </div>
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">رصيد الإجازات</p>

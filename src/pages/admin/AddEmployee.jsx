@@ -17,8 +17,8 @@ export default function AddEmployee() {
     full_name: '',
     birth_date: '',
     hire_date: '',
+    hire_date: '',
     leave_balance: 0,
-    years_of_service: 0,
     job_title: '',
     certificate: '',
     specialization: '',
@@ -116,7 +116,7 @@ export default function AddEmployee() {
         'الراتب الاسمي': 1000000,
         'الراتب الكلي': 1500000,
         'الحافز الشهري': 250000,
-        'سنوات الخدمة': 5,
+        'الحافز الشهري': 250000,
         'رصيد الإجازات': 30
       }
     ]
@@ -173,7 +173,7 @@ export default function AddEmployee() {
             nominal_salary: row['الراتب الاسمي'] || 0,
             total_salary: row['الراتب الكلي'] || 0,
             incentive: row['الحافز الشهري'] || 0,
-            years_of_service: row['سنوات الخدمة'] || 0,
+            years_of_service: 0, // Legacy/Ignored
             leave_balance: row['رصيد الإجازات'] || 0,
             visible_password: '123456',
             role: 'user'

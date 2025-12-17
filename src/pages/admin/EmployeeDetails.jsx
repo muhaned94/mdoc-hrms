@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, GraduationCap, Plus } from 'lucide-react'
+import { calculateServiceDuration } from '../../utils/dateUtils'
 
 export default function EmployeeDetails() {
   const { id } = useParams()
@@ -197,10 +198,12 @@ export default function EmployeeDetails() {
                     <input name="specialization" value={employee.specialization || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                </div>
 
-               <div className="space-y-1">
-                    <label className="text-sm text-slate-500">سنوات الخدمة</label>
-                    <input type="number" name="years_of_service" value={employee.years_of_service || 0} onChange={handleChange} className="w-full p-2 border rounded" />
-               </div>
+                <div className="space-y-1">
+                     <label className="text-sm text-slate-500">مدة الخدمة (محسوبة)</label>
+                     <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
+                         {calculateServiceDuration(employee.hire_date).display}
+                     </div>
+                </div>
                <div className="space-y-1">
                     <label className="text-sm text-slate-500">رصيد الإجازات</label>
                     <input type="number" name="leave_balance" value={employee.leave_balance || 0} onChange={handleChange} className="w-full p-2 border rounded" />
