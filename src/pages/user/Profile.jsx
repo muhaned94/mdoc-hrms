@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award } from 'lucide-react'
+import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award, Star } from 'lucide-react'
 import { calculateServiceDuration } from '../../utils/dateUtils'
+import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function UserProfile() {
   const { session, loading: authLoading } = useAuth()
@@ -143,6 +144,13 @@ export default function UserProfile() {
                 <p className="text-lg font-bold text-slate-700">
                     {employee.work_schedule === 'morning' ? 'صباحي' : 'مناوب'}
                 </p>
+            </div>
+             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
+                <p className="text-slate-400 text-xs mb-1">الدرجة الوظيفية</p>
+                <p className="text-lg font-bold text-sky-600">
+                    {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date).years).display}
+                </p>
+                <p className="text-xs text-slate-400">حسب التحصيل والخدمة</p>
             </div>
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">الحالة</p>

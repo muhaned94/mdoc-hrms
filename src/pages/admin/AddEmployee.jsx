@@ -4,6 +4,8 @@ import { Upload, FileSpreadsheet, Save, X, AlertCircle } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { calculateJobGrade } from '../../utils/gradeUtils'
+import { calculateServiceDuration } from '../../utils/dateUtils'
 
 export default function AddEmployee() {
   const { user } = useAuth()
@@ -254,6 +256,14 @@ export default function AddEmployee() {
             <p className="text-sm text-indigo-700">قم برفع ملف يحتوي على بيانات الموظفين دفعة واحدة</p>
           </div>
         </div>
+        {formData.hire_date && formData.certificate && (
+          <div className="mt-4 p-3 bg-sky-50 rounded-lg border border-sky-100 flex items-center justify-between">
+            <span className="text-sm font-bold text-sky-800">توقع الدرجة الوظيفية:</span>
+            <span className="bg-sky-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                {calculateJobGrade(formData.certificate, calculateServiceDuration(formData.hire_date).years).display}
+            </span>
+          </div>
+        )}
         <div className="flex gap-2">
             <button 
                 onClick={handleDownloadTemplate}

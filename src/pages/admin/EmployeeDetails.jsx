@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, GraduationCap, Plus } from 'lucide-react'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, GraduationCap, Plus, Star } from 'lucide-react'
 import { calculateServiceDuration } from '../../utils/dateUtils'
+import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function EmployeeDetails() {
   const { id } = useParams()
@@ -202,6 +203,12 @@ export default function EmployeeDetails() {
                      <label className="text-sm text-slate-500">مدة الخدمة (محسوبة)</label>
                      <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
                          {calculateServiceDuration(employee.hire_date).display}
+                     </div>
+                </div>
+                <div className="space-y-1">
+                     <label className="text-sm text-slate-500">الدرجة الوظيفية (محسوبة)</label>
+                     <div className="w-full p-2 border rounded bg-sky-50 text-sky-700 font-bold">
+                         {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date).years).display}
                      </div>
                 </div>
                <div className="space-y-1">
