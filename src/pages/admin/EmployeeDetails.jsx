@@ -19,6 +19,7 @@ export default function EmployeeDetails() {
   const [bonusMonths, setBonusMonths] = useState(1)
   const [orders, setOrders] = useState([])
   const [slips, setSlips] = useState([])
+  const [slipDate, setSlipDate] = useState(new Date().toISOString().slice(0, 7)) // YYYY-MM
   const [letters, setLetters] = useState([])
   
   // Courses State
@@ -145,6 +146,30 @@ export default function EmployeeDetails() {
       }
   }
 
+  const handleDeleteSlip = async (slipId) => {
+      if (!confirm('هل أنت متأكد من حذف شريط الراتب هذا؟')) return
+      try {
+          const { error } = await supabase.from('salary_slips').delete().eq('id', slipId)
+          if (error) throw error
+          fetchDocuments()
+      } catch (err) {
+          alert('فشل حذف شريط الراتب')
+      }
+  }
+
+  const handleEditSlipDate = async (slipId) => {
+      const newDate = prompt('أدخل التاريخ الجديد (YYYY-MM):')
+      if (!newDate) return
+      try {
+          // Validate format or just pass it
+          const { error } = await supabase.from('salary_slips').update({ month_year: newDate }).eq('id', slipId)
+          if (error) throw error
+          fetchDocuments()
+      } catch (err) {
+          alert('فشل تحديث تاريخ شريط الراتب')
+      }
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setEmployee(prev => ({ ...prev, [name]: value }))
@@ -218,7 +243,7 @@ export default function EmployeeDetails() {
         } else {
              const { error: insErr } = await supabase.from('salary_slips').insert({
                 employee_id: id,
-                month_year: new Date(), // Logic needed
+                month_year: slipDate ? `${slipDate}-01` : new Date().toISOString(), 
                 file_url: publicUrl
             })
             if (insErr) throw insErr
@@ -477,19 +502,51 @@ export default function EmployeeDetails() {
                     <FileText className="text-green-500" size={20} />
                     أشرطة الراتب
                 </h3>
-                 <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                  <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
                     {slips.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد ملفات</p>}
                     {slips.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <span className="text-sm text-slate-600">راتب شهر</span>
-                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
+                        <div key={doc.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-green-200 shadow-sm transition-all">
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-slate-700">راتب شهر</span>
+                                <span className="text-[10px] text-slate-400">{formatDate(doc.month_year)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <button 
+                                        onClick={() => handleEditSlipDate(doc.id)}
+                                        className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                        title="تعديل التاريخ"
+                                    >
+                                        <Edit3 size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteSlip(doc.id)}
+                                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                        title="حذف"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                                <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 rounded hover:bg-green-500 hover:text-white transition-all shadow-sm">عرض</a>
+                            </div>
                         </div>
                     ))}
                 </div>
+                
+                <div className="mb-4">
+                    <label className="block text-[10px] text-slate-400 mb-1">شهر الراتب:</label>
+                    <input 
+                        type="month" 
+                        value={slipDate}
+                        onChange={(e) => setSlipDate(e.target.value)}
+                        className="w-full text-sm p-2 rounded border border-green-200 focus:ring-1 focus:ring-green-500 outline-none"
+                    />
+                </div>
+
                 <label className="block w-full text-center border-2 border-dashed border-green-200 rounded-lg p-4 cursor-pointer hover:bg-green-50 transition-colors">
                     <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
                     <Upload className="mx-auto text-green-400 mb-2" size={20} />
-                    <span className="text-sm text-green-600">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
+                    <span className="text-sm text-green-600 font-bold">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
                 </label>
             </div>
 
