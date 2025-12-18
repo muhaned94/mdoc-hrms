@@ -22,6 +22,7 @@ export default function UserLayout() {
                 <Link to="/user/profile" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الملف الشخصي</Link>
                 <Link to="/user/salary" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الراتب</Link>
                 <Link to="/user/orders" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الأوامر الإدارية</Link>
+                <Link to="/user/appreciation" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">كتب الشكر</Link>
                 <Link to="/user/courses" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الدورات</Link>
                 <Link to="/user/documents" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">المستمسكات</Link>
                 <Link to="/user/settings" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الإعدادات</Link>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, GraduationCap, Plus, Star } from 'lucide-react'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3 } from 'lucide-react'
 import { calculateServiceDuration } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
@@ -79,6 +79,39 @@ export default function EmployeeDetails() {
       setLetters(data || [])
     } catch (err) {
       console.error('Catch error in fetchLetters:', err)
+    }
+  }
+
+  const handleDeleteLetter = async (letterId, bonusValue) => {
+    if (!confirm('هل أنت متأكد من حذف كتاب الشكر هذا؟ سيتم خصم مدة الخدمة المضافة.')) return
+    try {
+      const { error: delErr } = await supabase.from('appreciation_letters').delete().eq('id', letterId)
+      if (delErr) throw delErr
+
+      const { data: emp, error: empErr } = await supabase.from('employees').select('bonus_service_months').eq('id', id).single()
+      if (empErr) throw empErr
+
+      const { error: updErr } = await supabase.from('employees').update({ 
+          bonus_service_months: Math.max(0, (emp.bonus_service_months || 0) - bonusValue) 
+      }).eq('id', id)
+      if (updErr) throw updErr
+
+      await fetchLetters()
+      await fetchEmployee()
+    } catch (err) {
+      alert('فشل حذف الكتاب: ' + err.message)
+    }
+  }
+
+  const handleEditLetterTitle = async (letterId) => {
+    const newTitle = prompt('أدخل العنوان الجديد للكتاب:')
+    if (!newTitle) return
+    try {
+      const { error } = await supabase.from('appreciation_letters').update({ title: newTitle }).eq('id', letterId)
+      if (error) throw error
+      await fetchLetters()
+    } catch (err) {
+      alert('فشل تحديث العنوان')
     }
   }
   
@@ -349,15 +382,47 @@ export default function EmployeeDetails() {
                     <Star className="text-amber-500" size={20} />
                     كتب الشكر والتقدير
                 </h3>
-                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-                    {letters.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب شكر</p>}
+                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1">
+                    {letters.length === 0 && (
+                        <div className="py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200 text-center">
+                            <p className="text-xs text-slate-400">لا توجد كتب شكر مسجلة</p>
+                        </div>
+                    )}
                     {letters.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <div className="flex flex-col">
-                                <span className="text-xs font-bold text-slate-700 truncate w-32">{doc.title}</span>
-                                <span className="text-[10px] text-amber-600">زيادة خدمة: {doc.bonus_months} شهر</span>
+                        <div key={doc.id} className="group/item flex flex-col bg-white p-3 rounded-lg border border-slate-100 hover:border-amber-200 shadow-sm transition-all">
+                            <div className="flex items-start justify-between mb-2">
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-bold text-slate-700 leading-tight mb-1">{doc.title}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">+{doc.bonus_months} شهر</span>
+                                        <span className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('ar-EG')}</span>
+                                    </div>
+                                </div>
+                                <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <button 
+                                        onClick={() => handleEditLetterTitle(doc.id)}
+                                        className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                        title="تعديل العنوان"
+                                    >
+                                        <Edit3 size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteLetter(doc.id, doc.bonus_months)}
+                                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                        title="حذف"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
                             </div>
-                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
+                            <a 
+                                href={doc.file_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="mt-2 text-center py-1.5 bg-slate-50 text-xs font-bold text-primary rounded-md group-hover/item:bg-amber-500 group-hover/item:text-white transition-all shadow-sm"
+                            >
+                                عرض الكتاب
+                            </a>
                         </div>
                     ))}
                 </div>

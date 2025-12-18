@@ -19,7 +19,6 @@ export default function Documents() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState({})
   const [deleting, setDeleting] = useState({})
-  const [letters, setLetters] = useState([])
 
   const userId = session?.user?.id
 
@@ -30,7 +29,6 @@ export default function Documents() {
       return
     }
     fetchEmployeeData()
-    fetchLetters()
   }, [userId, authLoading])
 
   const fetchEmployeeData = async () => {
@@ -50,21 +48,6 @@ export default function Documents() {
     }
   }
 
-  const fetchLetters = async () => {
-    if (!userId) return
-    try {
-      const { data, error } = await supabase
-        .from('appreciation_letters')
-        .select('*')
-        .eq('employee_id', userId)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setLetters(data || [])
-    } catch (error) {
-      console.error('Error fetching letters:', error)
-    }
-  }
 
   const handleFileUpload = async (event, docType) => {
     const file = event.target.files[0]
@@ -248,42 +231,6 @@ export default function Documents() {
         })}
       </div>
 
-      {/* Administrative Orders & Appreciation Letters Section */}
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 overflow-hidden relative">
-        <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                <FileText size={20} />
-            </div>
-            <h2 className="text-xl font-bold text-slate-900">أوامر إدارية وكتب شكر</h2>
-        </div>
-
-        {letters.length === 0 ? (
-            <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                <p className="text-slate-400">لا توجد أوامر إدارية أو كتب شكر مرفوعة حالياً.</p>
-            </div>
-        ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {letters.map((letter) => (
-                    <div key={letter.id} className="flex flex-col p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-amber-200 transition-colors">
-                        <div className="flex items-start justify-between mb-3">
-                            <span className="bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold">كتاب شكر</span>
-                            <span className="text-[10px] text-slate-400">{new Date(letter.created_at).toLocaleDateString('ar-EG')}</span>
-                        </div>
-                        <h4 className="font-bold text-slate-800 text-sm truncate mb-1" title={letter.title}>{letter.title}</h4>
-                        <p className="text-[11px] text-amber-600 font-medium mb-4">أضاف {letter.bonus_months} أشهر للخدمة</p>
-                        <a 
-                            href={letter.file_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="w-full py-2 bg-white text-primary text-xs font-bold rounded-lg border border-slate-200 hover:bg-primary hover:text-white hover:border-primary transition-all text-center"
-                        >
-                            عرض الملف
-                        </a>
-                    </div>
-                ))}
-            </div>
-        )}
-      </div>
     </div>
   )
 }
