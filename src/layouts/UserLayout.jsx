@@ -3,8 +3,17 @@ import { useAuth } from '../context/AuthContext'
 import { User, FileText, CreditCard, Award, LogOut } from 'lucide-react'
 
 export default function UserLayout() {
-  const { user, signOut } = useAuth()
+  const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate('/login')
+    }
+  }, [user, loading, navigate])
+
+  if (loading) return null
+  if (!user) return null
 
   const handleSignOut = async () => {
     await signOut()

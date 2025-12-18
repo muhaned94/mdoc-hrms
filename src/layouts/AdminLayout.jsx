@@ -4,12 +4,19 @@ import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function AdminLayout() {
-  const { user, isAdmin, signOut } = useAuth()
+  const { user, isAdmin, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // ... (auth checks)
+  useEffect(() => {
+    if (!loading && (!user || !isAdmin)) {
+      navigate('/login')
+    }
+  }, [user, isAdmin, loading, navigate])
+
+  if (loading) return null // Handled by App Suspense but for safety
+  if (!user || !isAdmin) return null
 
   const handleSignOut = async () => {
     await signOut()

@@ -8,7 +8,7 @@ import { calculateJobGrade } from '../../utils/gradeUtils'
 import { calculateServiceDuration } from '../../utils/dateUtils'
 
 export default function AddEmployee() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -43,6 +43,11 @@ export default function AddEmployee() {
     setLoading(true)
     setError(null)
     setSuccess(null)
+
+    if (!user) {
+        setError('يجب تسجيل الدخول كمسؤول للقيام بهذه العملية')
+        return
+    }
 
     try {
       // 1. Create Auth User
@@ -83,7 +88,7 @@ export default function AddEmployee() {
       // We pass the current logged in Admin ID to verify permission
       const { data, error } = await supabase
         .rpc('create_employee', {
-            p_admin_id: user.id, // From AuthContext
+            p_admin_id: user?.id,
             p_employee_data: {
                 ...formData,
                 id: crypto.randomUUID()
