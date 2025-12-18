@@ -105,7 +105,7 @@ export default function EmployeeDetails() {
   }
 
   const handleEditLetterTitle = async (letterId) => {
-    const newTitle = prompt('أدخل العنوان الجديد للكتاب:')
+    const newTitle = prompt('أدخل العنوان الجديد:')
     if (!newTitle) return
     try {
       const { error } = await supabase.from('appreciation_letters').update({ title: newTitle }).eq('id', letterId)
@@ -113,6 +113,29 @@ export default function EmployeeDetails() {
       await fetchLetters()
     } catch (err) {
       alert('فشل تحديث العنوان')
+    }
+  }
+
+  const handleDeleteOrder = async (orderId) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الأمر الإداري؟')) return
+    try {
+        const { error } = await supabase.from('admin_orders').delete().eq('id', orderId)
+        if (error) throw error
+        fetchDocuments()
+    } catch (err) {
+        alert('فشل الحذف')
+    }
+  }
+
+  const handleEditOrderTitle = async (orderId) => {
+    const newTitle = prompt('أدخل العنوان الجديد للأمر الإداري:')
+    if (!newTitle) return
+    try {
+        const { error } = await supabase.from('admin_orders').update({ title: newTitle }).eq('id', orderId)
+        if (error) throw error
+        fetchDocuments()
+    } catch (err) {
+        alert('فشل التعديل')
     }
   }
   
@@ -144,6 +167,24 @@ export default function EmployeeDetails() {
       } catch (err) {
           alert('فشل الحذف')
       }
+  }
+
+  const handleEditCourse = async (course) => {
+    const newName = prompt('تعديل اسم الدورة:', course.course_name)
+    if (!newName) return
+    const newDate = prompt('تعديل تاريخ الدورة (YYYY-MM-DD):', course.course_date)
+    if (!newDate) return
+    
+    try {
+        const { error } = await supabase.from('courses').update({ 
+            course_name: newName,
+            course_date: newDate
+        }).eq('id', course.id)
+        if (error) throw error
+        fetchDocuments()
+    } catch (err) {
+        alert('فشل تعديل الدورة')
+    }
   }
 
   const handleDeleteSlip = async (slipId) => {
@@ -480,12 +521,33 @@ export default function EmployeeDetails() {
                     <FileText className="text-indigo-500" size={20} />
                     الأوامر الإدارية
                 </h3>
-                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
                     {orders.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب</p>}
                     {orders.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <span className="text-sm truncate w-32" title={doc.title}>{doc.title}</span>
-                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
+                        <div key={doc.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-indigo-200 shadow-sm transition-all">
+                             <div className="flex flex-col overflow-hidden flex-1">
+                                <span className="text-sm font-bold text-slate-700 truncate" title={doc.title}>{doc.title}</span>
+                                <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                    <button 
+                                        onClick={() => handleEditOrderTitle(doc.id)}
+                                        className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                        title="تعديل العنوان"
+                                    >
+                                        <Edit3 size={14} />
+                                    </button>
+                                    <button 
+                                        onClick={() => handleDeleteOrder(doc.id)}
+                                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                        title="حذف"
+                                    >
+                                        <Trash2 size={14} />
+                                    </button>
+                                </div>
+                                <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 rounded hover:bg-indigo-500 hover:text-white transition-all shadow-sm">عرض</a>
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -580,17 +642,30 @@ export default function EmployeeDetails() {
                     </div>
                 </form>
 
-                <div className="space-y-3 max-h-48 overflow-y-auto">
+                <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
                     {courses.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد دورات</p>}
                     {courses.map(course => (
-                        <div key={course.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100 group">
-                            <div className="overflow-hidden">
-                                <p className="text-sm font-medium text-slate-700 truncate">{course.course_name}</p>
-                                <p className="text-xs text-slate-400">{new Date(course.course_date).toLocaleDateString('ar-EG')}</p>
+                        <div key={course.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-purple-200 shadow-sm transition-all">
+                            <div className="overflow-hidden flex-1">
+                                <p className="text-sm font-bold text-slate-700 truncate">{course.course_name}</p>
+                                <p className="text-[10px] text-slate-400">{formatDate(course.course_date)}</p>
                             </div>
-                            <button onClick={() => handleDeleteCourse(course.id)} className="text-slate-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Trash size={14} />
-                            </button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <button 
+                                    onClick={() => handleEditCourse(course)}
+                                    className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                    title="تعديل"
+                                >
+                                    <Edit3 size={14} />
+                                </button>
+                                <button 
+                                    onClick={() => handleDeleteCourse(course.id)}
+                                    className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                    title="حذف"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>

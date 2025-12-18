@@ -17,6 +17,8 @@ const Orders = lazy(() => import('./pages/user/Orders'))
 const Courses = lazy(() => import('./pages/user/Courses'))
 const Documents = lazy(() => import('./pages/user/Documents'))
 const Appreciation = lazy(() => import('./pages/user/Appreciation'))
+const Announcements = lazy(() => import('./pages/admin/Announcements'))
+const Reports = lazy(() => import('./pages/admin/Reports'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -31,6 +33,8 @@ function App() {
           <Route path="employees" element={<EmployeeList />} />
           <Route path="employees/:id" element={<EmployeeDetails />} />
           <Route path="add-employee" element={<AddEmployee />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="reports" element={<Reports />} />
         </Route>
 
         <Route path="/user" element={<UserLayout />}>

@@ -1,20 +1,26 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import {
+  User, Briefcase, Calendar, MapPin, GraduationCap,
+  Settings, LogOut, ChevronRight, Download, Megaphone, Clock
+} from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
-export default function UserProfile() {
-  const { session, loading: authLoading } = useAuth()
+export default function Profile() {
+  const { session, signOut, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [employee, setEmployee] = useState(null)
+  const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [letters, setLetters] = useState([])
 
   // In a real scenario, we'd get the ID from the Auth session linkage
   // For this MVP where we might not have linked Auth.Users to Employees 1:1 perfectly yet,
-  // we will try to find the employee by some unique identifier if possible, 
+  // we will try to find the employee by some unique identifier if possible,
   // OR assume `session.user.id` IS the `employee.id`.
   // Given the schema `id uuid references auth.users`, this is the intended design.
   const userId = session?.user?.id
@@ -39,6 +45,15 @@ export default function UserProfile() {
 
       if (error) throw error
       setEmployee(data)
+
+      // Fetch latest 3 announcements
+      const { data: annData } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3)
+
+      setAnnouncements(annData || [])
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -67,8 +82,34 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header Card */}
+    <div className="max-w-5xl mx-auto space-y-6 pb-20">
+      {/* Announcements Bar */}
+      {announcements.length > 0 && (
+        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 overflow-hidden relative">
+            <div className="flex items-center gap-3 mb-3">
+                <div className="p-2 bg-primary text-white rounded-lg animate-pulse">
+                    <Megaphone size={16} />
+                </div>
+                <h3 className="font-bold text-primary">إعلانات وتعميمات هامة</h3>
+            </div>
+            <div className="space-y-3">
+                {announcements.map(ann => (
+                    <div key={ann.id} className="bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
+                        <div className="flex justify-between items-start gap-4">
+                            <h4 className="font-bold text-slate-800 text-sm">{ann.title}</h4>
+                            <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
+                                <Clock size={10} />
+                                {formatDate(ann.created_at)}
+                            </span>
+                        </div>
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{ann.content}</p>
+                    </div>
+                ))}
+            </div>
+        </div>
+      )}
+
+      {/* Profile Header */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
         <div className="h-32 bg-gradient-to-r from-sky-500 to-indigo-600"></div>
         <div className="px-6 pb-6">

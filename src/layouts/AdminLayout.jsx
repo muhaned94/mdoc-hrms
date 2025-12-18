@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 export default function AdminLayout() {
@@ -27,6 +27,8 @@ export default function AdminLayout() {
     { label: 'لوحة التحكم', path: '/admin', icon: LayoutDashboard },
     { label: 'الموظفين', path: '/admin/employees', icon: Users },
     { label: 'إضافة موظف', path: '/admin/add-employee', icon: UserPlus },
+    { label: 'الإعلانات', path: '/admin/announcements', icon: Megaphone },
+    { label: 'التقارير', path: '/admin/reports', icon: BarChart3 },
   ]
 
   return (
