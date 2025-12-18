@@ -10,6 +10,7 @@ export default function AdminDashboard() {
     shift: 0,
     newHires: 0
   })
+  const [recentEmployees, setRecentEmployees] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -33,6 +34,15 @@ export default function AdminDashboard() {
       const newHires = data.filter(e => new Date(e.hire_date) > oneYearAgo).length
 
       setStats({ total, morning, shift, newHires })
+      
+      // Fetch 5 most recent employees
+      const { data: recent } = await supabase
+        .from('employees')
+        .select('*')
+        .order('hire_date', { ascending: false })
+        .limit(5)
+      
+      setRecentEmployees(recent || [])
     } catch (error) {
       console.error(error)
     } finally {
@@ -51,64 +61,64 @@ export default function AdminDashboard() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <Link to="/admin/employees" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-all hover:border-primary/20 group">
           <div>
-            <p className="text-slate-400 text-sm font-medium mb-1">إجمالي الموظفين</p>
+            <p className="text-slate-400 text-sm font-medium mb-1 group-hover:text-primary transition-colors">إجمالي الموظفين</p>
             <p className="text-3xl font-bold text-slate-800">{stats.total}</p>
           </div>
-          <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <Users size={24} />
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <Link to="/admin/employees" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-all hover:border-amber-200 group">
           <div>
-            <p className="text-slate-400 text-sm font-medium mb-1">الدوام الصباحي</p>
+            <p className="text-slate-400 text-sm font-medium mb-1 group-hover:text-amber-600 transition-colors">الدوام الصباحي</p>
             <p className="text-3xl font-bold text-amber-600">{stats.morning}</p>
           </div>
-          <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <Sun size={24} />
           </div>
-        </div>
+        </Link>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+        <Link to="/admin/employees" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-all hover:border-indigo-200 group">
           <div>
-            <p className="text-slate-400 text-sm font-medium mb-1">المناوبين</p>
+            <p className="text-slate-400 text-sm font-medium mb-1 group-hover:text-indigo-600 transition-colors">المناوبين</p>
             <p className="text-3xl font-bold text-indigo-600">{stats.shift}</p>
           </div>
-          <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <Moon size={24} />
           </div>
-        </div>
+        </Link>
 
-         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+         <Link to="/admin/employees" className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between hover:shadow-md transition-all hover:border-green-200 group">
           <div>
-            <p className="text-slate-400 text-sm font-medium mb-1">تعيينات جديدة</p>
+            <p className="text-slate-400 text-sm font-medium mb-1 group-hover:text-green-600 transition-colors">تعيينات جديدة</p>
             <p className="text-3xl font-bold text-green-600">{stats.newHires}</p>
             <p className="text-xs text-slate-400">آخر سنة</p>
           </div>
-          <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center">
+          <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <UserPlus size={24} />
           </div>
-        </div>
+        </Link>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 text-white relative overflow-hidden group hover:shadow-xl transition-shadow cursor-pointer">
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform">
+         <Link to="/admin/add-employee" className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 text-white relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer block">
+            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all">
                 <UserPlus size={120} />
             </div>
             <h3 className="text-2xl font-bold mb-2">إضافة موظف جديد</h3>
-            <p className="text-slate-400 mb-6">تسجيل بيانات موظف جديد أو استيراد من Excel</p>
-            <Link to="/admin/add-employee" className="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors inline-block">
+            <p className="text-slate-400 mb-6 max-w-xs">تسجيل بيانات موظف جديد أو استيراد البيانات من ملف Excel المتكامل.</p>
+            <div className="bg-white text-slate-900 px-6 py-2 rounded-lg font-bold hover:bg-slate-200 transition-colors inline-block">
                 بدء الإضافة
-            </Link>
-         </div>
+            </div>
+         </Link>
 
-         <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+         <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm flex flex-col">
             <h3 className="text-xl font-bold text-slate-800 mb-4">روابط سريعة</h3>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1">
                 <Link to="/admin/employees" className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 border border-slate-100 transition-colors">
                     <span className="flex items-center gap-2">
                         <Users size={18} className="text-slate-400" />
@@ -116,9 +126,63 @@ export default function AdminDashboard() {
                     </span>
                     <span className="text-xs text-primary font-bold">عرض</span>
                 </Link>
-                {/* Add more quick links like 'Generate Report' later */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 opacity-50 cursor-not-allowed">
+                    <span className="flex items-center gap-2">
+                        <Clock size={18} className="text-slate-400" />
+                        <span className="text-slate-700">طلبات الإجازات</span>
+                    </span>
+                    <span className="text-[10px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded">قريباً</span>
+                </div>
             </div>
          </div>
+      </div>
+
+      {/* Recent Employees Table */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-slate-800">أحدث التعيينات</h3>
+            <Link to="/admin/employees" className="text-sm text-primary font-bold hover:underline">عرض الكل</Link>
+        </div>
+        <div className="overflow-x-auto">
+            <table className="w-full text-right">
+                <thead className="bg-slate-50 text-slate-500 text-sm">
+                    <tr>
+                        <th className="p-4 font-bold">الموظف</th>
+                        <th className="p-4 font-bold">العنوان الوظيفي</th>
+                        <th className="p-4 font-bold">تاريخ التعيين</th>
+                        <th className="p-4 font-bold">مكان العمل</th>
+                        <th className="p-4 font-bold">الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                    {recentEmployees.map(emp => (
+                        <tr key={emp.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="p-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-xs">
+                                        {emp.full_name[0]}
+                                    </div>
+                                    <span className="font-medium text-slate-700">{emp.full_name}</span>
+                                </div>
+                            </td>
+                            <td className="p-4 text-slate-600 text-sm">{emp.job_title}</td>
+                            <td className="p-4 text-slate-500 text-sm">{new Date(emp.hire_date).toLocaleDateString('ar-EG')}</td>
+                            <td className="p-4 text-slate-500 text-sm">{emp.work_location || '-'}</td>
+                            <td className="p-4">
+                                <Link to={`/admin/employees/${emp.id}`} className="text-primary hover:underline font-bold text-xs text-left block">
+                                    تفاصيل
+                                </Link>
+                            </td>
+                        </tr>
+                    ))}
+                    {recentEmployees.length === 0 && (
+                        <tr>
+                            <td colSpan="5" className="p-8 text-center text-slate-400">لا توجد بيانات متاحة</td>
+                        </tr>
+                    )}
+                </tbody>
+            </table>
+        </div>
       </div>
     </div>
   )
