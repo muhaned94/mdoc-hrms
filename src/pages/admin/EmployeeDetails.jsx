@@ -65,8 +65,21 @@ export default function EmployeeDetails() {
   }
 
   const fetchLetters = async () => {
-    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', id).order('created_at', { ascending: false })
-    setLetters(data || [])
+    try {
+      const { data, error } = await supabase
+        .from('appreciation_letters')
+        .select('*')
+        .eq('employee_id', id)
+        .order('created_at', { ascending: false })
+      
+      if (error) {
+        console.error('Error fetching letters:', error.message)
+        return
+      }
+      setLetters(data || [])
+    } catch (err) {
+      console.error('Catch error in fetchLetters:', err)
+    }
   }
   
   const handleAddCourse = async (e) => {
@@ -143,32 +156,39 @@ export default function EmployeeDetails() {
 
         // Insert into DB
         if (type === 'order') {
-            await supabase.from('admin_orders').insert({
+            const { error: insErr } = await supabase.from('admin_orders').insert({
                 employee_id: id,
                 title: file.name,
                 file_url: publicUrl
             })
+            if (insErr) throw insErr
         } else if (type === 'letter') {
-            await supabase.from('appreciation_letters').insert({
+            const { error: insErr } = await supabase.from('appreciation_letters').insert({
                 employee_id: id,
                 title: file.name,
                 file_url: publicUrl,
                 bonus_months: bonusMonths
             })
+            if (insErr) throw insErr
+
             // Update employee total bonus months
-            const { data: emp } = await supabase.from('employees').select('bonus_service_months').eq('id', id).single()
-            await supabase.from('employees').update({ 
+            const { data: emp, error: empErr } = await supabase.from('employees').select('bonus_service_months').eq('id', id).single()
+            if (empErr) throw empErr
+
+            const { error: updErr } = await supabase.from('employees').update({ 
                 bonus_service_months: (emp.bonus_service_months || 0) + bonusMonths 
             }).eq('id', id)
+            if (updErr) throw updErr
             
-            fetchLetters()
-            fetchEmployee() // Refresh for service calc
+            await fetchLetters()
+            await fetchEmployee() // Refresh for service calc
         } else {
-             await supabase.from('salary_slips').insert({
+             const { error: insErr } = await supabase.from('salary_slips').insert({
                 employee_id: id,
                 month_year: new Date(), // Logic needed
                 file_url: publicUrl
             })
+            if (insErr) throw insErr
         }
         
         fetchDocuments()
