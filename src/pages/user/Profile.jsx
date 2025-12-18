@@ -32,8 +32,25 @@ export default function Profile() {
         return
     }
     fetchProfile()
+    fetchAnnouncements()
     fetchLetters()
   }, [userId, authLoading])
+
+  const fetchAnnouncements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('announcements')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(3)
+      
+      if (error) throw error
+      setAnnouncements(data || [])
+    } catch (err) {
+      console.warn('Announcements could not be loaded:', err.message)
+      setAnnouncements([])
+    }
+  }
 
   const fetchProfile = async () => {
     try {
@@ -45,15 +62,6 @@ export default function Profile() {
 
       if (error) throw error
       setEmployee(data)
-
-      // Fetch latest 3 announcements
-      const { data: annData } = await supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(3)
-
-      setAnnouncements(annData || [])
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -180,8 +188,10 @@ export default function Profile() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">مدة الخدمة</p>
-                <p className="text-xl font-bold text-primary">{employee.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display : '0'}</p>
-                <p className="text-xs text-slate-400">تشمل كتب الشكر ({employee.bonus_service_months || 0} شهر)</p>
+                <p className="text-xl font-bold text-primary">
+                    {employee?.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0).display : '0 يوم'}
+                </p>
+                <p className="text-xs text-slate-400">تشمل كتب الشكر ({employee?.bonus_service_months || 0} شهر)</p>
             </div>
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">رصيد الإجازات</p>
@@ -197,7 +207,9 @@ export default function Profile() {
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">الدرجة الوظيفية</p>
                 <p className="text-lg font-bold text-sky-600">
-                    {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
+                    {employee?.hire_date && employee?.certificate ? 
+                        calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0).yearsDecimal).display 
+                        : '-'}
                 </p>
                 <p className="text-xs text-slate-400">حسب التحصيل والخدمة</p>
             </div>
