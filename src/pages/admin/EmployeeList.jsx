@@ -8,6 +8,7 @@ export default function EmployeeList() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterRole, setFilterRole] = useState('all') // 'all', 'morning', 'shift'
+  const [filterLocation, setFilterLocation] = useState('all')
   
   // Selection State
   const [selectedIds, setSelectedIds] = useState([])
@@ -71,15 +72,20 @@ export default function EmployeeList() {
       }
   }
 
+  // Get unique locations for the filter
+  const locations = [...new Set(employees.map(emp => emp.work_location).filter(Boolean))].sort()
+
   const filteredEmployees = employees.filter(emp => {
     const matchesSearch = 
       emp.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.company_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.job_title?.toLowerCase().includes(searchTerm.toLowerCase())
+      emp.job_title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.work_location?.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesFilter = filterRole === 'all' || emp.work_schedule === filterRole
+    const matchesSchedule = filterRole === 'all' || emp.work_schedule === filterRole
+    const matchesLocation = filterLocation === 'all' || emp.work_location === filterLocation
 
-    return matchesSearch && matchesFilter
+    return matchesSearch && matchesSchedule && matchesLocation
   })
 
   return (
@@ -121,17 +127,32 @@ export default function EmployeeList() {
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2 md:col-span-1">
-          <Filter className="text-slate-400" size={18} />
-          <select 
-            className="w-full py-2.5 px-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary bg-white"
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="all">جميع أنظمة الدوام</option>
-            <option value="morning">صباحي</option>
-            <option value="shift">مناوب</option>
-          </select>
+        <div className="flex flex-col md:flex-row gap-4 md:col-span-2">
+          <div className="flex items-center gap-2 flex-1">
+            <Filter className="text-slate-400 shrink-0" size={18} />
+            <select 
+              className="w-full py-2.5 px-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary bg-white text-sm"
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+            >
+              <option value="all">جميع أنظمة الدوام</option>
+              <option value="morning">صباحي</option>
+              <option value="shift">مناوب</option>
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2 flex-1">
+            <select 
+              className="w-full py-2.5 px-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary bg-white text-sm"
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+            >
+              <option value="all">جميع مواقع العمل</option>
+              {locations.map(loc => (
+                <option key={loc} value={loc}>{loc}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
