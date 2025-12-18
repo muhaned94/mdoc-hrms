@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Briefcase, Calendar, MapPin, GraduationCap,
-  Settings, LogOut, ChevronRight, Download, Megaphone, Clock
+  Settings, LogOut, ChevronRight, Download, Megaphone, Clock, Award, Star
 } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
