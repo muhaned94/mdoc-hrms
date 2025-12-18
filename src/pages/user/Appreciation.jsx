@@ -1,47 +1,63 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Star, FileText, Calendar, ExternalLink, Award } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { Star, FileText, Calendar, ExternalLink, Award, Loader2 } from 'lucide-react'
 
 export default function Appreciation() {
+  const { session, loading: authLoading } = useAuth()
   const [letters, setLetters] = useState([])
   const [loading, setLoading] = useState(true)
   const [employee, setEmployee] = useState(null)
 
+  const userId = session?.user?.id
+
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (!authLoading && userId) {
+      fetchData()
+    } else if (!authLoading && !userId) {
+      setLoading(false)
+    }
+  }, [userId, authLoading])
 
   const fetchData = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      console.log('Fetching appreciation letters for:', userId)
 
       // Fetch employee data for bonus months
-      const { data: empData } = await supabase
+      const { data: empData, error: empError } = await supabase
         .from('employees')
         .select('bonus_service_months')
-        .eq('id', user.id)
-        .single()
+        .eq('id', userId)
+        .maybeSingle()
       
+      if (empError) console.error('Error fetching employee:', empError.message)
       setEmployee(empData)
 
       // Fetch letters
-      const { data: lettersData, error } = await supabase
+      const { data: lettersData, error: lettersError } = await supabase
         .from('appreciation_letters')
         .select('*')
-        .eq('employee_id', user.id)
+        .eq('employee_id', userId)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (lettersError) {
+        console.error('Error fetching letters:', lettersError.message)
+        throw lettersError
+      }
+      
+      console.log('Letters found:', lettersData?.length)
       setLetters(lettersData || [])
     } catch (error) {
-      console.error('Error fetching appreciation data:', error)
+      console.error('Catch error in fetchData:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  if (loading) return <div className="text-center p-10 font-arabic">جاري التحميل...</div>
+  if (loading || authLoading) return <div className="text-center p-10 font-arabic flex flex-col items-center gap-4">
+    <Loader2 className="animate-spin text-amber-500" size={40} />
+    <span>جاري تحميل كتب الشكر...</span>
+  </div>
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
