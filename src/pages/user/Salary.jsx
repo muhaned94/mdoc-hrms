@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Download, DollarSign, TrendingUp, CreditCard, FileText } from 'lucide-react'
+import { formatDate } from '../../utils/dateUtils'
 
 export default function Salary() {
   const { session } = useAuth()
@@ -113,9 +114,9 @@ export default function Salary() {
                             </div>
                             <div>
                                 <p className="font-bold text-slate-800">
-                                    {slip.month_year ? new Date(slip.month_year).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long' }) : 'شريط راتب'}
+                                    {slip.month_year ? formatDate(slip.month_year) : 'شريط راتب'}
                                 </p>
-                                <p className="text-xs text-slate-500">تم الرفع: {new Date(slip.created_at).toLocaleDateString('en-GB')}</p>
+                                <p className="text-xs text-slate-500">تم الرفع: {formatDate(slip.created_at)}</p>
                             </div>
                         </div>
                         <a 

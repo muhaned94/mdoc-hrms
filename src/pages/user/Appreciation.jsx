@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Star, FileText, Calendar, ExternalLink, Award, Loader2 } from 'lucide-react'
+import { formatDate } from '../../utils/dateUtils'
 
 export default function Appreciation() {
   const { session, loading: authLoading } = useAuth()
@@ -104,7 +105,7 @@ export default function Appreciation() {
                   </span>
                   <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                     <Calendar size={10} />
-                    {new Date(letter.created_at).toLocaleDateString('ar-EG')}
+                    {formatDate(letter.created_at)}
                   </span>
                 </div>
               </div>

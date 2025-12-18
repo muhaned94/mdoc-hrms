@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3 } from 'lucide-react'
-import { calculateServiceDuration } from '../../utils/dateUtils'
+import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function EmployeeDetails() {
@@ -395,7 +395,7 @@ export default function EmployeeDetails() {
                                     <span className="text-sm font-bold text-slate-700 leading-tight mb-1">{doc.title}</span>
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">+{doc.bonus_months} شهر</span>
-                                        <span className="text-[10px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('ar-EG')}</span>
+                                        <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
                                     </div>
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">

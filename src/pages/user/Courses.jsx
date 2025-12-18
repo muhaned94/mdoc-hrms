@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { GraduationCap, Calendar, Clock, CheckCircle } from 'lucide-react'
+import { formatDate } from '../../utils/dateUtils'
 
 export default function Courses() {
   const { session } = useAuth()
@@ -57,7 +58,7 @@ export default function Courses() {
                             <div className="space-y-1">
                                 <p className="text-sm text-slate-500 flex items-center gap-2">
                                     <Calendar size={14} />
-                                    <span>التاريخ: {new Date(course.course_date).toLocaleDateString('ar-EG')}</span>
+                                    <span>التاريخ: {formatDate(course.course_date)}</span>
                                 </p>
                                 <p className="text-sm text-green-600 flex items-center gap-2">
                                     <CheckCircle size={14} />

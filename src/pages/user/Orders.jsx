@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { FileText, Calendar, ExternalLink } from 'lucide-react'
+import { formatDate } from '../../utils/dateUtils'
 
 export default function Orders() {
   const { session } = useAuth()
@@ -57,7 +58,7 @@ export default function Orders() {
                             <div className="flex items-center gap-4 text-sm text-slate-500">
                                 <span className="flex items-center gap-1">
                                     <Calendar size={14} />
-                                    {new Date(order.created_at).toLocaleDateString('ar-EG')}
+                                    {formatDate(order.created_at)}
                                 </span>
                             </div>
                         </div>

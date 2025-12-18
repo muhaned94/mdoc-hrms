@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Camera, Mail, Phone, MapPin, Briefcase, Calendar, Award, Star } from 'lucide-react'
-import { calculateServiceDuration } from '../../utils/dateUtils'
+import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function UserProfile() {
@@ -128,7 +128,7 @@ export default function UserProfile() {
                     </div>
                     <div>
                         <p className="text-xs text-slate-400">تاريخ التعيين</p>
-                        <p className="font-medium text-sm">{employee.hire_date}</p>
+                        <p className="font-medium text-sm">{formatDate(employee.hire_date)}</p>
                     </div>
                 </div>
             </div>
