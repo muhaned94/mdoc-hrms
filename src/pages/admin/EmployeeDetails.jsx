@@ -468,7 +468,7 @@ export default function EmployeeDetails() {
                 </div>
 
                 <label className="block w-full text-center border-2 border-dashed border-amber-200 rounded-lg p-3 cursor-pointer hover:bg-amber-50 transition-colors">
-                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0], 'letter')} />
+                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'letter')} />
                     <Upload className="mx-auto text-amber-400 mb-1" size={18} />
                     <span className="text-xs text-amber-600 font-bold">{uploadingLetter ? 'جاري الرفع...' : 'رفع كتاب شكر'}</span>
                 </label>
@@ -490,7 +490,7 @@ export default function EmployeeDetails() {
                     ))}
                 </div>
                 <label className="block w-full text-center border-2 border-dashed border-indigo-200 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 transition-colors">
-                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
+                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
                     <Upload className="mx-auto text-indigo-400 mb-2" size={20} />
                     <span className="text-sm text-indigo-600">{uploadingOrder ? 'جاري الرفع...' : 'رفع كتاب جديد'}</span>
                 </label>
@@ -544,7 +544,7 @@ export default function EmployeeDetails() {
                 </div>
 
                 <label className="block w-full text-center border-2 border-dashed border-green-200 rounded-lg p-4 cursor-pointer hover:bg-green-50 transition-colors">
-                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
+                    <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
                     <Upload className="mx-auto text-green-400 mb-2" size={20} />
                     <span className="text-sm text-green-600 font-bold">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
                 </label>
