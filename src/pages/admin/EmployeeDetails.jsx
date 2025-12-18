@@ -60,6 +60,8 @@ export default function EmployeeDetails() {
 
     const { data: coursesData } = await supabase.from('courses').select('*').eq('employee_id', id).order('course_date', { ascending: false })
     setCourses(coursesData || [])
+
+    fetchLetters() // Ensure letters are fetched with documents
   }
 
   const fetchLetters = async () => {
@@ -320,31 +322,9 @@ export default function EmployeeDetails() {
                     ))}
                 </div>
             </div>
-
-            {/* Admin Orders */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <FileText className="text-indigo-500" size={20} />
-                    الأوامر الإدارية
-                </h3>
-                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-                    {orders.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب</p>}
-                    {orders.map(doc => (
-                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <span className="text-sm truncate w-32" title={doc.title}>{doc.title}</span>
-                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
-                        </div>
-                    ))}
-                </div>
-                <label className="block w-full text-center border-2 border-dashed border-indigo-200 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 transition-colors">
-                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
-                    <Upload className="mx-auto text-indigo-400 mb-2" size={20} />
-                    <span className="text-sm text-indigo-600">{uploadingOrder ? 'جاري الرفع...' : 'رفع كتاب جديد'}</span>
-                </label>
-            </div>
-
-            {/* Salary Slips */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+            
+            {/* Appreciation Letters */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 ring-2 ring-amber-50">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                     <Star className="text-amber-500" size={20} />
                     كتب الشكر والتقدير
@@ -384,7 +364,49 @@ export default function EmployeeDetails() {
                 </label>
             </div>
 
+            {/* Admin Orders */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <FileText className="text-indigo-500" size={20} />
+                    الأوامر الإدارية
+                </h3>
+                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                    {orders.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب</p>}
+                    {orders.map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
+                            <span className="text-sm truncate w-32" title={doc.title}>{doc.title}</span>
+                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
+                        </div>
+                    ))}
+                </div>
+                <label className="block w-full text-center border-2 border-dashed border-indigo-200 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 transition-colors">
+                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
+                    <Upload className="mx-auto text-indigo-400 mb-2" size={20} />
+                    <span className="text-sm text-indigo-600">{uploadingOrder ? 'جاري الرفع...' : 'رفع كتاب جديد'}</span>
+                </label>
+            </div>
+
             {/* Salary Slips */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <FileText className="text-green-500" size={20} />
+                    أشرطة الراتب
+                </h3>
+                 <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                    {slips.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد ملفات</p>}
+                    {slips.map(doc => (
+                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
+                            <span className="text-sm text-slate-600">راتب شهر</span>
+                            <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
+                        </div>
+                    ))}
+                </div>
+                <label className="block w-full text-center border-2 border-dashed border-green-200 rounded-lg p-4 cursor-pointer hover:bg-green-50 transition-colors">
+                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
+                    <Upload className="mx-auto text-green-400 mb-2" size={20} />
+                    <span className="text-sm text-green-600">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
+                </label>
+            </div>
 
             {/* Training Courses */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
