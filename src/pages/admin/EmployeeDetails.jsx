@@ -254,6 +254,41 @@ export default function EmployeeDetails() {
 
         {/* Side Panel: Documents */}
         <div className="space-y-6">
+            {/* Official Documents (New Section) */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <Shield className="text-primary" size={20} />
+                    المستمسكات الرسمية
+                </h3>
+                <div className="space-y-3">
+                    {[
+                        { id: 'national_id', name: 'البطاقة الوطنية', key: 'national_id_url' },
+                        { id: 'residency_card', name: 'بطاقة السكن', key: 'residency_card_url' },
+                        { id: 'marriage_contract', name: 'عقد الزواج', key: 'marriage_contract_url' },
+                        { id: 'ration_card', name: 'البطاقة التموينية', key: 'ration_card_url' }
+                    ].map((doc) => (
+                        <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <div className="flex flex-col">
+                                <span className="text-sm font-medium text-slate-700">{doc.name}</span>
+                                <span className={`text-xs ${employee[doc.key] ? 'text-green-500' : 'text-slate-400'}`}>
+                                    {employee[doc.key] ? 'متوفر' : 'غير متوفر'}
+                                </span>
+                            </div>
+                            {employee[doc.key] && (
+                                <a 
+                                    href={employee[doc.key]} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-xs font-bold text-primary hover:underline hover:bg-sky-50 px-2 py-1 rounded transition-colors"
+                                >
+                                    فتح
+                                </a>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Admin Orders */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">

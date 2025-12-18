@@ -15,6 +15,7 @@ const Settings = lazy(() => import('./pages/user/Settings'))
 const Salary = lazy(() => import('./pages/user/Salary'))
 const Orders = lazy(() => import('./pages/user/Orders'))
 const Courses = lazy(() => import('./pages/user/Courses'))
+const Documents = lazy(() => import('./pages/user/Documents'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -38,6 +39,7 @@ function App() {
           <Route path="salary" element={<Salary />} />
           <Route path="orders" element={<Orders />} />
           <Route path="courses" element={<Courses />} />
+          <Route path="documents" element={<Documents />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />
