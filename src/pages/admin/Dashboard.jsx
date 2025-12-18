@@ -27,10 +27,10 @@ export default function AdminDashboard() {
       const total = data.length
       const morning = data.filter(e => e.work_schedule === 'morning').length
       const shift = data.filter(e => e.work_schedule === 'shift').length
-      // New hires in last 30 days
-      const thirtyDaysAgo = new Date()
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
-      const newHires = data.filter(e => new Date(e.hire_date) > thirtyDaysAgo).length
+      // New hires in last year
+      const oneYearAgo = new Date()
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+      const newHires = data.filter(e => new Date(e.hire_date) > oneYearAgo).length
 
       setStats({ total, morning, shift, newHires })
     } catch (error) {
@@ -85,7 +85,7 @@ export default function AdminDashboard() {
           <div>
             <p className="text-slate-400 text-sm font-medium mb-1">تعيينات جديدة</p>
             <p className="text-3xl font-bold text-green-600">{stats.newHires}</p>
-            <p className="text-xs text-slate-400">آخر 30 يوم</p>
+            <p className="text-xs text-slate-400">آخر سنة</p>
           </div>
           <div className="w-12 h-12 bg-green-50 text-green-500 rounded-xl flex items-center justify-center">
             <UserPlus size={24} />
