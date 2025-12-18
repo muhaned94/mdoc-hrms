@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { User, FileText, CreditCard, Award, LogOut } from 'lucide-react'
