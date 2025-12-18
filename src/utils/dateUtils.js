@@ -1,5 +1,5 @@
-export const calculateServiceDuration = (hireDateArg) => {
-    if (!hireDateArg) return { years: 0, months: 0, display: '0 سنة' }
+export const calculateServiceDuration = (hireDateArg, bonusMonths = 0) => {
+    if (!hireDateArg) return { years: 0, months: 0, display: '0 سنة', totalMonths: 0, yearsDecimal: 0 }
     
     const hireDate = new Date(hireDateArg)
     const today = new Date()
@@ -11,13 +11,25 @@ export const calculateServiceDuration = (hireDateArg) => {
         years--
         months += 12
     }
+
+    // Add bonus months
+    let totalMonths = (years * 12) + months + (bonusMonths || 0)
+    let finalYears = Math.floor(totalMonths / 12)
+    let finalMonths = totalMonths % 12
+    let yearsDecimal = totalMonths / 12
     
     // Construct display string
     let display = ''
-    if (years > 0) display += `${years} سنة`
-    if (years > 0 && months > 0) display += ' و '
-    if (months > 0) display += `${months} شهر`
+    if (finalYears > 0) display += `${finalYears} سنة`
+    if (finalYears > 0 && finalMonths > 0) display += ' و '
+    if (finalMonths > 0) display += `${finalMonths} شهر`
     if (display === '') display = 'أقل من شهر'
     
-    return { years, months, display }
+    return { 
+        years: finalYears, 
+        months: finalMonths, 
+        display, 
+        totalMonths,
+        yearsDecimal
+    }
 }

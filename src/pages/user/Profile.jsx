@@ -10,6 +10,7 @@ export default function UserProfile() {
   const [employee, setEmployee] = useState(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [letters, setLetters] = useState([])
 
   // In a real scenario, we'd get the ID from the Auth session linkage
   // For this MVP where we might not have linked Auth.Users to Employees 1:1 perfectly yet,
@@ -25,6 +26,7 @@ export default function UserProfile() {
         return
     }
     fetchProfile()
+    fetchLetters()
   }, [userId, authLoading])
 
   const fetchProfile = async () => {
@@ -42,6 +44,12 @@ export default function UserProfile() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchLetters = async () => {
+    if (!userId) return
+    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', userId).order('created_at', { ascending: false })
+    setLetters(data || [])
   }
 
   if (loading || authLoading) {
@@ -131,8 +139,8 @@ export default function UserProfile() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">مدة الخدمة</p>
-                <p className="text-xl font-bold text-primary">{employee.hire_date ? calculateServiceDuration(employee.hire_date).display : '0'}</p>
-                <p className="text-xs text-slate-400">محسوبة من تاريخ التعيين</p>
+                <p className="text-xl font-bold text-primary">{employee.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display : '0'}</p>
+                <p className="text-xs text-slate-400">تشمل كتب الشكر ({employee.bonus_service_months || 0} شهر)</p>
             </div>
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">رصيد الإجازات</p>
@@ -148,7 +156,7 @@ export default function UserProfile() {
              <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
                 <p className="text-slate-400 text-xs mb-1">الدرجة الوظيفية</p>
                 <p className="text-lg font-bold text-sky-600">
-                    {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date).years).display}
+                    {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
                 </p>
                 <p className="text-xs text-slate-400">حسب التحصيل والخدمة</p>
             </div>
@@ -158,6 +166,29 @@ export default function UserProfile() {
                 <span className="text-sm font-medium text-green-600 mr-2">نشط</span>
             </div>
       </div>
+
+      {/* Letters List */}
+      {letters.length > 0 && (
+        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <Star className="text-amber-500" size={20} />
+                كتب الشكر والتقدير المستلمة
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {letters.map(letter => (
+                    <div key={letter.id} className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-100">
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-900 text-sm">{letter.title}</span>
+                            <span className="text-xs text-amber-700">أضاف {letter.bonus_months} أشهر للخدمة</span>
+                        </div>
+                        <a href={letter.file_url} target="_blank" className="bg-white text-amber-600 p-2 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                            عرض الكتاب
+                        </a>
+                    </div>
+                ))}
+            </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -15,8 +15,11 @@ export default function EmployeeDetails() {
   // Document Upload States
   const [uploadingOrder, setUploadingOrder] = useState(false)
   const [uploadingSlip, setUploadingSlip] = useState(false)
+  const [uploadingLetter, setUploadingLetter] = useState(false)
+  const [bonusMonths, setBonusMonths] = useState(1)
   const [orders, setOrders] = useState([])
   const [slips, setSlips] = useState([])
+  const [letters, setLetters] = useState([])
   
   // Courses State
   const [courses, setCourses] = useState([])
@@ -26,6 +29,7 @@ export default function EmployeeDetails() {
   useEffect(() => {
     fetchEmployee()
     fetchDocuments()
+    fetchLetters()
   }, [id])
 
   const fetchEmployee = async () => {
@@ -56,6 +60,11 @@ export default function EmployeeDetails() {
 
     const { data: coursesData } = await supabase.from('courses').select('*').eq('employee_id', id).order('course_date', { ascending: false })
     setCourses(coursesData || [])
+  }
+
+  const fetchLetters = async () => {
+    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', id).order('created_at', { ascending: false })
+    setLetters(data || [])
   }
   
   const handleAddCourse = async (e) => {
@@ -113,12 +122,13 @@ export default function EmployeeDetails() {
 
   const handleFileUpload = async (file, type) => {
     if (!file) return
-    const bucket = type === 'order' ? 'documents' : 'salary-slips' // Ensure buckets exist
+    const bucket = (type === 'order' || type === 'letter') ? 'documents' : 'salary-slips' // Ensure buckets exist
     const ext = file.name.split('.').pop()
     const fileName = `${id}/${Date.now()}.${ext}`
 
     try {
         if (type === 'order') setUploadingOrder(true)
+        else if (type === 'letter') setUploadingLetter(true)
         else setUploadingSlip(true)
 
         const { data, error } = await supabase.storage
@@ -136,6 +146,21 @@ export default function EmployeeDetails() {
                 title: file.name,
                 file_url: publicUrl
             })
+        } else if (type === 'letter') {
+            await supabase.from('appreciation_letters').insert({
+                employee_id: id,
+                title: file.name,
+                file_url: publicUrl,
+                bonus_months: bonusMonths
+            })
+            // Update employee total bonus months
+            const { data: emp } = await supabase.from('employees').select('bonus_service_months').eq('id', id).single()
+            await supabase.from('employees').update({ 
+                bonus_service_months: (emp.bonus_service_months || 0) + bonusMonths 
+            }).eq('id', id)
+            
+            fetchLetters()
+            fetchEmployee() // Refresh for service calc
         } else {
              await supabase.from('salary_slips').insert({
                 employee_id: id,
@@ -200,15 +225,15 @@ export default function EmployeeDetails() {
                </div>
 
                 <div className="space-y-1">
-                     <label className="text-sm text-slate-500">مدة الخدمة (محسوبة)</label>
+                     <label className="text-sm text-slate-500">مدة الخدمة (محسوبة مع كتب الشكر)</label>
                      <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
-                         {calculateServiceDuration(employee.hire_date).display}
+                         {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
                      </div>
                 </div>
                 <div className="space-y-1">
                      <label className="text-sm text-slate-500">الدرجة الوظيفية (محسوبة)</label>
                      <div className="w-full p-2 border rounded bg-sky-50 text-sky-700 font-bold">
-                         {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date).years).display}
+                         {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
                      </div>
                 </div>
                <div className="space-y-1">
@@ -321,24 +346,45 @@ export default function EmployeeDetails() {
             {/* Salary Slips */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <FileText className="text-green-500" size={20} />
-                    أشرطة الراتب
+                    <Star className="text-amber-500" size={20} />
+                    كتب الشكر والتقدير
                 </h3>
-                 <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
-                    {slips.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد ملفات</p>}
-                    {slips.map(doc => (
+                <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                    {letters.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب شكر</p>}
+                    {letters.map(doc => (
                         <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                            <span className="text-sm text-slate-600">راتب شهر</span>
+                            <div className="flex flex-col">
+                                <span className="text-xs font-bold text-slate-700 truncate w-32">{doc.title}</span>
+                                <span className="text-[10px] text-amber-600">زيادة خدمة: {doc.bonus_months} شهر</span>
+                            </div>
                             <a href={doc.file_url} target="_blank" className="text-xs text-primary underline">عرض</a>
                         </div>
                     ))}
                 </div>
-                <label className="block w-full text-center border-2 border-dashed border-green-200 rounded-lg p-4 cursor-pointer hover:bg-green-50 transition-colors">
-                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
-                    <Upload className="mx-auto text-green-400 mb-2" size={20} />
-                    <span className="text-sm text-green-600">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
+                
+                <div className="flex gap-2 mb-3">
+                    <button 
+                        onClick={() => setBonusMonths(1)}
+                        className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 1 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                    >
+                        +1 شهر
+                    </button>
+                    <button 
+                        onClick={() => setBonusMonths(6)}
+                        className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 6 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                    >
+                        +6 أشهر
+                    </button>
+                </div>
+
+                <label className="block w-full text-center border-2 border-dashed border-amber-200 rounded-lg p-3 cursor-pointer hover:bg-amber-50 transition-colors">
+                    <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0], 'letter')} />
+                    <Upload className="mx-auto text-amber-400 mb-1" size={18} />
+                    <span className="text-xs text-amber-600 font-bold">{uploadingLetter ? 'جاري الرفع...' : 'رفع كتاب شكر'}</span>
                 </label>
             </div>
+
+            {/* Salary Slips */}
 
             {/* Training Courses */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
