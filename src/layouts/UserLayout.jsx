@@ -35,6 +35,7 @@ export default function UserLayout() {
                 <Link to="/user/appreciation" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">كتب الشكر</Link>
                 <Link to="/user/courses" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الدورات</Link>
                 <Link to="/user/documents" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">المستمسكات</Link>
+                <Link to="/user/support" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الدعم والشكاوي</Link>
                 <Link to="/user/settings" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الإعدادات</Link>
               </nav>
             </div>

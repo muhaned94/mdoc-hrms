@@ -1,26 +1,29 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3, MessageSquareWarning } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 export default function AdminLayout() {
   const { user, isAdmin, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [pendingReports, setPendingReports] = useState(0)
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
-      navigate('/login')
-    }
-  }, [user, isAdmin, loading, navigate])
+    fetchPendingReports()
+    // Poll every minute for new reports
+    const interval = setInterval(fetchPendingReports, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
-  if (loading) return null // Handled by App Suspense but for safety
-  if (!user || !isAdmin) return null
-
-  const handleSignOut = async () => {
-    await signOut()
-    navigate('/login')
+  const fetchPendingReports = async () => {
+    const { count, error } = await supabase
+        .from('reports')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending')
+    
+    if (!error) setPendingReports(count || 0)
   }
 
   const navItems = [
@@ -29,6 +32,7 @@ export default function AdminLayout() {
     { label: 'إضافة موظف', path: '/admin/add-employee', icon: UserPlus },
     { label: 'الإعلانات', path: '/admin/announcements', icon: Megaphone },
     { label: 'التقارير', path: '/admin/reports', icon: BarChart3 },
+    { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
   ]
 
   return (
@@ -56,14 +60,21 @@ export default function AdminLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center space-x-3 space-x-reverse p-3 rounded-lg transition-colors ${
+              className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
                 location.pathname === item.path
                   ? 'bg-primary text-white'
                   : 'text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <item.icon size={20} />
-              <span>{item.label}</span>
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <item.icon size={20} />
+                <span>{item.label}</span>
+              </div>
+              {item.badge > 0 && (
+                <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                    {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>

@@ -18,7 +18,9 @@ const Courses = lazy(() => import('./pages/user/Courses'))
 const Documents = lazy(() => import('./pages/user/Documents'))
 const Appreciation = lazy(() => import('./pages/user/Appreciation'))
 const Announcements = lazy(() => import('./pages/admin/Announcements'))
-const Reports = lazy(() => import('./pages/admin/Reports'))
+const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
+const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
+const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -34,7 +36,8 @@ function App() {
           <Route path="employees/:id" element={<EmployeeDetails />} />
           <Route path="add-employee" element={<AddEmployee />} />
           <Route path="announcements" element={<Announcements />} />
-          <Route path="reports" element={<Reports />} />
+          <Route path="reports" element={<Reports />} /> {/* Analytics */}
+          <Route path="complaints" element={<AdminReports />} /> {/* Complaints System */}
         </Route>
 
         <Route path="/user" element={<UserLayout />}>
@@ -45,6 +48,7 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="courses" element={<Courses />} />
           <Route path="documents" element={<Documents />} />
+          <Route path="support" element={<ReportIssue />} />
           <Route path="appreciation" element={<Appreciation />} />
         </Route>
 
