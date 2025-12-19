@@ -14,9 +14,29 @@ drop policy if exists "Admins can update reports" on public.reports;
 drop policy if exists "Users can view own notifications" on public.notifications;
 drop policy if exists "Users can update own notifications" on public.notifications;
 drop policy if exists "System can insert notifications" on public.notifications;
+drop policy if exists "Employees can view own record" on public.employees;
 
--- 1. Reports: Select (View)
--- Users can view their own, Admins can view all.
+-- ========================================================
+-- 1. Employees Table: Allow users to find their own ID
+-- ========================================================
+alter table public.employees enable row level security;
+
+create policy "Employees can view own record" on public.employees for select
+using (
+    email = (select auth.jwt() ->> 'email')
+    OR
+    exists (
+        select 1 from public.employees
+        where email = (select auth.jwt() ->> 'email')
+        and role = 'admin'
+    )
+);
+
+-- ========================================================
+-- 2. Reports Table
+-- ========================================================
+
+-- Select (View)
 create policy "Reports Select Policy" on public.reports for select
 using (
     -- User owns the report (matched by email)
@@ -34,8 +54,7 @@ using (
     )
 );
 
--- 2. Reports: Insert (Create)
--- Users can insert reports for themselves.
+-- Insert (Create)
 create policy "Reports Insert Policy" on public.reports for insert
 with check (
     exists (
@@ -45,8 +64,7 @@ with check (
     )
 );
 
--- 3. Reports: Update
--- Only Admins can update reports (to resolve them).
+-- Update
 create policy "Reports Update Policy" on public.reports for update
 using (
     exists (
@@ -56,8 +74,11 @@ using (
     )
 );
 
--- 4. Notifications: Select
--- Users view their own.
+-- ========================================================
+-- 3. Notifications Table
+-- ========================================================
+
+-- Select
 create policy "Notifications Select Policy" on public.notifications for select
 using (
     exists (
@@ -67,8 +88,7 @@ using (
     )
 );
 
--- 5. Notifications: Update
--- Users can mark as read.
+-- Update
 create policy "Notifications Update Policy" on public.notifications for update
 using (
     exists (
@@ -78,8 +98,7 @@ using (
     )
 );
 
--- 6. Notifications: Insert
--- Allow authenticated users (system/admins) to create notifications.
+-- Insert
 create policy "Notifications Insert Policy" on public.notifications for insert
 with check (
     auth.role() = 'authenticated'

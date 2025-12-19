@@ -34,10 +34,10 @@ export default function ReportIssue() {
             .from('employees')
             .select('id')
             .eq('email', session.user.email)
-            .single()
+            .maybeSingle()
         
         if (empError) throw empError
-        if (!emp) throw new Error('Employee record not found')
+        if (!emp) throw new Error(`لم يتم العثور على سجل موظف مرتبط بالبريد: ${session.user.email}`)
 
         setEmployeeId(emp.id)
 
