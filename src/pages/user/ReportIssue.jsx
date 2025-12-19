@@ -9,10 +9,6 @@ export default function ReportIssue() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
-  const { session } = useAuth()
-  const [reports, setReports] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
   const [employeeId, setEmployeeId] = useState(null)
   
   const [formData, setFormData] = useState({
