@@ -119,6 +119,7 @@ export default function AddEmployee() {
         'الاسم الرباعي': 'مثال: أحمد محمد علي',
         'تاريخ الميلاد': '1990-01-01',
         'تاريخ التعيين': '2020-01-01',
+        'الجنس': 'ذكر',
         'العنوان الوظيفي': 'مهندس',
         'التحصيل الدراسي': 'بكالوريوس',
         'الاختصاص': 'هندسة نفط',
@@ -129,6 +130,18 @@ export default function AddEmployee() {
         'الراتب الكلي': 1500000,
         'الحافز الشهري': 250000,
         'رصيد الإجازات': 30,
+        'رقم الهاتف': '07xxxxxxxxx',
+        'البريد الإلكتروني': 'user@example.com',
+        'الحالة الاجتماعية': 'أعزب/باكر',
+        'اسم الزوج/الزوجة': '',
+        'الجامعة': 'جامعة بغداد',
+        'الكلية': 'كلية الهندسة',
+        'سنة التخرج': '2012',
+        'المحافظة': 'بغداد',
+        'المدينة': 'الكرادة',
+        'محلة': '901',
+        'زقاق': '12',
+        'دار': '5',
         'كلمة المرور': '123456',
         'الدورات': 'دورة سلامة:2023-01-01'
       }
@@ -174,12 +187,24 @@ export default function AddEmployee() {
             const empId = crypto.randomUUID()
             const rawPassword = row['كلمة المرور'] || '123456'
             
+            // Map Marital Status
+            let maritalStatus = 'single'
+            const msRaw = row['الحالة الاجتماعية'] || ''
+            if (msRaw.includes('متزوج')) maritalStatus = 'married'
+            else if (msRaw.includes('مطلق')) maritalStatus = 'divorced'
+            else if (msRaw.includes('أرمل')) maritalStatus = 'widowed'
+
+            // Map Gender
+            let gender = 'male'
+            if ((row['الجنس'] || '').includes('أنثى')) gender = 'female'
+
             employees.push({
                 id: empId,
                 company_id: row['رقم الشركة'] || row['Company ID'] || '',
                 full_name: row['الاسم الرباعي'] || row['Full Name'] || '',
                 birth_date: excelDateToJSDate(row['تاريخ الميلاد']) || null,
                 hire_date: excelDateToJSDate(row['تاريخ التعيين']) || null,
+                gender: gender,
                 job_title: row['العنوان الوظيفي'] || '',
                 certificate: row['التحصيل الدراسي'] || '',
                 specialization: row['الاختصاص'] || '',
@@ -191,6 +216,23 @@ export default function AddEmployee() {
                 incentive: row['الحافز الشهري'] || 0,
                 years_of_service: 0, 
                 leave_balance: row['رصيد الإجازات'] || 0,
+                
+                // New Fields
+                phone_number: row['رقم الهاتف'] || '',
+                email: row['البريد الإلكتروني'] || '',
+                marital_status: maritalStatus,
+                spouse_name: row['اسم الزوج/الزوجة'] || '',
+                university_name: row['الجامعة'] || '',
+                college_name: row['الكلية'] || '',
+                graduation_year: row['سنة التخرج'] || '',
+                
+                // Address
+                governorate: row['المحافظة'] || '',
+                city: row['المدينة'] || '',
+                mahalla: row['محلة'] || '',
+                zgaq: row['زقاق'] || '',
+                dar: row['دار'] || '',
+
                 visible_password: String(rawPassword),
                 role: 'user'
             })
