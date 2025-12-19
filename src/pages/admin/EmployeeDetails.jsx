@@ -386,6 +386,69 @@ export default function EmployeeDetails() {
                     <input type="number" name="incentive" value={employee.incentive || 0} onChange={handleChange} className="w-full p-2 border rounded bg-green-50 border-green-200" />
                </div>
 
+               {/* New Sections: Contact & Personal */}
+               <div className="md:col-span-2 border-t pt-2 mt-2">
+                   <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">معلومات الاتصال والشخصية</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-sm text-slate-500">رقم الهاتف</label>
+                            <input name="phone_number" value={employee.phone_number || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-sm text-slate-500">البريد الإلكتروني</label>
+                            <input name="email" value={employee.email || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                         <div className="space-y-1 md:col-span-2">
+                            <label className="text-sm text-slate-500">العنوان</label>
+                            <input name="address" value={employee.address || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                         <div className="space-y-1">
+                            <label className="text-sm text-slate-500">الحالة الاجتماعية</label>
+                            <select name="marital_status" value={employee.marital_status || 'single'} onChange={handleChange} className="w-full p-2 border rounded">
+                                <option value="single">أعزب/باكر</option>
+                                <option value="married">متزوج</option>
+                                <option value="divorced">مطلق</option>
+                                <option value="widowed">أرمل</option>
+                            </select>
+                        </div>
+                        {employee.marital_status === 'married' && (
+                             <div className="space-y-1">
+                                <label className="text-sm text-slate-500">اسم الزوج/الزوجة</label>
+                                <input name="spouse_name" value={employee.spouse_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                            </div>
+                        )}
+                   </div>
+               </div>
+
+                {/* New Section: Education */}
+               <div className="md:col-span-2 border-t pt-2 mt-2">
+                   <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">التعليم والشهادة</h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                            <label className="text-sm text-slate-500">اسم الجامعة</label>
+                            <input name="university_name" value={employee.university_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-sm text-slate-500">اسم الكلية</label>
+                            <input name="college_name" value={employee.college_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-sm text-slate-500">سنة التخرج</label>
+                            <input name="graduation_year" value={employee.graduation_year || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                        </div>
+                        <div className="space-y-1 flex items-end">
+                            {employee.graduation_certificate_url ? (
+                                <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm">
+                                    <FileText className="inline-block mr-1" size={16}/> عرض شهادة التخرج
+                                </a>
+                            ) : (
+                                <span className="text-xs text-slate-400">لا توجد نسخة ضوئية مرفوعة</span>
+                            )}
+                        </div>
+                   </div>
+               </div>
+
+
                <div className="md:col-span-2 border-t pt-4 mt-2">
                    <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">
                         <Shield size={16} /> Data Security

@@ -13,6 +13,7 @@ export default function AddEmployee() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
+  const [uploadingCert, setUploadingCert] = useState(false)
   
   const [formData, setFormData] = useState({
     company_id: '',
@@ -29,13 +30,48 @@ export default function AddEmployee() {
     nominal_salary: 0,
     total_salary: 0,
     incentive: 0,
-    visible_password: '123456', // Default password
-    role: 'user'
+    visible_password: '123456', 
+    role: 'user',
+    // New Fields
+    address: '',
+    email: '',
+    phone_number: '',
+    marital_status: 'single',
+    spouse_name: '',
+    gender: 'male',
+    university_name: '',
+    college_name: '',
+    graduation_year: '',
+    graduation_certificate_url: ''
   })
 
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  const handleCertUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    
+    setUploadingCert(true)
+    try {
+        const ext = file.name.split('.').pop()
+        const fileName = `certificates/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`
+        
+        const { error: uploadError } = await supabase.storage
+            .from('documents') // Using reliable 'documents' bucket
+            .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage.from('documents').getPublicUrl(fileName)
+        setFormData(prev => ({ ...prev, graduation_certificate_url: data.publicUrl }))
+    } catch (err) {
+        alert('فشل رفع الملف: ' + err.message)
+    } finally {
+        setUploadingCert(false)
+    }
   }
 
   const handleManualSubmit = async (e) => {
@@ -50,42 +86,7 @@ export default function AddEmployee() {
     }
 
     try {
-      // 1. Create Auth User
-      // Note: In a real app, this should be a backend function to avoid exposing service role key,
-      // but if we are just using client side, we can only sign up a user if we are not logged in, 
-      // OR we just insert into the employees table and let the user 'claim' the account or 
-      // have an admin function using a secondary supabase client with service key.
-      // 
-      // FOR THIS MVP: We will just insert into the 'employees' table first. 
-      // The auth.users creation usually requires a distinct flow (Invite User).
-      // Since the requirements didn't specify the signup flow detail, 
-      // I'll assume we insert into 'employees' and maybe create a shadow auth user later 
-      // or assume the admin creates the auth user separately.
-      
-      // WAIT: User said "Login via company number and Password".
-      // This implies an Auth User exists.
-      // Limitation: Client-side SDK cannot create *other* users without logging out the current admin.
-      // SOLUTION: We will just insert into the 'employees' table for now to satisfy the data requirement.
-      // The 'login' page will need to verify against this table if we don't use Supabase Auth for *Authentication* proper,
-      // OR we assume Supabase Auth is used and Admin manually invites them.
-      
-      // Let's try to SignUp a dummy email for them: companyID@mdoc.hrms
-      // This will fail if we are currently logged in as Admin.
-      
-      // Alternative: Just store data in 'employees' table. 
-      // Modify Login.jsx to check 'employees' table for password matching (Insecure but requested).
-      // Then if match, sign in anonymously or use a shared token? No, that's bad.
-      
-      // BEST PATH: Insert into 'employees'. 
-      // Trigger a Supabase Edge Function to create the Auth User? (Too complex for now).
-      // 
-      // REVISED PLAN: Insert into 'employees' table. 
-      // Login.jsx will query 'employees' table where company_id = X and visible_password = Y.
-      // If match, we manually set a session or just Mock the session?
-      // Supabase Auth is strict. 
-      
       // 2. Insert using Secure RPC
-      // We pass the current logged in Admin ID to verify permission
       const { data, error } = await supabase
         .rpc('create_employee', {
             p_admin_id: user?.id,
@@ -124,7 +125,7 @@ export default function AddEmployee() {
         'الحافز الشهري': 250000,
         'رصيد الإجازات': 30,
         'كلمة المرور': '123456',
-        'الدورات': 'دورة سلامة:2023-01-01، دورة إدارة:2024-05-20'
+        'الدورات': 'دورة سلامة:2023-01-01'
       }
     ]
     const ws = XLSX.utils.json_to_sheet(headers)
@@ -168,7 +169,6 @@ export default function AddEmployee() {
             const empId = crypto.randomUUID()
             const rawPassword = row['كلمة المرور'] || '123456'
             
-            // Employee Data
             employees.push({
                 id: empId,
                 company_id: row['رقم الشركة'] || row['Company ID'] || '',
@@ -190,11 +190,8 @@ export default function AddEmployee() {
                 role: 'user'
             })
 
-            // Courses Data parsing
-            // Expected format: "Name:Date, Name2:Date" or "Name, Name"
             const coursesRaw = row['الدورات'] || ''
             if (coursesRaw) {
-                // Split by comma or Arabic comma
                 const list = coursesRaw.split(/,|،/)
                 list.forEach(item => {
                     const [name, date] = item.split(':')
@@ -202,26 +199,23 @@ export default function AddEmployee() {
                         courses.push({
                             employee_id: empId,
                             course_name: name.trim(),
-                            course_date: date ? date.trim() : new Date().toISOString().split('T')[0] // Default to today if no date
+                            course_date: date ? date.trim() : new Date().toISOString().split('T')[0] 
                         })
                     }
                 })
             }
         })
 
-        // 1. Insert Employees
         const { error: insertError } = await supabase
             .from('employees')
             .insert(employees)
         
         if (insertError) throw insertError
 
-        // 2. Insert Courses (if any)
         if (courses.length > 0) {
             const { error: coursesError } = await supabase
                 .from('courses')
                 .insert(courses)
-            
             if (coursesError) console.warn('Courses upload warning:', coursesError)
         }
 
@@ -261,14 +255,6 @@ export default function AddEmployee() {
             <p className="text-sm text-indigo-700">قم برفع ملف يحتوي على بيانات الموظفين دفعة واحدة</p>
           </div>
         </div>
-        {formData.hire_date && formData.certificate && (
-          <div className="mt-4 p-3 bg-sky-50 rounded-lg border border-sky-100 flex items-center justify-between">
-            <span className="text-sm font-bold text-sky-800">توقع الدرجة الوظيفية:</span>
-            <span className="bg-sky-600 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                {calculateJobGrade(formData.certificate, calculateServiceDuration(formData.hire_date).years).display}
-            </span>
-          </div>
-        )}
         <div className="flex gap-2">
             <button 
                 onClick={handleDownloadTemplate}
@@ -303,6 +289,12 @@ export default function AddEmployee() {
         )}
 
         <form onSubmit={handleManualSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Section: Basic Info */}
+           <div className="md:col-span-2 bg-slate-50 p-3 rounded mb-2 border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 uppercase">المعلومات الأساسية</span>
+           </div>
+
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700">رقم الشركة</label>
             <input required name="company_id" value={formData.company_id} onChange={handleChange} className="w-full p-2 border rounded-lg" />
@@ -316,6 +308,97 @@ export default function AddEmployee() {
             <input type="date" name="birth_date" value={formData.birth_date} onChange={handleChange} className="w-full p-2 border rounded-lg" />
           </div>
           <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">الجنس</label>
+             <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+              <option value="male">ذكر</option>
+              <option value="female">أنثى</option>
+            </select>
+          </div>
+
+        {/* Section: Contact & Personal */}
+           <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 uppercase">معلومات الاتصال والحالة الاجتماعية</span>
+           </div>
+
+           <div className="md:col-span-2 space-y-2">
+            <label className="text-sm font-medium text-slate-700">عنوان السكن بالتفصيل</label>
+            <textarea rows="2" name="address" value={formData.address} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="المحافظة - القضاء - الحي - المحلة..." />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">رقم الهاتف</label>
+            <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className="w-full p-2 border rounded-lg text-left" placeholder="07xxxxxxxxx" />
+          </div>
+           <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">البريد الإلكتروني</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded-lg text-left" placeholder="example@domain.com" />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">الحالة الاجتماعية</label>
+             <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+              <option value="single">أعزب/باكر</option>
+              <option value="married">متزوج</option>
+              <option value="divorced">مطلق</option>
+              <option value="widowed">أرمل</option>
+            </select>
+          </div>
+          
+          {formData.marital_status === 'married' && (
+             <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">اسم الزوج/الزوجة</label>
+                <input name="spouse_name" value={formData.spouse_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            </div>
+          )}
+
+
+           {/* Section: Education */}
+           <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 uppercase">التحصيل الدراسي والشهادة</span>
+           </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">الشهادة</label>
+            <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="دكتوراه/ماجستير/بكالوريوس..." />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">الاختصاص</label>
+            <input name="specialization" value={formData.specialization} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">اسم الجامعة</label>
+            <input name="university_name" value={formData.university_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+          </div>
+          <div className="space-y-2">
+             <label className="text-sm font-medium text-slate-700">اسم الكلية</label>
+            <input name="college_name" value={formData.college_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+          </div>
+          <div className="space-y-2">
+             <label className="text-sm font-medium text-slate-700">سنة التخرج</label>
+            <input type="number" name="graduation_year" value={formData.graduation_year} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="YYYY" />
+          </div>
+          <div className="space-y-2">
+             <label className="text-sm font-medium text-slate-700">نسخة ضوئية من الشهادة</label>
+             <div className="flex items-center gap-2">
+                <label className="cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 px-3 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 w-full">
+                    {uploadingCert ? <span className="text-xs">جاري الرفع...</span> : <Upload size={18} />}
+                    <span className="text-sm">{formData.graduation_certificate_url ? 'تم رفع الشهادة' : 'اضغط لرفع الصورة'}</span>
+                    <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleCertUpload} />
+                </label>
+             </div>
+             {formData.graduation_certificate_url && (
+                 <a href={formData.graduation_certificate_url} target="_blank" className="text-xs text-blue-600 underline block mt-1">عرض الملف المرفوع</a>
+             )}
+          </div>
+
+
+        {/* Section: Job Details */}
+           <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
+                <span className="text-xs font-bold text-slate-500 uppercase">المعلومات الوظيفية</span>
+           </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700">تاريخ التعيين</label>
             <input type="date" name="hire_date" value={formData.hire_date} onChange={handleChange} className="w-full p-2 border rounded-lg" />
           </div>
@@ -324,14 +407,7 @@ export default function AddEmployee() {
             <label className="text-sm font-medium text-slate-700">العنوان الوظيفي</label>
             <input name="job_title" value={formData.job_title} onChange={handleChange} className="w-full p-2 border rounded-lg" />
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الشهادة</label>
-            <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full p-2 border rounded-lg" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الاختصاص</label>
-            <input name="specialization" value={formData.specialization} onChange={handleChange} className="w-full p-2 border rounded-lg" />
-          </div>
+          
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700">المنصب</label>
             <input name="position" value={formData.position} onChange={handleChange} className="w-full p-2 border rounded-lg" />
