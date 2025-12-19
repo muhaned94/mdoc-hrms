@@ -52,11 +52,12 @@ export default function Profile() {
       const { data, error } = await supabase
         .from('employees')
         .select('*')
-        .eq('id', userId)
-        .single()
+        .eq('email', session.user.email)
+        .maybeSingle()
 
       if (error) throw error
       setEmployee(data)
+      if (data) fetchLetters(data.id) // Fetch letters using correct emp ID
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -64,9 +65,9 @@ export default function Profile() {
     }
   }
 
-  const fetchLetters = async () => {
-    if (!userId) return
-    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', userId).order('created_at', { ascending: false })
+  const fetchLetters = async (empId) => {
+    if (!empId) return
+    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', empId).order('created_at', { ascending: false })
     setLetters(data || [])
   }
 
