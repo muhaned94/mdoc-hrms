@@ -4,7 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import {
   User, Briefcase, Calendar, MapPin, GraduationCap,
-  Settings, LogOut, ChevronRight, Download, Megaphone, Clock, Award, Star
+  Settings, LogOut, ChevronRight, Download, Megaphone, Clock, Award, Star,
+  Phone, Mail, Home, Heart, FileText
 } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
@@ -15,14 +16,8 @@ export default function Profile() {
   const [employee, setEmployee] = useState(null)
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
-  const [uploading, setUploading] = useState(false)
   const [letters, setLetters] = useState([])
 
-  // In a real scenario, we'd get the ID from the Auth session linkage
-  // For this MVP where we might not have linked Auth.Users to Employees 1:1 perfectly yet,
-  // we will try to find the employee by some unique identifier if possible,
-  // OR assume `session.user.id` IS the `employee.id`.
-  // Given the schema `id uuid references auth.users`, this is the intended design.
   const userId = session?.user?.id
 
   useEffect(() => {
@@ -140,10 +135,20 @@ export default function Profile() {
                 </div>
             </div>
             
-            <h1 className="text-2xl font-bold text-slate-900">{employee.full_name}</h1>
-            <p className="text-slate-500 text-sm mb-4">رقم الشركة: {employee.company_id}</p>
+            <div className="flex justify-between items-start flex-wrap gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">{employee.full_name}</h1>
+                    <p className="text-slate-500 text-sm">رقم الشركة: {employee.company_id}</p>
+                </div>
+                <div className="flex gap-2">
+                    {employee.gender === 'male' ? 
+                         <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">ذكر</span>
+                       : <span className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-xs font-bold">أنثى</span>
+                    }
+                </div>
+            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
                 <div className="flex items-center gap-3 text-slate-600">
                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                         <MapPin size={18} />
@@ -182,6 +187,112 @@ export default function Profile() {
                 </div>
             </div>
         </div>
+      </div>
+
+      {/* New Section: Personal & Contact Details */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         {/* Contact Info */}
+         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <User size={18} />
+                </div>
+                <span>المعلومات الشخصية والاتصال</span>
+            </h3>
+            <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Home size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">العنوان</p>
+                        <p className="text-sm font-medium text-slate-700">{employee.address || 'غير محدد'}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Phone size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">رقم الهاتف</p>
+                        <p className="text-sm font-medium text-slate-700 font-mono" dir="ltr">{employee.phone_number || 'غير محدد'}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Mail size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">البريد الإلكتروني</p>
+                        <p className="text-sm font-medium text-slate-700">{employee.email || 'غير محدد'}</p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Heart size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">الحالة الاجتماعية</p>
+                         <p className="text-sm font-medium text-slate-700">
+                            {employee.marital_status === 'single' && 'أعزب/باكر'}
+                            {employee.marital_status === 'married' && 'متزوج'}
+                            {employee.marital_status === 'divorced' && 'مطلق'}
+                            {employee.marital_status === 'widowed' && 'أرمل'}
+                            {(!employee.marital_status) && 'غير محدد'}
+                            {employee.spouse_name && <span className="text-xs text-slate-500 mr-1">({employee.spouse_name})</span>}
+                        </p>
+                    </div>
+                </div>
+            </div>
+         </div>
+
+         {/* Education Info */}
+         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                    <GraduationCap size={18} />
+                </div>
+                <span>التعليم والمؤهلات</span>
+            </h3>
+            <div className="space-y-4">
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Award size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">المؤهل العلمي</p>
+                        <p className="text-sm font-medium text-slate-700">{employee.certificate} في {employee.specialization}</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Briefcase size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">الجامعة / الكلية</p>
+                         <p className="text-sm font-medium text-slate-700">
+                             {employee.university_name || '-'} {employee.college_name ? ` - ${employee.college_name}` : ''}
+                         </p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Calendar size={16} />
+                    </div>
+                    <div>
+                        <p className="text-xs text-slate-400">سنة التخرج</p>
+                        <p className="text-sm font-medium text-slate-700">{employee.graduation_year || '-'}</p>
+                    </div>
+                </div>
+                
+                {employee.graduation_certificate_url && (
+                    <a href={employee.graduation_certificate_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 mt-2 text-primary hover:bg-slate-100 transition-colors cursor-pointer">
+                         <FileText size={18} />
+                         <span className="text-sm font-bold">عرض نسخة الشهادة</span>
+                    </a>
+                )}
+            </div>
+         </div>
       </div>
 
       {/* Stats Summary */}
