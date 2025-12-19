@@ -41,7 +41,7 @@ begin
     visible_password,
     role,
     -- New Columns
-    address,
+    -- New Columns
     email,
     phone_number,
     marital_status,
@@ -50,7 +50,13 @@ begin
     university_name,
     college_name,
     graduation_year,
-    graduation_certificate_url
+    graduation_certificate_url,
+    -- Detailed Address
+    governorate,
+    city,
+    mahalla,
+    zgaq,
+    dar
   ) values (
     (p_employee_data->>'id')::uuid,
     p_employee_data->>'company_id',
@@ -70,7 +76,6 @@ begin
     p_employee_data->>'visible_password',
     p_employee_data->>'role',
     -- New Values
-    p_employee_data->>'address',
     p_employee_data->>'email',
     p_employee_data->>'phone_number',
     p_employee_data->>'marital_status',
@@ -79,7 +84,13 @@ begin
     p_employee_data->>'university_name',
     p_employee_data->>'college_name',
     (p_employee_data->>'graduation_year')::int,
-    p_employee_data->>'graduation_certificate_url'
+    p_employee_data->>'graduation_certificate_url',
+    -- Detailed Address Values
+    p_employee_data->>'governorate',
+    p_employee_data->>'city',
+    p_employee_data->>'mahalla',
+    p_employee_data->>'zgaq',
+    p_employee_data->>'dar'
   )
   returning row_to_json(employees.*) into result;
 

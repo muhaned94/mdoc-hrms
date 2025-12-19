@@ -400,7 +400,11 @@ export default function EmployeeDetails() {
                         </div>
                          <div className="space-y-1 md:col-span-2">
                             <label className="text-sm text-slate-500">العنوان</label>
-                            <input name="address" value={employee.address || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                            <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
+                                {employee.governorate ? 
+                                    `${employee.governorate} / ${employee.city} / محلة ${employee.mahalla} / زقاق ${employee.zgaq} / دار ${employee.dar}` 
+                                    : employee.address || 'غير محدد'}
+                            </div>
                         </div>
                          <div className="space-y-1">
                             <label className="text-sm text-slate-500">الحالة الاجتماعية</label>

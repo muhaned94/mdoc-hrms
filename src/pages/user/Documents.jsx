@@ -7,7 +7,8 @@ const DOCUMENT_TYPES = [
   { id: 'national_id', name: 'البطاقة الوطنية', key: 'national_id_url', description: 'وجه وظهر البطاقة الموحدة' },
   { id: 'residency_card', name: 'بطاقة السكن', key: 'residency_card_url', description: 'تأكد من وضوح العنوان ورقم البطاقة' },
   { id: 'marriage_contract', name: 'عقد الزواج', key: 'marriage_contract_url', description: 'الصفحة الأولى ومعلومات الزوجين' },
-  { id: 'ration_card', name: 'البطاقة التموينية', key: 'ration_card_url', description: 'تأكد من وضوح أسماء أفراد العائلة' }
+  { id: 'ration_card', name: 'البطاقة التموينية', key: 'ration_card_url', description: 'تأكد من وضوح أسماء أفراد العائلة' },
+  { id: 'graduation_certificate', name: 'وثيقة التخرج / الأمر الجامعي', key: 'graduation_certificate_url', description: 'نسخة واضحة من الشهادة أو وثيقة التخرج' }
 ]
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
