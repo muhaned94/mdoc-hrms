@@ -1,7 +1,3 @@
--- Secure Admin Insert Function
--- Since we are using "Fake Auth" (Visible Passwords), RLS doesn't know we are Admins.
--- We must use an RPC function to perform admin actions securely.
-
 create or replace function public.create_employee(
     p_admin_id uuid, -- ID of the admin performing the action (for verification)
     p_employee_data jsonb
@@ -43,7 +39,18 @@ begin
     nominal_salary,
     total_salary,
     visible_password,
-    role
+    role,
+    -- New Columns
+    address,
+    email,
+    phone_number,
+    marital_status,
+    spouse_name,
+    gender,
+    university_name,
+    college_name,
+    graduation_year,
+    graduation_certificate_url
   ) values (
     (p_employee_data->>'id')::uuid,
     p_employee_data->>'company_id',
@@ -61,7 +68,18 @@ begin
     (p_employee_data->>'nominal_salary')::numeric,
     (p_employee_data->>'total_salary')::numeric,
     p_employee_data->>'visible_password',
-    p_employee_data->>'role'
+    p_employee_data->>'role',
+    -- New Values
+    p_employee_data->>'address',
+    p_employee_data->>'email',
+    p_employee_data->>'phone_number',
+    p_employee_data->>'marital_status',
+    p_employee_data->>'spouse_name',
+    p_employee_data->>'gender',
+    p_employee_data->>'university_name',
+    p_employee_data->>'college_name',
+    (p_employee_data->>'graduation_year')::int,
+    p_employee_data->>'graduation_certificate_url'
   )
   returning row_to_json(employees.*) into result;
 
