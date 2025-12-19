@@ -299,6 +299,35 @@ export default function EmployeeDetails() {
     }
   }
 
+  const handleCertUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+        const ext = file.name.split('.').pop()
+        const fileName = `certificates/${id}_${Date.now()}.${ext}`
+        
+        const { error: uploadError } = await supabase.storage
+            .from('documents') 
+            .upload(fileName, file)
+
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage.from('documents').getPublicUrl(fileName)
+        
+        // Update local state immediately so user sees change pending save (or auto save if preferred, but here we just set state to be saved on "Save Changes")
+        setEmployee(prev => ({ ...prev, graduation_certificate_url: data.publicUrl }))
+        
+        // Optional: Auto-save field to DB immediately 
+        // const { error: dbError } = await supabase.from('employees').update({ graduation_certificate_url: data.publicUrl }).eq('id', id)
+        // if (dbError) throw dbError
+
+        alert('تم رفع الشهادة بنجاح. اضغط "حفظ التغييرات" لتثبيت التعديلات.')
+    } catch (err) {
+        alert('فشل رفع الملف: ' + err.message)
+    }
+  }
+
   if (loading) return <div className="text-center p-10">جاري التحميل...</div>
   if (!employee) return <div className="text-center p-10">الموظف غير موجود</div>
 
@@ -386,8 +415,7 @@ export default function EmployeeDetails() {
                     <input type="number" name="incentive" value={employee.incentive || 0} onChange={handleChange} className="w-full p-2 border rounded bg-green-50 border-green-200" />
                </div>
 
-               {/* New Sections: Contact & Personal */}
-               <div className="md:col-span-2 border-t pt-2 mt-2">
+                <div className="md:col-span-2 border-t pt-2 mt-2">
                    <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">معلومات الاتصال والشخصية</h4>
                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
@@ -398,14 +426,18 @@ export default function EmployeeDetails() {
                             <label className="text-sm text-slate-500">البريد الإلكتروني</label>
                             <input name="email" value={employee.email || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                         </div>
+                        
                          <div className="space-y-1 md:col-span-2">
-                            <label className="text-sm text-slate-500">العنوان</label>
-                            <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
-                                {employee.governorate ? 
-                                    `${employee.governorate} / ${employee.city} / محلة ${employee.mahalla} / زقاق ${employee.zgaq} / دار ${employee.dar}` 
-                                    : employee.address || 'غير محدد'}
+                            <label className="text-sm text-slate-500">العنوان (تفاصيل)</label>
+                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                <input name="governorate" value={employee.governorate || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="المحافظة" />
+                                <input name="city" value={employee.city || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="المدينة" />
+                                <input name="mahalla" value={employee.mahalla || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="محلة" />
+                                <input name="zgaq" value={employee.zgaq || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="زقاق" />
+                                <input name="dar" value={employee.dar || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="دار" />
                             </div>
                         </div>
+
                          <div className="space-y-1">
                             <label className="text-sm text-slate-500">الحالة الاجتماعية</label>
                             <select name="marital_status" value={employee.marital_status || 'single'} onChange={handleChange} className="w-full p-2 border rounded">
@@ -421,6 +453,13 @@ export default function EmployeeDetails() {
                                 <input name="spouse_name" value={employee.spouse_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                             </div>
                         )}
+                         <div className="space-y-1">
+                            <label className="text-sm text-slate-500">الجنس</label>
+                            <select name="gender" value={employee.gender || 'male'} onChange={handleChange} className="w-full p-2 border rounded">
+                                <option value="male">ذكر</option>
+                                <option value="female">أنثى</option>
+                            </select>
+                        </div>
                    </div>
                </div>
 
@@ -440,14 +479,16 @@ export default function EmployeeDetails() {
                             <label className="text-sm text-slate-500">سنة التخرج</label>
                             <input name="graduation_year" value={employee.graduation_year || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                         </div>
-                        <div className="space-y-1 flex items-end">
-                            {employee.graduation_certificate_url ? (
-                                <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm">
-                                    <FileText className="inline-block mr-1" size={16}/> عرض شهادة التخرج
-                                </a>
-                            ) : (
-                                <span className="text-xs text-slate-400">لا توجد نسخة ضوئية مرفوعة</span>
-                            )}
+                        <div className="space-y-1">
+                             <label className="text-sm text-slate-500">صورة وثيقة التخرج</label>
+                             <div className="flex flex-col gap-2">
+                                {employee.graduation_certificate_url && (
+                                    <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm flex items-center gap-1">
+                                        <FileText size={16}/> عرض الحالية
+                                    </a>
+                                )}
+                                <input type="file" onChange={handleCertUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" accept="image/*,.pdf" />
+                             </div>
                         </div>
                    </div>
                </div>
