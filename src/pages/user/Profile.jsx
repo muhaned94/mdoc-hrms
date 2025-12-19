@@ -135,13 +135,14 @@ export default function Profile() {
                 </div>
             </div>
             
-            <div className="flex justify-between items-start flex-wrap gap-4">
+                <div className="flex justify-between items-start flex-wrap gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900">{employee.full_name}</h1>
                     <p className="text-slate-500 text-sm">رقم الشركة: {employee.company_id}</p>
                 </div>
                 <div className="flex gap-2">
-                    {employee.gender === 'male' ? 
+                    {/* Default to male if gender is 'male' OR null/undefined (legacy compatibility) */}
+                   {(!employee.gender || employee.gender === 'male') ? 
                          <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">ذكر</span>
                        : <span className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-xs font-bold">أنثى</span>
                     }
@@ -149,6 +150,7 @@ export default function Profile() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
+                {/* ... existing fields ... */}
                 <div className="flex items-center gap-3 text-slate-600">
                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                         <MapPin size={18} />
@@ -178,7 +180,7 @@ export default function Profile() {
                 </div>
                  <div className="flex items-center gap-3 text-slate-600">
                     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                        <Calendar size={18} />
+                         <Calendar size={18} />
                     </div>
                     <div>
                         <p className="text-xs text-slate-400">تاريخ التعيين</p>
@@ -208,7 +210,7 @@ export default function Profile() {
                         <p className="text-xs text-slate-400">العنوان</p>
                         <p className="text-sm font-medium text-slate-700">
                           {employee.governorate ? (
-                             `${employee.governorate} - ${employee.city} - م ${employee.mahalla} - ز ${employee.zgaq} - د ${employee.dar}`
+                             `${employee.governorate} - ${employee.city} - م ${employee.mahalla || '-'} - ز ${employee.zgaq || '-'} - د ${employee.dar || '-'}`
                           ) : (
                              employee.address || 'غير محدد'
                           )}
