@@ -1,4 +1,12 @@
 -- Drop existing policies to avoid conflicts
+drop policy if exists "Reports Select Policy" on public.reports;
+drop policy if exists "Reports Insert Policy" on public.reports;
+drop policy if exists "Reports Update Policy" on public.reports;
+drop policy if exists "Notifications Select Policy" on public.notifications;
+drop policy if exists "Notifications Update Policy" on public.notifications;
+drop policy if exists "Notifications Insert Policy" on public.notifications;
+
+-- Drop old policy names just in case
 drop policy if exists "Users can view own reports" on public.reports;
 drop policy if exists "Users can create reports" on public.reports;
 drop policy if exists "Admins can view all reports" on public.reports;

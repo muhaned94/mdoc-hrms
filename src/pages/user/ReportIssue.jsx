@@ -9,6 +9,12 @@ export default function ReportIssue() {
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const { session } = useAuth()
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [employeeId, setEmployeeId] = useState(null)
+  
   const [formData, setFormData] = useState({
     type: 'complaint',
     title: '',
@@ -18,26 +24,42 @@ export default function ReportIssue() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
-  const userId = session?.user?.id
-
   useEffect(() => {
-    if (userId) fetchReports()
-  }, [userId])
+    if (session?.user?.email) {
+        fetchEmployeeAndReports()
+    }
+  }, [session])
 
-  const fetchReports = async () => {
+  const fetchEmployeeAndReports = async () => {
     try {
-      const { data, error } = await supabase
-        .from('reports')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      setReports(data || [])
+        setLoading(true)
+        // 1. Get Employee ID from Email
+        const { data: emp, error: empError } = await supabase
+            .from('employees')
+            .select('id')
+            .eq('email', session.user.email)
+            .single()
+        
+        if (empError) throw empError
+        if (!emp) throw new Error('Employee record not found')
+
+        setEmployeeId(emp.id)
+
+        // 2. Fetch Reports for this Employee
+        const { data: reportsData, error: reportsError } = await supabase
+            .from('reports')
+            .select('*')
+            .eq('user_id', emp.id)
+            .order('created_at', { ascending: false })
+        
+        if (reportsError) throw reportsError
+        setReports(reportsData || [])
+
     } catch (err) {
-      console.error('Error fetching reports:', err)
+        console.error('Error fetching data:', err)
+        setError('تعذر تحميل البيانات. يرجى التأكد من أن حسابك مرتبط بسجل موظف.')
     } finally {
-      setLoading(false)
+        setLoading(false)
     }
   }
 
@@ -54,10 +76,12 @@ export default function ReportIssue() {
     }
 
     try {
+        if (!employeeId) throw new Error('لم يتم العثور على سجل الموظف الخاص بك')
+
         const { error: submitError } = await supabase
             .from('reports')
             .insert([{
-                user_id: userId,
+                user_id: employeeId,
                 type: formData.type,
                 title: formData.title,
                 description: formData.description,
@@ -68,7 +92,7 @@ export default function ReportIssue() {
 
         setSuccess('تم إرسال بلاغك بنجاح، سيتم مراجعته من قبل الإدارة.')
         setFormData({ type: 'complaint', title: '', description: '', priority: 'normal' })
-        fetchReports() // Refresh list
+        fetchEmployeeAndReports() // Refresh list
     } catch (err) {
         setError(err.message)
     } finally {
