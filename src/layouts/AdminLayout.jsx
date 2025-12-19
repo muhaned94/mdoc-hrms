@@ -8,6 +8,7 @@ export default function AdminLayout() {
   const { user, isAdmin, loading, signOut } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
 
   useEffect(() => {
