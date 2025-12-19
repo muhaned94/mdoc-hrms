@@ -27,6 +27,11 @@ export default function AdminLayout() {
     if (!error) setPendingReports(count || 0)
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login')
+  }
+
   const navItems = [
     { label: 'لوحة التحكم', path: '/admin', icon: LayoutDashboard },
     { label: 'الموظفين', path: '/admin/employees', icon: Users },
