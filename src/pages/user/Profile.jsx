@@ -52,12 +52,12 @@ export default function Profile() {
       const { data, error } = await supabase
         .from('employees')
         .select('*')
-        .eq('email', session.user.email)
-        .maybeSingle()
+        .eq('id', userId)
+        .single()
 
       if (error) throw error
       setEmployee(data)
-      if (data) fetchLetters(data.id) // Fetch letters using correct emp ID
+      if (data) fetchLetters(data.id)
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {

@@ -24,28 +24,22 @@ export default function ReportIssue() {
     if (session?.user?.email) {
         fetchEmployeeAndReports()
     }
-  }, [session])
+  }, [session.user?.id])
 
   const fetchEmployeeAndReports = async () => {
     try {
         setLoading(true)
-        // 1. Get Employee ID from Email
-        const { data: emp, error: empError } = await supabase
-            .from('employees')
-            .select('id')
-            .eq('email', session.user.email)
-            .single()
-        
-        if (empError) throw empError
-        if (!emp) throw new Error('Employee record not found')
+        // In Custom Auth, session.user.id IS the employee ID.
+        const empId = session?.user?.id
+        if (!empId) throw new Error('يرجى تسجيل الدخول أولاً')
 
-        setEmployeeId(emp.id)
+        setEmployeeId(empId)
 
         // 2. Fetch Reports for this Employee
         const { data: reportsData, error: reportsError } = await supabase
             .from('reports')
             .select('*')
-            .eq('user_id', emp.id)
+            .eq('user_id', empId)
             .order('created_at', { ascending: false })
         
         if (reportsError) throw reportsError
