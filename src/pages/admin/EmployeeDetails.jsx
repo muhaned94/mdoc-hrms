@@ -484,15 +484,15 @@ export default function EmployeeDetails() {
                             className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
                         />
                     </div>
-                     <div>
-                        <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
-                        <input
-                            type="text"
-                            value={employee.address || ''}
-                            onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
-                            className="w-full border rounded-lg p-2"
-                        />
-                    </div>
+                   <div className="md:col-span-2">
+                      <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
+                      <textarea
+                          value={employee.address || ''}
+                          onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
+                          className="w-full border rounded-lg p-3 h-24 resize-none focus:ring-primary focus:border-primary"
+                          placeholder="أدخل العنوان الكامل (المحافظة - القضاء - الحي - رقم الدار)"
+                      />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
