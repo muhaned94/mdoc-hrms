@@ -54,9 +54,37 @@ export default function Reports() {
     const locations = {}
     data.forEach(e => {
         const loc = e.work_location || 'غير محدد'
-        locations[loc] = (locations[loc] || 0) + (Number(e.total_salary) || 0)
+        if (!locations[loc]) {
+            locations[loc] = {
+                name: loc,
+                total: 0,
+                // Stats
+                employeesCount: 0,
+                engineersCount: 0,
+                adminsCount: 0,
+                morningCount: 0,
+                shiftCount: 0
+            }
+        }
+        locations[loc].total += (Number(e.total_salary) || 0)
+        locations[loc].employeesCount++
+        
+        // Check Role/Title
+        const title = e.job_title || ''
+        if (title.includes('مهندس')) {
+            locations[loc].engineersCount++
+        } else {
+            locations[loc].adminsCount++ // Assuming non-engineers are admin/others
+        }
+
+        // Check Schedule
+        if (e.work_schedule === 'shift') {
+            locations[loc].shiftCount++
+        } else {
+            locations[loc].morningCount++
+        }
     })
-    return Object.entries(locations).map(([name, value]) => ({ name, value }))
+    return Object.values(locations)
   }
 
   const getScheduleDistribution = () => {
@@ -151,21 +179,35 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Salary by Location */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">توزيع الرواتب حسب الموقع</h3>
-            <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={getSalaryByLocation()} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                        <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 12}} />
-                        <Tooltip 
-                            formatter={(value) => [`${value.toLocaleString()} د.ع`, 'إجمالي الرواتب']}
-                            contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}
-                        />
-                        <Bar dataKey="value" fill="#0ea5e9" radius={[0, 4, 4, 0]} barSize={20} />
-                    </BarChart>
-                </ResponsiveContainer>
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm col-span-1 lg:col-span-2">
+            <h3 className="font-bold text-slate-800 mb-6 flex items-center gap-2">تحليل المواقع (الموظفين، الاختصاصات، الدوام)</h3>
+            <div className="overflow-x-auto">
+                <table className="w-full text-right">
+                    <thead>
+                        <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 font-bold uppercase tracking-wider">
+                            <th className="p-4 rounded-tr-lg">الموقع</th>
+                            <th className="p-4">عدد الموظفين</th>
+                            <th className="p-4">هندسي</th>
+                            <th className="p-4">إداري/فني</th>
+                            <th className="p-4">صباحي</th>
+                            <th className="p-4 rounded-tl-lg">مناوب</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        {getSalaryByLocation().map((loc) => (
+                            <tr key={loc.name} className="hover:bg-slate-50 transition-colors">
+                                <td className="p-4 font-bold text-slate-700">{loc.name}</td>
+                                <td className="p-4">
+                                    <span className="bg-slate-100 text-slate-700 font-bold px-2 py-1 rounded text-xs">{loc.employeesCount}</span>
+                                </td>
+                                <td className="p-4 text-slate-600">{loc.engineersCount}</td>
+                                <td className="p-4 text-slate-600">{loc.adminsCount}</td>
+                                <td className="p-4 text-green-600">{loc.morningCount}</td>
+                                <td className="p-4 text-amber-600">{loc.shiftCount}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
 

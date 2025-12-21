@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { GraduationCap, Calendar, Clock, CheckCircle } from 'lucide-react'
-import { formatDate } from '../../utils/dateUtils'
+import { formatDate, calculateServiceDuration } from '../../utils/dateUtils'
+import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function Courses() {
   const { session } = useAuth()
@@ -13,16 +14,35 @@ export default function Courses() {
     if (session?.user?.id) fetchCourses()
   }, [session])
 
+  /* 
+    Need to import these at top:
+    import { calculateServiceDuration } from '../../utils/dateUtils'
+    import { calculateJobGrade } from '../../utils/gradeUtils'
+  */
+  const [employee, setEmployee] = useState(null)
+  
   const fetchCourses = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch Courses
+      const { data: coursesData, error: coursesError } = await supabase
         .from('courses')
         .select('*')
         .eq('employee_id', session.user.id)
         .order('course_date', { ascending: false })
       
-      if (error) throw error
-      setCourses(data)
+      if (coursesError) throw coursesError
+      setCourses(coursesData)
+
+      // Fetch Employee Details for Grade Calc
+      const { data: empData, error: empError } = await supabase
+        .from('employees')
+        .select('certificate, hire_date, bonus_service_months')
+        .eq('id', session.user.id)
+        .single()
+      
+      if (empError) throw empError
+      setEmployee(empData)
+
     } catch (error) {
       console.error(error)
     } finally {
@@ -30,11 +50,33 @@ export default function Courses() {
     }
   }
 
+  const getCourseStatus = () => {
+    if (!employee) return { deficit: 0 }
+    const serviceYears = calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal
+    const gradeInfo = calculateJobGrade(employee.certificate, serviceYears)
+    const numericGrade = gradeInfo.grade || 10 
+    
+    const required = numericGrade >= 6 ? 4 : 5
+    const current = courses.length
+    const deficit = Math.max(required - current, 0)
+    
+    return { deficit }
+  }
+
+  const courseStatus = getCourseStatus()
+
   if (loading) return <div className="p-8 text-center">جاري التحميل...</div>
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-slate-800">سجل الدورات التدريبية</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-800">سجل الدورات التدريبية</h1>
+        {employee && (
+             <div className={`px-3 py-1 rounded-full text-xs font-bold ${courseStatus.deficit > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                {courseStatus.deficit > 0 ? `لديك نقص ${courseStatus.deficit} دورات` : 'مستوفي المتطلبات'}
+             </div>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {courses.length === 0 ? (

@@ -25,7 +25,13 @@ export default function EmployeeDetails() {
   // Courses State
   const [courses, setCourses] = useState([])
   const [addingCourse, setAddingCourse] = useState(false)
+
   const [newCourse, setNewCourse] = useState({ course_name: '', course_date: '' })
+
+  // Messaging State
+  const [messageOpen, setMessageOpen] = useState(false)
+  const [messageData, setMessageData] = useState({ title: '', body: '' })
+  const [sendingMessage, setSendingMessage] = useState(false)
 
   useEffect(() => {
     fetchEmployee()
@@ -211,6 +217,44 @@ export default function EmployeeDetails() {
       }
   }
 
+  const handleDeleteCert = async () => {
+      if (!confirm('هل أنت متأكد من حذف وثيقة التخرج؟')) return
+      try {
+          const { error } = await supabase.from('employees').update({ graduation_certificate_url: null }).eq('id', id)
+          if (error) throw error
+          
+          setEmployee(prev => ({ ...prev, graduation_certificate_url: null }))
+          alert('تم حذف الوثيقة بنجاح')
+      } catch (err) {
+          alert('فشل حذف الوثيقة: ' + err.message)
+      }
+  }
+
+  const handleSendMessage = async (e) => {
+      e.preventDefault()
+      if (!messageData.title || !messageData.body) return
+      
+      setSendingMessage(true)
+      try {
+          const { error } = await supabase.from('messages').insert({
+              sender_id: (await supabase.auth.getUser()).data.user.id,
+              receiver_id: id,
+              title: messageData.title,
+              body: messageData.body
+          })
+
+          if (error) throw error
+          
+          alert('تم إرسال الرسالة بنجاح')
+          setMessageOpen(false)
+          setMessageData({ title: '', body: '' })
+      } catch (err) {
+          alert('فشل إرسال الرسالة: ' + err.message)
+      } finally {
+          setSendingMessage(false)
+      }
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target
     setEmployee(prev => ({ ...prev, [name]: value }))
@@ -315,7 +359,7 @@ export default function EmployeeDetails() {
 
         const { data } = supabase.storage.from('documents').getPublicUrl(fileName)
         
-        // Update local state immediately so user sees change pending save (or auto save if preferred, but here we just set state to be saved on "Save Changes")
+        // Update local state immediately so user sees change pending save
         setEmployee(prev => ({ ...prev, graduation_certificate_url: data.publicUrl }))
         
         // Optional: Auto-save field to DB immediately 
@@ -328,6 +372,26 @@ export default function EmployeeDetails() {
     }
   }
 
+  // Course Requirements Logic
+  const getCourseStatus = () => {
+    if (!employee) return { required: 0, current: 0, deficit: 0, text: '' }
+    
+    const serviceYears = calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal
+    const gradeInfo = calculateJobGrade(employee.certificate, serviceYears)
+    const numericGrade = gradeInfo.grade || 10 // Default to lower rank if unknown
+    
+    // Grade 6+ (6,7,8...) -> 4 courses
+    // Grade 5- (5,4,3,2,1) -> 5 courses
+    const required = numericGrade >= 6 ? 4 : 5
+    const current = courses.length
+    const deficit = Math.max(required - current, 0)
+    
+    return { required, current, deficit, grade: numericGrade }
+  }
+
+  const courseStatus = getCourseStatus()
+
+
   if (loading) return <div className="text-center p-10">جاري التحميل...</div>
   if (!employee) return <div className="text-center p-10">الموظف غير موجود</div>
 
@@ -339,6 +403,14 @@ export default function EmployeeDetails() {
         </button>
         <h1 className="text-2xl font-bold">{employee.full_name}</h1>
         <span className="bg-slate-100 px-3 py-1 rounded text-sm text-slate-500">{employee.company_id}</span>
+        <div className="flex-1"></div>
+        <button 
+            onClick={() => setMessageOpen(true)}
+            className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-bold"
+        >
+            <FileText size={18} />
+            إرسال رسالة/تبليغ
+        </button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -483,9 +555,19 @@ export default function EmployeeDetails() {
                              <label className="text-sm text-slate-500">صورة وثيقة التخرج</label>
                              <div className="flex flex-col gap-2">
                                 {employee.graduation_certificate_url && (
-                                    <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm flex items-center gap-1">
-                                        <FileText size={16}/> عرض الحالية
-                                    </a>
+                                    <div className="flex items-center gap-4">
+                                        <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm flex items-center gap-1">
+                                            <FileText size={16}/> عرض الحالية
+                                        </a>
+                                        <button 
+                                            type="button"
+                                            onClick={handleDeleteCert}
+                                            className="text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
+                                            title="حذف الوثيقة"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
                                 )}
                                 <input type="file" onChange={handleCertUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" accept="image/*,.pdf" />
                              </div>
@@ -727,6 +809,19 @@ export default function EmployeeDetails() {
                     الدورات التدريبية
                 </h3>
                 
+                {/* Course Requirements Status */}
+                <div className={`mb-4 p-3 rounded-lg border ${courseStatus.deficit > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                    <div className="flex justify-between items-center mb-1">
+                        <span className="font-bold text-sm text-slate-700">تحليل الموقف التدريبي</span>
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${courseStatus.deficit > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                            {courseStatus.deficit > 0 ? `نقص ${courseStatus.deficit}` : 'مستوفي'}
+                        </span>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                        الدرجة الوظيفية: {courseStatus.grade} | المطلوب: {courseStatus.required} | المنجز: {courseStatus.current}
+                    </p>
+                </div>
+                
                 {/* Add Course Form */}
                 <form onSubmit={handleAddCourse} className="mb-4 bg-purple-50 p-3 rounded-lg border border-purple-100">
                     <input 
@@ -780,6 +875,51 @@ export default function EmployeeDetails() {
             </div>
         </div>
       </div>
+
+      {/* Message Modal */}
+      {messageOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
+                    <h3 className="font-bold flex items-center gap-2">
+                        <FileText size={20} />
+                        إرسال رسالة للموظف
+                    </h3>
+                    <button onClick={() => setMessageOpen(false)} className="hover:bg-white/20 p-1 rounded">
+                        <Trash size={20} className="rotate-45" /> {/* Close Icon */}
+                    </button>
+                </div>
+                <form onSubmit={handleSendMessage} className="p-6 space-y-4">
+                    <div className="space-y-1">
+                        <label className="text-sm font-bold text-slate-700">عنوان الرسالة</label>
+                        <input 
+                            required
+                            value={messageData.title} 
+                            onChange={e => setMessageData({...messageData, title: e.target.value})}
+                            className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none"
+                            placeholder="مثال: تبليغ إداري"
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <label className="text-sm font-bold text-slate-700">نص الرسالة</label>
+                        <textarea 
+                            required
+                            value={messageData.body}
+                            onChange={e => setMessageData({...messageData, body: e.target.value})}
+                            className="w-full p-2 border rounded h-32 resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                            placeholder="اكتب التبليغ أو الرسالة هنا..."
+                        ></textarea>
+                    </div>
+                    <div className="pt-2 flex justify-end gap-2">
+                        <button type="button" onClick={() => setMessageOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-50 rounded-lg">إلغاء</button>
+                        <button type="submit" disabled={sendingMessage} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">
+                            {sendingMessage ? 'جاري الإرسال...' : 'إرسال'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
     </div>
   )
 }
