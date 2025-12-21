@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, LineChart, Line, ComposedChart, Area
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+  PieChart, Pie, Cell, ComposedChart, Line
 } from 'recharts'
-import { BarChart3, TrendingUp, Users, Wallet, MapPin } from 'lucide-react'
+import { Wallet, TrendingUp, Users, MapPin, UserCheck, Clock } from 'lucide-react'
 
-const COLORS = ['#0ea5e9', '#f59e0b', '#6366f1', '#10b981', '#ef4444', '#8b5cf6']
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
 export default function Reports() {
   const [data, setData] = useState([])
@@ -208,6 +208,40 @@ export default function Reports() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+        </div>
+
+        {/* Location Pie Chart */}
+        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 className="font-bold text-slate-800 mb-6">توزيع الموظفين حسب الموقع</h3>
+            <div className="h-[300px] w-full flex items-center flex-col md:flex-row">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={getSalaryByLocation().map(l => ({ name: l.name, value: l.employeesCount }))}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {getSalaryByLocation().map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend verticalAlign="bottom" height={36}/>
+                    </PieChart>
+                </ResponsiveContainer>
+                <div className="md:w-32 space-y-4 text-sm mt-4 md:mt-0">
+                    {getSalaryByLocation().map((item, idx) => (
+                        <div key={item.name} className="flex flex-col">
+                            <span className="text-slate-400 text-xs">{item.name}</span>
+                            <span className="font-bold" style={{color: COLORS[idx % COLORS.length]}}>
+                                {item.employeesCount} ({Math.round(item.employeesCount / (stats.totalEmployees || 1) * 100)}%)
+                            </span>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
 
