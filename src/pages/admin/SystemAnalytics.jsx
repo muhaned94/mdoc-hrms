@@ -94,6 +94,7 @@ export default function SystemAnalytics() {
 drop table if exists public.user_activity_logs;
 create table public.user_activity_logs (
     id uuid default uuid_generate_v4() primary key,
+    -- Ensure user_id references public.employees and matches auth.uid()
     user_id uuid references public.employees(id) on delete cascade not null,
     action_type text not null,
     path text,
@@ -111,6 +112,14 @@ create policy "Users can insert logs" on public.user_activity_logs for insert
 create policy "Users can view own logs" on public.user_activity_logs for select
     using ( auth.uid() = user_id );`}
                     </pre>
+                </div>
+                <div className="flex justify-end">
+                    <button 
+                        onClick={() => { setDbError(null); fetchLogs(); }}
+                        className="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors"
+                    >
+                        تم تشغيل الكود - أعد المحاولة
+                    </button>
                 </div>
             </div>
         )}
