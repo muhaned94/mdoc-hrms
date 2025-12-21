@@ -10,20 +10,36 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // 1. Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session) {
         setSession(session)
         setUser(session?.user ?? null)
       } else {
-        // Fallback: Check LocalStorage for custom auth
+        // Fallback: Check LocalStorage and RESTORE Supabase Session
         const local = localStorage.getItem('mdoc_session')
         if (local) {
             try {
                 const parsed = JSON.parse(local)
-                setSession(parsed)
-                setUser(parsed.user)
+                if (parsed.access_token && parsed.refresh_token) {
+                    // CRITICAL FIX: Tell Supabase to use this token!
+                    const { data, error } = await supabase.auth.setSession({
+                        access_token: parsed.access_token,
+                        refresh_token: parsed.refresh_token
+                    })
+                    
+                    if (!error && data.session) {
+                        setSession(data.session)
+                        setUser(data.session.user)
+                    } else {
+                        throw new Error("Session restoration failed")
+                    }
+                }
             } catch (e) {
-                console.error("Auth Parse Error", e)
+                console.error("Auth Restoration Error", e)
+                // Clear invalid session
+                localStorage.removeItem('mdoc_session')
+                setSession(null)
+                setUser(null)
             }
         }
       }
