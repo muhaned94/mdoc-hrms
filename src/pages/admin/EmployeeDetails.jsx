@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../context/AuthContext'
 import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3 } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
@@ -8,7 +9,39 @@ import { calculateJobGrade } from '../../utils/gradeUtils'
 export default function EmployeeDetails() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
+/* ... */
+  const handleSendMessage = async (e) => {
+      e.preventDefault()
+      if (!messageData.title || !messageData.body) return
+      
+      if (!user) {
+          alert('خطأ: المستخدم غير مسجل الدخول')
+          return
+      }
+
+      setSendingMessage(true)
+      try {
+          const { error } = await supabase.from('messages').insert({
+              sender_id: user.id,
+              receiver_id: id,
+              title: messageData.title,
+              body: messageData.body
+          })
+
+          if (error) throw error
+          
+          alert('تم إرسال الرسالة بنجاح')
+          setMessageOpen(false)
+          setMessageData({ title: '', body: '' })
+      } catch (err) {
+          console.error(err)
+          alert('فشل إرسال الرسالة: ' + (err.message || 'خطأ غير معروف'))
+      } finally {
+          setSendingMessage(false)
+      }
+  }
   const [saving, setSaving] = useState(false)
   const [employee, setEmployee] = useState(null)
   
@@ -230,34 +263,7 @@ export default function EmployeeDetails() {
       }
   }
 
-  const handleSendMessage = async (e) => {
-      e.preventDefault()
-      if (!messageData.title || !messageData.body) return
-      
-      setSendingMessage(true)
-      try {
-          const { data: { user }, error: authError } = await supabase.auth.getUser()
-          if (authError || !user) throw new Error('User not authenticated')
 
-          const { error } = await supabase.from('messages').insert({
-              sender_id: user.id,
-              receiver_id: id,
-              title: messageData.title,
-              body: messageData.body
-          })
-
-          if (error) throw error
-          
-          alert('تم إرسال الرسالة بنجاح')
-          setMessageOpen(false)
-          setMessageData({ title: '', body: '' })
-      } catch (err) {
-          console.error(err)
-          alert('فشل إرسال الرسالة: ' + (err.message || 'خطأ غير معروف'))
-      } finally {
-          setSendingMessage(false)
-      }
-  }
 
 
   const handleChange = (e) => {
