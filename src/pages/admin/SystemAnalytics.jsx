@@ -8,6 +8,7 @@ export default function SystemAnalytics() {
   const [activityLogs, setActivityLogs] = useState([])
   const [loadingLogs, setLoadingLogs] = useState(true)
   const [dbError, setDbError] = useState(null)
+  const [showSetup, setShowSetup] = useState(false)
 
   // 1. Subscribe to Real-time Presence
   useEffect(() => {
@@ -36,6 +37,7 @@ export default function SystemAnalytics() {
 
   const fetchLogs = async () => {
       try {
+          setLoadingLogs(true)
           const { data, error } = await supabase
             .from('user_activity_logs')
             .select(`
@@ -60,6 +62,7 @@ export default function SystemAnalytics() {
       } catch (err) {
           console.error('Error fetching logs:', err)
           setDbError(err)
+          setShowSetup(true) // Auto-show on error
       } finally {
           setLoadingLogs(false)
       }
@@ -69,24 +72,34 @@ export default function SystemAnalytics() {
   
   return (
     <div className="space-y-6">
-        <div>
-            <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                <Activity className="text-primary" />
-                تحليل النظام
-            </h1>
-            <p className="text-slate-500 text-sm">مراقبة حية للمستخدمين وسجل النشاطات</p>
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <Activity className="text-primary" />
+                    تحليل النظام
+                </h1>
+                <p className="text-slate-500 text-sm">مراقبة حية للمستخدمين وسجل النشاطات</p>
+            </div>
+            <button 
+                onClick={() => setShowSetup(!showSetup)}
+                className="flex items-center gap-2 bg-slate-100 text-slate-600 px-4 py-2 rounded-lg hover:bg-slate-200 transition-colors text-sm font-medium"
+            >
+                <Terminal size={16} />
+                {showSetup ? 'إخفاء كود التثبيت' : 'صيانة / إعداد قاعدة البيانات'}
+            </button>
         </div>
 
-        {/* Database Error Banner - Shows instructions if table/permissions missing */}
-        {dbError && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-2 text-amber-800 font-bold">
-                    <AlertTriangle size={20} />
-                    <span>تنبيه: قاعدة البيانات تحتاج إلى تحديث</span>
+        {/* Database Error/Setup Banner */}
+        {(dbError || showSetup) && (
+            <div className={`border rounded-xl p-4 flex flex-col gap-3 ${dbError ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'}`}>
+                <div className={`flex items-center gap-2 font-bold ${dbError ? 'text-amber-800' : 'text-blue-800'}`}>
+                    {dbError ? <AlertTriangle size={20} /> : <Terminal size={20} />}
+                    <span>{dbError ? 'تنبيه: مطلوب إجراء صيانة' : 'إعداد جدول السجلات (SQL Setup)'}</span>
                 </div>
-                <p className="text-sm text-amber-700">
-                    لم نتمكن من جلب سجل النشاطات (Error: {dbError.code || dbError.message}). 
-                    يرجى تشغيل كود SQL التالي في Supabase لإصلاح الجدول والصلاحيات:
+                <p className={`text-sm ${dbError ? 'text-amber-700' : 'text-blue-700'}`}>
+                    {dbError 
+                        ? `حدث خطأ (${dbError.code || 'Unknown'}). الجدول غير موجود أو الصلاحيات مفقودة.`
+                        : 'لتفعيل سجل النشاطات، يرجى تشغيل الكود التالي في Supabase SQL Editor:'}
                 </p>
                 <div className="bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-xs overflow-x-auto direction-ltr text-left relative group">
                     <pre>
