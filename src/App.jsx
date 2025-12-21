@@ -24,6 +24,21 @@ const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 
+const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
+
+function App() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="employees" element={<EmployeeList />} />
+          <Route path="employees/:id" element={<EmployeeDetails />} />
+          <Route path="add-employee" element={<AddEmployee />} />
+          <Route path="announcements" element={<Announcements />} />
+          <Route path="reports" element={<Reports />} /> {/* Analytics */}
           <Route path="complaints" element={<AdminReports />} /> {/* Complaints System */}
           <Route path="messages" element={<SentMessages />} /> {/* Sent Messages */}
           <Route path="employees-grid" element={<EmployeeGrid />} />
