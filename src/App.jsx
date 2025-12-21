@@ -21,15 +21,18 @@ const Announcements = lazy(() => import('./pages/admin/Announcements'))
 const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
 const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
-const Messages = lazy(() => import('./pages/user/Messages'))
 const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
+const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
+
+import ActivityTracker from './components/analytics/ActivityTracker'
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
 function App() {
   return (
     <Suspense fallback={<Loading />}>
+      <ActivityTracker />
       <Routes>
         <Route path="/login" element={<Login />} />
         
@@ -40,6 +43,7 @@ function App() {
           <Route path="add-employee" element={<AddEmployee />} />
           <Route path="announcements" element={<Announcements />} />
           <Route path="reports" element={<Reports />} /> {/* Analytics */}
+          <Route path="analytics" element={<SystemAnalytics />} /> {/* New System Analytics */}
           <Route path="complaints" element={<AdminReports />} /> {/* Complaints System */}
           <Route path="messages" element={<SentMessages />} /> {/* Sent Messages */}
           <Route path="employees-grid" element={<EmployeeGrid />} />
