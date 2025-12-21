@@ -47,12 +47,29 @@ export default function EmployeeGrid() {
   const uniqueJobs = [...new Set(employees.map(e => e.job_title).filter(Boolean))]
   const uniqueLocations = [...new Set(employees.map(e => e.work_location).filter(Boolean))]
 
+  const calculateYearsOfService = (hireDate) => {
+    if (!hireDate) return 0
+    const start = new Date(hireDate)
+    const now = new Date()
+    let years = now.getFullYear() - start.getFullYear()
+    const m = now.getMonth() - start.getMonth()
+    if (m < 0 || (m === 0 && now.getDate() < start.getDate())) {
+        years--
+    }
+    return Math.max(0, years)
+  }
+
   if (loading) return <div className="p-10 text-center text-slate-500">جاري تحميل البيانات...</div>
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
+// ... (rest of the file remains same until the table row)
+// Wait, I can't replace the huge block. I'll make two edits. 
+// Edit 1: Insert the function.
+// Edit 2: Update the usage.
+
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Database className="text-primary" />
                 سجل الموظفين الشامل
@@ -144,7 +161,7 @@ export default function EmployeeGrid() {
                              </td>
                              <td className="p-4 text-emerald-600 font-mono border-l border-slate-100">{Number(emp.nominal_salary).toLocaleString()} IQD</td>
                              <td className="p-4 text-green-700 font-bold font-mono border-l border-slate-100">{Number(emp.total_salary).toLocaleString()} IQD</td>
-                             <td className="p-4 text-center border-l border-slate-100">{emp.years_of_service}</td>
+                             <td className="p-4 text-center border-l border-slate-100 font-bold text-slate-700">{calculateYearsOfService(emp.hire_date)} سنة</td>
                              <td className="p-4 border-l border-slate-100">{formatDate(emp.hire_date)}</td>
                              <td className="p-4 border-l border-slate-100">{emp.certificate}</td>
                              <td className="p-4 border-l border-slate-100">{emp.specialization}</td>
