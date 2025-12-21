@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3, MessageSquareWarning } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3, MessageSquareWarning, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -38,6 +38,7 @@ export default function AdminLayout() {
     { label: 'إضافة موظف', path: '/admin/add-employee', icon: UserPlus },
     { label: 'الإعلانات', path: '/admin/announcements', icon: Megaphone },
     { label: 'التقارير', path: '/admin/reports', icon: BarChart3 },
+    { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
   ]
 

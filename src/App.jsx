@@ -22,6 +22,7 @@ const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
 const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
+const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -39,6 +40,7 @@ function App() {
           <Route path="announcements" element={<Announcements />} />
           <Route path="reports" element={<Reports />} /> {/* Analytics */}
           <Route path="complaints" element={<AdminReports />} /> {/* Complaints System */}
+          <Route path="messages" element={<SentMessages />} /> {/* Sent Messages */}
         </Route>
 
         <Route path="/user" element={<UserLayout />}>

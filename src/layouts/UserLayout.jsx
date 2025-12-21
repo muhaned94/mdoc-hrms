@@ -1,17 +1,41 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import { User, FileText, CreditCard, Award, LogOut } from 'lucide-react'
 
 export default function UserLayout() {
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+  const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate('/login')
-    }
+    if (!loading && !user) navigate('/login')
   }, [user, loading, navigate])
+
+  // Fetch Unread Messages Count
+  useEffect(() => {
+    if (user) {
+        fetchUnreadCount()
+        // Simple polling for now
+        const interval = setInterval(fetchUnreadCount, 30000)
+        return () => clearInterval(interval)
+    }
+  }, [user])
+
+  const fetchUnreadCount = async () => {
+      try {
+          const { count, error } = await supabase
+            .from('messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('receiver_id', user.id)
+            .eq('is_read', false)
+          
+          if (!error) setUnreadCount(count || 0)
+      } catch (e) {
+          console.error(e)
+      }
+  }
 
   if (loading) return null
   if (!user) return null
@@ -31,8 +55,13 @@ export default function UserLayout() {
               <nav className="flex space-x-4 space-x-reverse whitespace-nowrap">
                 <Link to="/user/profile" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الملف الشخصي</Link>
                 <Link to="/user/salary" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الراتب</Link>
-                <Link to="/user/messages" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2">
+                <Link to="/user/messages" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 relative">
                     الرسائل
+                    {unreadCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
+                            {unreadCount}
+                        </span>
+                    )}
                 </Link>
                 <Link to="/user/orders" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الأوامر الإدارية</Link>
                 <Link to="/user/appreciation" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">كتب الشكر</Link>
