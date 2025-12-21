@@ -9,49 +9,21 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for Supabase Session
+    // 1. Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
-      } else {
-        // Fallback to LocalStorage (Custom Auth)
-        const local = localStorage.getItem('mdoc_session')
-        if (local) {
-            const parsed = JSON.parse(local)
-            setSession(parsed)
-            setUser(parsed.user)
-        }
-        setLoading(false)
-      }
+      setSession(session)
+      setUser(session?.user ?? null)
+      setLoading(false)
     })
 
+    // 2. Listen for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    // Listen for custom login events
-    const handleStorageChange = () => {
-        const local = localStorage.getItem('mdoc_session')
-        if (local) {
-            const parsed = JSON.parse(local)
-            setSession(parsed)
-            setUser(parsed.user)
-        } else {
-             // If removed
-             setSession(null)
-             setUser(null)
-        }
-    }
-    window.addEventListener('storage', handleStorageChange)
-
-    return () => {
-        subscription.unsubscribe()
-        window.removeEventListener('storage', handleStorageChange)
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   const signOut = async () => {

@@ -66,10 +66,10 @@ export default function UserLayout() {
       
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center shadow-sm">
-         <h1 className="text-xl font-bold text-primary">MDOC Portal</h1>
          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-600">
             {sidebarOpen ? <X /> : <Menu />}
          </button>
+         <h1 className="text-xl font-bold text-primary">MDOC Portal</h1>
       </div>
 
       {/* Sidebar */}
