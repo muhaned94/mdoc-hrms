@@ -484,15 +484,15 @@ export default function EmployeeDetails() {
                             className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
                         />
                     </div>
-                   <div className="md:col-span-2">
-                      <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
-                      <textarea
-                          value={employee.address || ''}
-                          onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
-                          className="w-full border rounded-lg p-3 h-24 resize-none focus:ring-primary focus:border-primary"
-                          placeholder="أدخل العنوان الكامل (المحافظة - القضاء - الحي - رقم الدار)"
-                      />
-                  </div>
+                     <div>
+                        <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
+                        <input
+                            type="text"
+                            value={employee.address || ''}
+                            onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -555,6 +555,52 @@ export default function EmployeeDetails() {
                             className="w-full border rounded-lg p-2"
                         />
                     </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                     <div>
+                        <label className="block text-sm text-slate-500 mb-1">الشهادة</label>
+                        <input
+                            type="text"
+                            value={employee.certificate || ''}
+                            onChange={(e) => setEmployee({ ...employee, certificate: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">الاختصاص</label>
+                        <input
+                            type="text"
+                            value={employee.specialization || ''}
+                            onChange={(e) => setEmployee({ ...employee, specialization: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                     <div>
+                         <label className="block text-sm text-slate-500 mb-1">مدة الخدمة (محسوبة)</label>
+                         <div className="w-full border rounded-lg p-2 bg-slate-50 text-slate-700">
+                             {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
+                         </div>
+                    </div>
+                    <div>
+                         <label className="block text-sm text-slate-500 mb-1">الدرجة الوظيفية (محسوبة)</label>
+                         <div className="w-full border rounded-lg p-2 bg-sky-50 text-sky-700 font-bold">
+                             {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
+                         </div>
+                    </div>
+                </div>
+
+                <div className="mt-4">
+                    <label className="block text-sm text-slate-500 mb-1">رصيد الإجازات</label>
+                    <input
+                        type="number"
+                        value={employee.leave_balance || 0}
+                        onChange={(e) => setEmployee({ ...employee, leave_balance: e.target.value })}
+                        className="w-full border rounded-lg p-2"
+                    />
                 </div>
                <div className="space-y-1">
                     <label className="text-sm text-slate-500">الراتب الاسمي</label>
