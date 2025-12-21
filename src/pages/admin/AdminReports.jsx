@@ -4,7 +4,7 @@ import {
   MessageSquareWarning, CheckCircle, XCircle, Clock, Search, 
   Filter, AlertCircle, ChevronDown, ChevronUp, Bell, Send
 } from 'lucide-react'
-import { formatDate } from '../../utils/dateUtils'
+import { formatDate, formatDateTime } from '../../utils/dateUtils'
 
 export default function AdminReports() {
   const [reports, setReports] = useState([])
