@@ -47,10 +47,9 @@ export default function Login() {
       // Save to LocalStorage (Simple Auth)
       localStorage.setItem('mdoc_session', JSON.stringify(sessionData))
       
-      // Force reload or event dispatch to update AuthContext
-      // Ideally AuthContext should listen to storage or we pass a method.
-      // We'll reload for simplicity in this MVP step or expose a login method in context.
+      // Update AuthContext listeners
       window.dispatchEvent(new Event('storage'))
+      window.dispatchEvent(new Event('mdoc-auth-update'))
 
       if (employee.role === 'admin') {
         navigate('/admin')
