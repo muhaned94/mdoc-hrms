@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Activity, Users, Clock, Monitor } from 'lucide-react'
-import { formatDateTime } from '../../utils/dateUtils' // Ensure this exists
+import { Activity, Users, Clock, Monitor, AlertTriangle, Terminal } from 'lucide-react'
+import { formatDateTime } from '../../utils/dateUtils'
 
 export default function SystemAnalytics() {
   const [onlineUsers, setOnlineUsers] = useState([])
   const [activityLogs, setActivityLogs] = useState([])
   const [loadingLogs, setLoadingLogs] = useState(true)
+  const [dbError, setDbError] = useState(null)
 
   // 1. Subscribe to Real-time Presence
   useEffect(() => {
@@ -15,13 +16,10 @@ export default function SystemAnalytics() {
     channel
         .on('presence', { event: 'sync' }, () => {
             const state = channel.presenceState()
-            // State is an object where keys are presence_ref_ids, values are arrays of presence objects
-            // flatten it
             const users = []
             for (const key in state) {
                 users.push(...state[key])
             }
-            // Filter duplicates if any (though usually presence tracks separate tabs as separate presences)
             setOnlineUsers(users)
         })
         .subscribe()
@@ -48,11 +46,10 @@ export default function SystemAnalytics() {
                 employees ( full_name, avatar_url )
             `)
             .order('created_at', { ascending: false })
-            .limit(50) // Last 50 actions
+            .limit(50)
 
           if (error) throw error
           
-          // Map employees data
           const formatted = data.map(log => ({
               ...log,
               user_name: log.employees?.full_name || 'Unknown User',
@@ -62,12 +59,12 @@ export default function SystemAnalytics() {
           setActivityLogs(formatted)
       } catch (err) {
           console.error('Error fetching logs:', err)
+          setDbError(err)
       } finally {
           setLoadingLogs(false)
       }
   }
 
-  // Calculate stats
   const pageViews = activityLogs.filter(l => l.action_type === 'navigation').length
   
   return (
@@ -79,6 +76,44 @@ export default function SystemAnalytics() {
             </h1>
             <p className="text-slate-500 text-sm">مراقبة حية للمستخدمين وسجل النشاطات</p>
         </div>
+
+        {/* Database Error Banner - Shows instructions if table/permissions missing */}
+        {dbError && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col gap-3">
+                <div className="flex items-center gap-2 text-amber-800 font-bold">
+                    <AlertTriangle size={20} />
+                    <span>تنبيه: قاعدة البيانات تحتاج إلى تحديث</span>
+                </div>
+                <p className="text-sm text-amber-700">
+                    لم نتمكن من جلب سجل النشاطات (Error: {dbError.code || dbError.message}). 
+                    يرجى تشغيل كود SQL التالي في Supabase لإصلاح الجدول والصلاحيات:
+                </p>
+                <div className="bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-xs overflow-x-auto direction-ltr text-left relative group">
+                    <pre>
+{`-- Run this in Supabase SQL Editor
+drop table if exists public.user_activity_logs;
+create table public.user_activity_logs (
+    id uuid default uuid_generate_v4() primary key,
+    user_id uuid references public.employees(id) on delete cascade not null,
+    action_type text not null,
+    path text,
+    details jsonb, 
+    created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+alter table public.user_activity_logs enable row level security;
+grant all on public.user_activity_logs to authenticated;
+grant all on public.user_activity_logs to service_role;
+
+create policy "Admins can view all logs" on public.user_activity_logs for select
+    using ( exists ( select 1 from public.employees where id = auth.uid() and role = 'admin' ) );
+create policy "Users can insert logs" on public.user_activity_logs for insert
+    with check ( auth.uid() = user_id );
+create policy "Users can view own logs" on public.user_activity_logs for select
+    using ( auth.uid() = user_id );`}
+                    </pre>
+                </div>
+            </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
