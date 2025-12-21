@@ -1,4 +1,4 @@
-```javascript
+
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, ChartBar, MessageSquareWarning, Send, Database } from 'lucide-react'
@@ -40,6 +40,7 @@ export default function AdminLayout() {
     { label: 'الإعلانات', path: '/admin/announcements', icon: Megaphone },
     { label: 'التقارير', path: '/admin/reports', icon: BarChart3 },
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
+    { label: 'سجل الموظفين الشامل', path: '/admin/employees-grid', icon: Database },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
   ]
 
