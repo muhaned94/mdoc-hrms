@@ -4,7 +4,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
   PieChart, Pie, Cell, ComposedChart, Line
 } from 'recharts'
-import { Wallet, TrendingUp, Users, MapPin, UserCheck, Clock } from 'lucide-react'
+import { Wallet, TrendingUp, Users, MapPin, UserCheck, Clock, BarChart3 } from 'lucide-react'
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
