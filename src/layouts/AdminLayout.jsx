@@ -1,6 +1,7 @@
+```javascript
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, LogOut, Menu, X, Megaphone, BarChart3, MessageSquareWarning, Send } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, ChartBar, MessageSquareWarning, Send, Database } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 

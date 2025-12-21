@@ -79,6 +79,30 @@ export default function SentMessages() {
                 <Send className="text-primary transform -scale-x-100" /> 
                 الرسائل المرسلة
             </h1>
+            {messages.length > 0 && (
+                <button 
+                    onClick={async () => {
+                        if (confirm('تحذير: هل أنت متأكد من حذف جميع الرسائل المرسلة؟ لا يمكن التراجع عن هذا الإجراء.')) {
+                            try {
+                                const { error } = await supabase
+                                    .from('messages')
+                                    .delete()
+                                    .eq('sender_id', user.id)
+                                
+                                if (error) throw error
+                                setMessages([])
+                            } catch (err) {
+                                console.error(err)
+                                alert('فشل حذف الكل')
+                            }
+                        }
+                    }}
+                    className="flex items-center gap-2 text-red-500 text-sm font-bold hover:bg-red-50 px-3 py-2 rounded-lg transition-colors"
+                >
+                    <Trash2 size={16} />
+                    حذف الكل
+                </button>
+            )}
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">

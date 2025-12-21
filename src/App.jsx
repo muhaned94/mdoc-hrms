@@ -22,7 +22,10 @@ const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
 const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
-const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
+const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
+
+// ... inside Routes
+          <Route path="employees-grid" element={<EmployeeGrid />} />
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 

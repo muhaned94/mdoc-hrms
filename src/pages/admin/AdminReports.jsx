@@ -180,12 +180,24 @@ export default function AdminReports() {
                                     مراجعة وحل
                                 </button>
                             )}
-                             {activeTab === 'history' && (
-                                <div className="text-right">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${report.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                        {report.status === 'resolved' ? 'تم الحل' : 'مغلق'}
-                                    </span>
-                                    {report.admin_response && <p className="text-xs text-slate-500 mt-1 max-w-xs truncate">الرد: {report.admin_response}</p>}
+                            {activeTab === 'history' && (
+                                <div className="text-right mt-2 w-full border-t pt-2">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${report.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {report.status === 'resolved' ? 'تم الحل' : 'مغلق'}
+                                        </span>
+                                        {report.resolved_at && (
+                                            <span className="text-[10px] text-slate-400 font-mono" dir="ltr">
+                                                {formatDateTime(report.resolved_at)}
+                                            </span>
+                                        )}
+                                    </div>
+                                    {report.admin_response && (
+                                        <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm text-slate-600">
+                                            <span className="font-bold text-slate-700 block mb-1 text-xs">الرد:</span>
+                                            {report.admin_response}
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
