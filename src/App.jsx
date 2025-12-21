@@ -21,6 +21,7 @@ const Announcements = lazy(() => import('./pages/admin/Announcements'))
 const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
 const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
+const Messages = lazy(() => import('./pages/user/Messages'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -50,6 +51,7 @@ function App() {
           <Route path="documents" element={<Documents />} />
           <Route path="support" element={<ReportIssue />} />
           <Route path="appreciation" element={<Appreciation />} />
+          <Route path="messages" element={<Messages />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

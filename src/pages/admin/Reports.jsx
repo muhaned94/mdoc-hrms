@@ -215,23 +215,25 @@ export default function Reports() {
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
             <h3 className="font-bold text-slate-800 mb-6">توزيع الموظفين حسب الموقع</h3>
             <div className="h-[300px] w-full flex items-center flex-col md:flex-row">
-                <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                        <Pie
-                            data={getSalaryByLocation().map(l => ({ name: l.name, value: l.employeesCount }))}
-                            innerRadius={60}
-                            outerRadius={80}
-                            paddingAngle={5}
-                            dataKey="value"
-                        >
-                            {getSalaryByLocation().map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend verticalAlign="bottom" height={36}/>
-                    </PieChart>
-                </ResponsiveContainer>
+                <div className="w-full h-full flex-1 min-w-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={getSalaryByLocation().map(l => ({ name: l.name, value: l.employeesCount }))}
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {getSalaryByLocation().map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <Tooltip />
+                            <Legend verticalAlign="bottom" height={36}/>
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
                 <div className="md:w-32 space-y-4 text-sm mt-4 md:mt-0">
                     {getSalaryByLocation().map((item, idx) => (
                         <div key={item.name} className="flex flex-col">
