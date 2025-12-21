@@ -447,45 +447,112 @@ export default function EmployeeDetails() {
                     <label className="text-sm text-slate-500">المنصب</label>
                     <input name="position" value={employee.position || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="مثال: مدير قسم" />
                </div>
-
                 <div className="space-y-1">
                     <label className="text-sm text-slate-500">الشهادة</label>
                     <input name="certificate" value={employee.certificate || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                </div>
-               <div className="space-y-1">
-                    <label className="text-sm text-slate-500">الاختصاص</label>
-                    <input name="specialization" value={employee.specialization || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-               </div>
-
-                <div className="space-y-1">
-                     <label className="text-sm text-slate-500">مدة الخدمة (محسوبة مع كتب الشكر)</label>
-                     <div className="w-full p-2 border rounded bg-slate-50 text-slate-700">
-                         {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
-                     </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">الاسم الكامل</label>
+                        <input
+                            type="text"
+                            value={employee.full_name}
+                            onChange={(e) => setEmployee({ ...employee, full_name: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">رقم الهاتف</label>
+                        <input
+                            type="text"
+                            value={employee.phone_number || ''}
+                            onChange={(e) => setEmployee({ ...employee, phone_number: e.target.value })}
+                            className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
+                            placeholder="07xxxxxxxxx"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">البريد الإلكتروني</label>
+                        <input
+                            type="email"
+                            value={employee.email || ''}
+                            onChange={(e) => setEmployee({ ...employee, email: e.target.value })}
+                            className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
+                        />
+                    </div>
+                     <div>
+                        <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
+                        <input
+                            type="text"
+                            value={employee.address || ''}
+                            onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
                 </div>
-                <div className="space-y-1">
-                     <label className="text-sm text-slate-500">الدرجة الوظيفية (محسوبة)</label>
-                     <div className="w-full p-2 border rounded bg-sky-50 text-sky-700 font-bold">
-                         {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
-                     </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">رقم الشركة</label>
+                        <input
+                            type="text"
+                            value={employee.company_id}
+                            onChange={(e) => setEmployee({ ...employee, company_id: e.target.value })}
+                            className="w-full border rounded-lg p-2 bg-slate-50 font-mono"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">المنصب</label>
+                        <input
+                            type="text"
+                            value={employee.position || ''}
+                            onChange={(e) => setEmployee({ ...employee, position: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">العنوان الوظيفي</label>
+                        <input
+                            type="text"
+                            value={employee.job_title}
+                            onChange={(e) => setEmployee({ ...employee, job_title: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">موقع العمل</label>
+                        <input
+                            type="text"
+                            value={employee.work_location}
+                            onChange={(e) => setEmployee({ ...employee, work_location: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                     <div>
+                        <label className="block text-sm text-slate-500 mb-1">نظام العمل</label>
+                        <select
+                            value={employee.work_schedule}
+                            onChange={(e) => setEmployee({ ...employee, work_schedule: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        >
+                            <option value="morning">صباحي</option>
+                            <option value="shift">مناوبات</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm text-slate-500 mb-1">تاريخ التعيين</label>
+                        <input
+                            type="date"
+                            value={employee.hire_date}
+                            onChange={(e) => setEmployee({ ...employee, hire_date: e.target.value })}
+                            className="w-full border rounded-lg p-2"
+                        />
+                    </div>
                 </div>
                <div className="space-y-1">
-                    <label className="text-sm text-slate-500">رصيد الإجازات</label>
-                    <input type="number" name="leave_balance" value={employee.leave_balance || 0} onChange={handleChange} className="w-full p-2 border rounded" />
-               </div>
-
-               <div className="space-y-1">
-                    <label className="text-sm text-slate-500">نظام الدوام</label>
-                     <select name="work_schedule" value={employee.work_schedule || 'morning'} onChange={handleChange} className="w-full p-2 border rounded">
-                        <option value="morning">صباحي</option>
-                        <option value="shift">مناوب</option>
-                    </select>
-               </div>
-               <div className="space-y-1">
-                    <label className="text-sm text-slate-500">مكان العمل / القسم</label>
-                    <input name="work_location" value={employee.work_location || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-               </div>
-                <div className="space-y-1">
                     <label className="text-sm text-slate-500">الراتب الاسمي</label>
                     <input type="number" name="nominal_salary" value={employee.nominal_salary || 0} onChange={handleChange} className="w-full p-2 border rounded" />
                </div>
