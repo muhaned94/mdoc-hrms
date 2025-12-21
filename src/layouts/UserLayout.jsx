@@ -1,14 +1,20 @@
 import { useEffect, useState } from 'react'
-import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { User, FileText, CreditCard, Award, LogOut } from 'lucide-react'
+import { 
+  User, Wallet, Mail, FileText, Award, GraduationCap, Files, 
+  LifeBuoy, Settings, LogOut, Menu, X, Home
+} from 'lucide-react'
 
 export default function UserLayout() {
   const { user, loading, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  // Auth Check
   useEffect(() => {
     if (!loading && !user) navigate('/login')
   }, [user, loading, navigate])
@@ -17,7 +23,6 @@ export default function UserLayout() {
   useEffect(() => {
     if (user) {
         fetchUnreadCount()
-        // Simple polling for now
         const interval = setInterval(fetchUnreadCount, 30000)
         return () => clearInterval(interval)
     }
@@ -37,56 +42,115 @@ export default function UserLayout() {
       }
   }
 
-  if (loading) return null
-  if (!user) return null
-
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
   }
 
-  return (
-    <div className="min-h-screen bg-slate-50" dir="rtl">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <div className="flex items-center flex-1 overflow-x-auto no-scrollbar">
-              <h1 className="text-xl font-bold text-primary ml-6 shrink-0">MDOC HRMS</h1>
-              <nav className="flex space-x-4 space-x-reverse whitespace-nowrap">
-                <Link to="/user/profile" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الملف الشخصي</Link>
-                <Link to="/user/salary" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الراتب</Link>
-                <Link to="/user/messages" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2 relative">
-                    الرسائل
-                    {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
-                            {unreadCount}
-                        </span>
-                    )}
-                </Link>
-                <Link to="/user/orders" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الأوامر الإدارية</Link>
-                <Link to="/user/appreciation" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">كتب الشكر</Link>
-                <Link to="/user/courses" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الدورات</Link>
-                <Link to="/user/documents" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">المستمسكات</Link>
-                <Link to="/user/support" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الدعم والشكاوي</Link>
-                <Link to="/user/settings" className="text-slate-600 hover:text-primary px-3 py-2 rounded-md text-sm font-medium">الإعدادات</Link>
-              </nav>
-            </div>
-            <div className="flex items-center">
-              <button
-                onClick={handleSignOut}
-                className="ml-4 p-2 text-slate-400 hover:text-red-500 transition-colors"
-                title="تسجيل الخروج"
-              >
-                <LogOut size={20} />
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+  if (loading || !user) return null
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Outlet />
+  const navItems = [
+    { label: 'الرئيسية', path: '/user/profile', icon: Home }, // Profile is main
+    { label: 'الراتب', path: '/user/salary', icon: Wallet },
+    { label: 'الرسائل', path: '/user/messages', icon: Mail, badge: unreadCount },
+    { label: 'الأوامر الإدارية', path: '/user/orders', icon: FileText },
+    { label: 'كتب الشكر', path: '/user/appreciation', icon: Award },
+    { label: 'الدورات', path: '/user/courses', icon: GraduationCap },
+    { label: 'المستمسكات', path: '/user/documents', icon: Files },
+    { label: 'الدعم والشكاوي', path: '/user/support', icon: LifeBuoy },
+    { label: 'الإعدادات', path: '/user/settings', icon: Settings },
+  ]
+
+  return (
+    <div className="flex h-screen bg-slate-50 font-sans" dir="rtl">
+      
+      {/* Mobile Header */}
+      <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center shadow-sm">
+         <h1 className="text-xl font-bold text-primary">MDOC Portal</h1>
+         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-600">
+            {sidebarOpen ? <X /> : <Menu />}
+         </button>
+      </div>
+
+      {/* Sidebar */}
+      <aside className={`
+        fixed inset-y-0 right-0 z-20 w-64 bg-white shadow-xl transform transition-transform duration-300 md:translate-x-0 md:static md:shadow-md flex flex-col pt-16 md:pt-0
+        ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}>
+        {/* Sidebar Header */}
+        <div className="p-6 border-b hidden md:block">
+          <h1 className="text-2xl font-bold text-primary">MDOC HRMS</h1>
+          <p className="text-sm text-slate-500 mt-1">بوابة الموظف</p>
+        </div>
+
+        {/* User Info Teaser */}
+        <div className="p-4 bg-slate-50 border-b flex items-center gap-3 mx-4 mt-4 rounded-xl">
+             <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+                {user.email?.charAt(0).toUpperCase()}
+             </div>
+             <div className="overflow-hidden">
+                 <p className="text-sm font-bold text-slate-700 truncate">{user.email}</p>
+                 <p className="text-xs text-slate-400">نشط الآن</p>
+             </div>
+        </div>
+
+        {/* Nav Items */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          {navItems.map((item) => (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${
+                location.pathname === item.path
+                  ? 'bg-primary text-white shadow-md shadow-primary/20'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+              }`}
+            >
+              <div className="flex items-center space-x-3 space-x-reverse">
+                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 group-hover:text-primary'} />
+                <span className="font-medium">{item.label}</span>
+              </div>
+              {item.badge > 0 && (
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    location.pathname === item.path 
+                        ? 'bg-white text-primary' 
+                        : 'bg-red-500 text-white'
+                }`}>
+                    {item.badge}
+                </span>
+              )}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <div className="p-4 border-t">
+          <button
+            onClick={handleSignOut}
+            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+          >
+            <LogOut size={20} />
+            <span className="font-medium">تسجيل الخروج</span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Overlay */}
+      {sidebarOpen && (
+        <div 
+            className="fixed inset-0 bg-black/50 z-10 md:hidden"
+            onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full">
+        <div className="max-w-5xl mx-auto">
+             <Outlet />
+        </div>
       </main>
     </div>
   )
 }
+
