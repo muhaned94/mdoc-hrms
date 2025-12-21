@@ -167,7 +167,7 @@ export default function AdminReports() {
                                         <img src={report.employees?.avatar_url || `https://ui-avatars.com/api/?name=${report.employees?.full_name}&background=random`} className="w-5 h-5 rounded-full" />
                                         <span>{report.employees?.full_name}</span>
                                         <span>•</span>
-                                        <span>{formatDate(report.created_at)}</span>
+                                        <span>{formatDateTime(report.created_at)}</span>
                                     </div>
                                 </div>
                             </div>

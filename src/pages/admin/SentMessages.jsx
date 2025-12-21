@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Send, Clock, User, FileText, CheckCircle, XCircle } from 'lucide-react'
-import { formatDate } from '../../utils/dateUtils'
+import { Send, Clock, User, FileText, CheckCircle, XCircle, Trash2 } from 'lucide-react'
+import { formatDateTime } from '../../utils/dateUtils'
 
 export default function SentMessages() {
   const { user } = useAuth()
@@ -17,7 +17,6 @@ export default function SentMessages() {
 
   const fetchSentMessages = async () => {
     try {
-      // 1. Fetch messages sent by current user
       const { data: msgs, error } = await supabase
         .from('messages')
         .select('*')
@@ -26,7 +25,6 @@ export default function SentMessages() {
 
       if (error) throw error
 
-      // 2. Fetch Receiver Names manually to avoid FK issues if they are broken
       if (msgs && msgs.length > 0) {
         const receiverIds = [...new Set(msgs.map(m => m.receiver_id))]
         const { data: users, error: userError } = await supabase
@@ -37,8 +35,6 @@ export default function SentMessages() {
         if (!userError && users) {
              const userMap = {}
              users.forEach(u => userMap[u.id] = u.full_name)
-             
-             // Merge
              const merged = msgs.map(m => ({
                  ...m,
                  receiver_name: userMap[m.receiver_id] || 'مستخدم غير معروف'
@@ -47,7 +43,6 @@ export default function SentMessages() {
              return
         }
       }
-
       setMessages(msgs || [])
     } catch (err) {
       console.error(err)
@@ -56,13 +51,32 @@ export default function SentMessages() {
     }
   }
 
+  const handleDelete = async (id) => {
+      if (!confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return
+
+      try {
+          const { error } = await supabase
+             .from('messages')
+             .delete()
+             .eq('id', id)
+          
+          if (error) throw error
+          
+          // Optimistic update
+          setMessages(prev => prev.filter(m => m.id !== id))
+      } catch (err) {
+          console.error(err)
+          alert('فشل الحذف')
+      }
+  }
+
   if (loading) return <div className="p-8 text-center text-slate-500">جاري تحميل البريد المرسل...</div>
 
   return (
     <div className="space-y-6">
         <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                <Send className="text-primary transform -scale-x-100" /> {/* Flip icon for RTL */}
+                <Send className="text-primary transform -scale-x-100" /> 
                 الرسائل المرسلة
             </h1>
         </div>
@@ -85,7 +99,8 @@ export default function SentMessages() {
                                 <th className="p-4 text-slate-500 text-sm font-bold">العنوان</th>
                                 <th className="p-4 text-slate-500 text-sm font-bold">نص الرسالة</th>
                                 <th className="p-4 text-slate-500 text-sm font-bold">الحالة</th>
-                                <th className="p-4 text-slate-500 text-sm font-bold">التاريخ</th>
+                                <th className="p-4 text-slate-500 text-sm font-bold">الوقت والتاريخ</th>
+                                <th className="p-4 text-slate-500 text-sm font-bold">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
@@ -114,8 +129,17 @@ export default function SentMessages() {
                                             </span>
                                         )}
                                     </td>
-                                    <td className="p-4 text-slate-500 text-sm">
-                                        {formatDate(msg.created_at)}
+                                    <td className="p-4 text-slate-500 text-sm ltr">
+                                        {formatDateTime(msg.created_at)}
+                                    </td>
+                                    <td className="p-4">
+                                        <button 
+                                            onClick={() => handleDelete(msg.id)}
+                                            className="text-slate-400 hover:text-red-500 transition-colors"
+                                            title="حذف الرسالة"
+                                        >
+                                            <Trash2 size={18} />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
