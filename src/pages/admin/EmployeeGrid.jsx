@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText } from 'lucide-react'
+import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown } from 'lucide-react'
 import { formatDate } from '../../utils/dateUtils'
 
 export default function EmployeeGrid() {
@@ -9,6 +9,7 @@ export default function EmployeeGrid() {
   const [searchTerm, setSearchTerm] = useState('')
   const [jobFilter, setJobFilter] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
 
   useEffect(() => {
     fetchEmployees()
@@ -30,22 +31,13 @@ export default function EmployeeGrid() {
     }
   }
 
-  // Filter Logic
-  const filteredEmployees = employees.filter(emp => {
-    const term = searchTerm.toLowerCase()
-    const matchesSearch = 
-        (emp.full_name && emp.full_name.toLowerCase().includes(term)) ||
-        (emp.company_id && String(emp.company_id).includes(term))
-    
-    const matchesJob = jobFilter ? emp.job_title === jobFilter : true
-    const matchesLocation = locationFilter ? emp.work_location === locationFilter : true
-
-    return matchesSearch && matchesJob && matchesLocation
-  })
-
-  // Unique values for dropdowns
-  const uniqueJobs = [...new Set(employees.map(e => e.job_title).filter(Boolean))]
-  const uniqueLocations = [...new Set(employees.map(e => e.work_location).filter(Boolean))]
+  const handleSort = (key) => {
+    let direction = 'asc'
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc'
+    }
+    setSortConfig({ key, direction })
+  }
 
   const calculateYearsOfService = (hireDate) => {
     if (!hireDate) return 0
@@ -59,22 +51,92 @@ export default function EmployeeGrid() {
     return Math.max(0, years)
   }
 
+  // Filter & Sort Logic
+  const getProcessedEmployees = () => {
+      let filtered = employees.filter(emp => {
+        const term = searchTerm.toLowerCase()
+        const matchesSearch = 
+            (emp.full_name && emp.full_name.toLowerCase().includes(term)) ||
+            (emp.company_id && String(emp.company_id).includes(term))
+        
+        const matchesJob = jobFilter ? emp.job_title === jobFilter : true
+        const matchesLocation = locationFilter ? emp.work_location === locationFilter : true
+        return matchesSearch && matchesJob && matchesLocation
+      })
+
+      if (sortConfig.key) {
+          filtered.sort((a, b) => {
+              let aValue, bValue
+              
+              switch(sortConfig.key) {
+                  case 'full_name':
+                      aValue = a.full_name || ''
+                      bValue = b.full_name || ''
+                      break
+                  case 'job_title':
+                      aValue = a.job_title || ''
+                      bValue = b.job_title || ''
+                      break
+                  case 'work_schedule':
+                      aValue = a.work_schedule || ''
+                      bValue = b.work_schedule || ''
+                      break
+                   case 'hire_date':
+                      aValue = new Date(a.hire_date || 0).getTime()
+                      bValue = new Date(b.hire_date || 0).getTime()
+                      break
+                   case 'years_of_service':
+                      // Sort by service is roughly reverse of sorting by hire date
+                      // But let's calculate exact value to be safe
+                      aValue = calculateYearsOfService(a.hire_date)
+                      bValue = calculateYearsOfService(b.hire_date)
+                      break
+                  default:
+                      return 0
+              }
+
+              if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1
+              if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1
+              return 0
+          })
+      }
+      return filtered
+  }
+
+  const filteredEmployees = getProcessedEmployees()
+
+  // Unique values for dropdowns
+  const uniqueJobs = [...new Set(employees.map(e => e.job_title).filter(Boolean))]
+  const uniqueLocations = [...new Set(employees.map(e => e.work_location).filter(Boolean))]
+
+  const SortIcon = ({ column }) => {
+      if (sortConfig.key !== column) return <ArrowUpDown size={14} className="text-slate-300 opacity-50" />
+      return <ArrowUpDown size={14} className={`text-primary ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`} />
+  }
+
+  const HeaderCell = ({ label, column }) => (
+      <th 
+        className="p-4 border-l border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors select-none group"
+        onClick={() => handleSort(column)}
+      >
+          <div className="flex items-center justify-between gap-2">
+              <span>{label}</span>
+              <SortIcon column={column} />
+          </div>
+      </th>
+  )
+
   if (loading) return <div className="p-10 text-center text-slate-500">جاري تحميل البيانات...</div>
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-// ... (rest of the file remains same until the table row)
-// Wait, I can't replace the huge block. I'll make two edits. 
-// Edit 1: Insert the function.
-// Edit 2: Update the usage.
-
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Database className="text-primary" />
                 سجل الموظفين الشامل
             </h1>
-            <p className="text-slate-500 text-sm">عرض تفصيلي لجميع بيانات الموظفين</p>
+            <p className="text-slate-500 text-sm">عرض تفصيلي لجميع بيانات الموظفين - يمكنك الضغط على عناوين الجدول للترتيب</p>
         </div>
       </div>
 
@@ -129,15 +191,15 @@ export default function EmployeeGrid() {
                  <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                      <tr>
                          <th className="p-4 border-l border-slate-100">م</th>
-                         <th className="p-4 border-l border-slate-100">الأسم الكامل</th>
+                         <HeaderCell label="الأسم الكامل" column="full_name" />
                          <th className="p-4 border-l border-slate-100">رقم الشركة</th>
-                         <th className="p-4 border-l border-slate-100">العنوان الوظيفي</th>
+                         <HeaderCell label="العنوان الوظيفي" column="job_title" />
                          <th className="p-4 border-l border-slate-100">موقع العمل</th>
-                         <th className="p-4 border-l border-slate-100">نظام العمل</th>
+                         <HeaderCell label="نظام العمل" column="work_schedule" />
                          <th className="p-4 border-l border-slate-100">الراتب الاسمي</th>
                          <th className="p-4 border-l border-slate-100">الراتب الكلي</th>
-                         <th className="p-4 border-l border-slate-100">سنوات الخدمة</th>
-                         <th className="p-4 border-l border-slate-100">تاريخ التعيين</th>
+                         <HeaderCell label="سنوات الخدمة" column="years_of_service" />
+                         <HeaderCell label="تاريخ التعيين" column="hire_date" />
                          <th className="p-4 border-l border-slate-100">التحصيل الدراسي</th>
                          <th className="p-4 border-l border-slate-100">التخصص</th>
                          <th className="p-4">تاريخ الميلاد</th>
