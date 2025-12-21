@@ -275,15 +275,19 @@ export default function EmployeeDetails() {
     e.preventDefault()
     setSaving(true)
     try {
+      // Sanitize payload: remove non-updatable fields
+      const { id: _, created_at, ...updates } = employee
+      
       const { error } = await supabase
         .from('employees')
-        .update(employee)
+        .update(updates)
         .eq('id', id)
       
       if (error) throw error
       alert('تم تحديث البيانات بنجاح')
     } catch (error) {
-      alert('حدث خطأ أثناء التحديث')
+      console.error('Update Error:', error)
+      alert('حدث خطأ أثناء التحديث: ' + error.message)
     } finally {
       setSaving(false)
     }
