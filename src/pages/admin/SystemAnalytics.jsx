@@ -98,41 +98,35 @@ export default function SystemAnalytics() {
                 </p>
                 <div className="bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-xs overflow-x-auto direction-ltr text-left relative group">
                     <pre>
-{`-- Run this in Supabase SQL Editor (Fixes 401 & 400 Errors)
+{`-- Run this in Supabase SQL Editor (Fixes Custom Auth Issues)
 -- 1. Reset
 drop view if exists public.analytics_logs_view;
 drop table if exists public.user_activity_logs;
 
--- 2. Create Table (References auth.users directly for safety)
+-- 2. Create Table
 create table public.user_activity_logs (
     id uuid default uuid_generate_v4() primary key,
-    user_id uuid references auth.users not null,
+    user_id uuid references public.employees(id) on delete cascade not null,
     action_type text not null,
     path text,
     details jsonb, 
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 3. Security
+-- 3. Security (Enable Anon Access for Custom Login)
 alter table public.user_activity_logs enable row level security;
-grant all on public.user_activity_logs to authenticated;
-grant all on public.user_activity_logs to service_role;
+grant all on public.user_activity_logs to anon, authenticated, service_role;
 
-create policy "Admins can view all logs" on public.user_activity_logs for select
-    using ( exists ( select 1 from public.employees where id = auth.uid() and role = 'admin' ) );
-create policy "Users can insert own logs" on public.user_activity_logs for insert
-    with check ( auth.uid() = user_id );
-create policy "Users can view own logs" on public.user_activity_logs for select
-    using ( auth.uid() = user_id );
+create policy "Allow Public Insert" on public.user_activity_logs for insert with check (true);
+create policy "Allow Public Select" on public.user_activity_logs for select using (true);
 
--- 4. Create View for Frontend
+-- 4. Create View
 create or replace view public.analytics_logs_view as
 select l.id, l.user_id, l.action_type, l.path, l.created_at, e.full_name, e.avatar_url
 from public.user_activity_logs l
 left join public.employees e on l.user_id = e.id;
 
-grant select on public.analytics_logs_view to authenticated;
-grant select on public.analytics_logs_view to service_role;`}
+grant select on public.analytics_logs_view to anon, authenticated, service_role;`}
                     </pre>
                 </div>
                 <div className="flex justify-end">
