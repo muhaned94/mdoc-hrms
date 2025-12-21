@@ -258,26 +258,7 @@ export default function EmployeeDetails() {
           setSendingMessage(false)
       }
   }
-      
-      setSendingMessage(true)
-      try {
-          const { error } = await supabase.from('messages').insert({
-              sender_id: (await supabase.auth.getUser()).data.user.id,
-              receiver_id: id,
-              title: messageData.title,
-              body: messageData.body
-          })
-
-          if (error) throw error
-          
-          alert('تم إرسال الرسالة بنجاح')
-          setMessageOpen(false)
-          setMessageData({ title: '', body: '' })
-      } catch (err) {
-          alert('فشل إرسال الرسالة: ' + err.message)
-      } finally {
-          setSendingMessage(false)
-      }
+  }
   }
 
   const handleChange = (e) => {
