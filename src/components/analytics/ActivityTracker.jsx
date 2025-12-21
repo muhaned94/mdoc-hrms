@@ -67,7 +67,10 @@ export default function ActivityTracker() {
                   }
               })
           } catch (err) {
-              console.error('Failed to log activity', err)
+              // Silence 401s to avoid console spam if table missing/unauthed
+              if (err?.code !== '401' && err?.status !== 401) {
+                  console.warn('Activity Log Warning:', err.message)
+              }
           }
       }
 
