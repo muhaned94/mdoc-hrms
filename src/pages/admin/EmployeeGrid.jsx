@@ -69,27 +69,65 @@ export default function EmployeeGrid() {
               let aValue, bValue
               
               switch(sortConfig.key) {
+                  case 'company_id':
+                        // Try native number sort if possible, else string
+                      const aNum = parseInt(a.company_id)
+                      const bNum = parseInt(b.company_id)
+                      if (!isNaN(aNum) && !isNaN(bNum)) {
+                          aValue = aNum
+                          bValue = bNum
+                      } else {
+                          aValue = a.company_id || ''
+                          bValue = b.company_id || ''
+                      }
+                      break
                   case 'full_name':
                       aValue = a.full_name || ''
                       bValue = b.full_name || ''
+                      break
+                  case 'position':
+                      aValue = a.position || ''
+                      bValue = b.position || ''
+                      break
+                   case 'address':
+                      aValue = a.address || ''
+                      bValue = b.address || ''
                       break
                   case 'job_title':
                       aValue = a.job_title || ''
                       bValue = b.job_title || ''
                       break
+                  case 'work_location':
+                      aValue = a.work_location || ''
+                      bValue = b.work_location || ''
+                      break
                   case 'work_schedule':
                       aValue = a.work_schedule || ''
                       bValue = b.work_schedule || ''
                       break
-                   case 'hire_date':
+                  case 'total_salary':
+                      aValue = a.total_salary || 0
+                      bValue = b.total_salary || 0
+                      break
+                  case 'hire_date':
                       aValue = new Date(a.hire_date || 0).getTime()
                       bValue = new Date(b.hire_date || 0).getTime()
                       break
                    case 'years_of_service':
-                      // Sort by service is roughly reverse of sorting by hire date
-                      // But let's calculate exact value to be safe
                       aValue = calculateYearsOfService(a.hire_date)
                       bValue = calculateYearsOfService(b.hire_date)
+                      break
+                  case 'certificate':
+                      aValue = a.certificate || ''
+                      bValue = b.certificate || ''
+                      break
+                  case 'specialization':
+                      aValue = a.specialization || ''
+                      bValue = b.specialization || ''
+                      break
+                  case 'birth_date':
+                      aValue = new Date(a.birth_date || 0).getTime()
+                      bValue = new Date(b.birth_date || 0).getTime()
                       break
                   default:
                       return 0
@@ -114,14 +152,14 @@ export default function EmployeeGrid() {
       return <ArrowUpDown size={14} className={`text-primary ${sortConfig.direction === 'asc' ? 'transform rotate-180' : ''}`} />
   }
 
-  const HeaderCell = ({ label, column }) => (
+  const HeaderCell = ({ label, column, disableSort = false }) => (
       <th 
-        className="p-4 border-l border-slate-100 cursor-pointer hover:bg-slate-100 transition-colors select-none group"
-        onClick={() => handleSort(column)}
+        className={`p-4 border-l border-slate-100 ${disableSort ? '' : 'cursor-pointer hover:bg-slate-100 transition-colors select-none group'}`}
+        onClick={() => !disableSort && handleSort(column)}
       >
           <div className="flex items-center justify-between gap-2">
               <span>{label}</span>
-              <SortIcon column={column} />
+              {!disableSort && <SortIcon column={column} />}
           </div>
       </th>
   )
@@ -191,37 +229,43 @@ export default function EmployeeGrid() {
                  <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                      <tr>
                          <th className="p-4 border-l border-slate-100">م</th>
+                         <HeaderCell label="رقم الشركة" column="company_id" />
                          <HeaderCell label="الأسم الكامل" column="full_name" />
-                         <th className="p-4 border-l border-slate-100">رقم الشركة</th>
+                         <HeaderCell label="المنصب" column="position" />
                          <HeaderCell label="العنوان الوظيفي" column="job_title" />
-                         <th className="p-4 border-l border-slate-100">موقع العمل</th>
+                         <HeaderCell label="موقع العمل" column="work_location" />
+                         <HeaderCell label="عنوان السكن" column="address" />
+                         <HeaderCell label="رقم الهاتف" column="phone_number" disableSort={true} />
+                         <HeaderCell label="البريد الإلكتروني" column="email" disableSort={true} />
                          <HeaderCell label="نظام العمل" column="work_schedule" />
-                         <th className="p-4 border-l border-slate-100">الراتب الاسمي</th>
-                         <th className="p-4 border-l border-slate-100">الراتب الكلي</th>
+                         <HeaderCell label="الراتب الكلي" column="total_salary" />
                          <HeaderCell label="سنوات الخدمة" column="years_of_service" />
                          <HeaderCell label="تاريخ التعيين" column="hire_date" />
-                         <th className="p-4 border-l border-slate-100">التحصيل الدراسي</th>
-                         <th className="p-4 border-l border-slate-100">التخصص</th>
-                         <th className="p-4">تاريخ الميلاد</th>
+                         <HeaderCell label="التحصيل الدراسي" column="certificate" />
+                         <HeaderCell label="التخصص" column="specialization" />
+                         <HeaderCell label="تاريخ الميلاد" column="birth_date" />
                      </tr>
                  </thead>
                  <tbody className="divide-y divide-slate-100">
                      {filteredEmployees.map((emp, index) => (
                          <tr key={emp.id} className="hover:bg-blue-50/50 transition-colors">
                              <td className="p-4 text-center text-slate-400 border-l border-slate-100">{index + 1}</td>
+                             <td className="p-4 text-slate-600 font-mono border-l border-slate-100 font-bold">{emp.company_id}</td>
                              <td className="p-4 font-bold text-slate-800 border-l border-slate-100 flex items-center gap-2">
                                  <img src={emp.avatar_url || `https://ui-avatars.com/api/?name=${emp.full_name}&background=random`} className="w-6 h-6 rounded-full" />
                                  {emp.full_name}
                              </td>
-                             <td className="p-4 text-slate-600 font-mono border-l border-slate-100">{emp.company_id}</td>
+                             <td className="p-4 text-slate-700 border-l border-slate-100">{emp.position || '-'}</td>
                              <td className="p-4 text-blue-600 font-medium border-l border-slate-100">{emp.job_title}</td>
                              <td className="p-4 text-slate-600 border-l border-slate-100">{emp.work_location}</td>
+                             <td className="p-4 text-slate-600 border-l border-slate-100">{emp.address || '-'}</td>
+                             <td className="p-4 text-slate-600 font-mono border-l border-slate-100 direction-ltr">{emp.phone_number || '-'}</td>
+                             <td className="p-4 text-slate-600 font-mono border-l border-slate-100">{emp.email || '-'}</td>
                              <td className="p-4 border-l border-slate-100">
                                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${emp.work_schedule === 'morning' ? 'bg-amber-100 text-amber-700' : 'bg-indigo-100 text-indigo-700'}`}>
                                      {emp.work_schedule === 'morning' ? 'صباحي' : 'مناوبات'}
                                  </span>
                              </td>
-                             <td className="p-4 text-emerald-600 font-mono border-l border-slate-100">{Number(emp.nominal_salary).toLocaleString()} IQD</td>
                              <td className="p-4 text-green-700 font-bold font-mono border-l border-slate-100">{Number(emp.total_salary).toLocaleString()} IQD</td>
                              <td className="p-4 text-center border-l border-slate-100 font-bold text-slate-700">{calculateYearsOfService(emp.hire_date)} سنة</td>
                              <td className="p-4 border-l border-slate-100">{formatDate(emp.hire_date)}</td>
