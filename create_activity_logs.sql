@@ -1,31 +1,47 @@
--- Create Activity Logs Table
-create table if not exists public.user_activity_logs (
+-- 1. Reset Table
+drop view if exists public.analytics_logs_view;
+drop table if exists public.user_activity_logs;
+
+-- 2. Create Table (Ref auth.users for Safety)
+create table public.user_activity_logs (
     id uuid default uuid_generate_v4() primary key,
+    -- Reference auth.users to guarantee inserts work for any logged-in user
     user_id uuid references auth.users not null,
-    action_type text not null, -- 'login', 'navigation', 'logout'
+    action_type text not null,
     path text,
-    details jsonb, -- Browser info, IP (if available), etc.
+    details jsonb, 
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- Enable RLS
+-- 3. Security
 alter table public.user_activity_logs enable row level security;
 
--- Policies
--- Admin can view all logs
-create policy "Admins can view all logs"
-    on public.user_activity_logs
-    for select
+grant all on public.user_activity_logs to authenticated;
+grant all on public.user_activity_logs to service_role;
+
+-- 4. Policies
+create policy "Admins can view all logs" on public.user_activity_logs for select
     using ( exists ( select 1 from public.employees where id = auth.uid() and role = 'admin' ) );
 
--- Users can insert their own logs (for tracking)
-create policy "Users can insert logs"
-    on public.user_activity_logs
-    for insert
+create policy "Users can insert own logs" on public.user_activity_logs for insert
     with check ( auth.uid() = user_id );
 
--- Users can view their own logs (optional, maybe used later)
-create policy "Users can view own logs"
-    on public.user_activity_logs
-    for select
+create policy "Users can view own logs" on public.user_activity_logs for select
     using ( auth.uid() = user_id );
+
+-- 5. Create View for Frontend (Solves the Join Error)
+create or replace view public.analytics_logs_view as
+select 
+    l.id,
+    l.user_id,
+    l.action_type,
+    l.path,
+    l.created_at,
+    e.full_name,
+    e.avatar_url
+from public.user_activity_logs l
+left join public.employees e on l.user_id = e.id;
+
+-- Grant access to view
+grant select on public.analytics_logs_view to authenticated;
+grant select on public.analytics_logs_view to service_role;

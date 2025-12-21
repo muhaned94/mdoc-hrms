@@ -38,15 +38,10 @@ export default function SystemAnalytics() {
   const fetchLogs = async () => {
       try {
           setLoadingLogs(true)
+          // Fetch from the Secure View instead of direct table join
           const { data, error } = await supabase
-            .from('user_activity_logs')
-            .select(`
-                id,
-                action_type,
-                path,
-                created_at,
-                employees ( full_name, avatar_url )
-            `)
+            .from('analytics_logs_view')
+            .select('*')
             .order('created_at', { ascending: false })
             .limit(50)
 
@@ -54,15 +49,15 @@ export default function SystemAnalytics() {
           
           const formatted = data.map(log => ({
               ...log,
-              user_name: log.employees?.full_name || 'Unknown User',
-              avatar: log.employees?.avatar_url
+              user_name: log.full_name || 'Unknown User',
+              avatar: log.avatar_url
           }))
           
           setActivityLogs(formatted)
       } catch (err) {
           console.error('Error fetching logs:', err)
           setDbError(err)
-          setShowSetup(true) // Auto-show on error
+          setShowSetup(true)
       } finally {
           setLoadingLogs(false)
       }
@@ -103,27 +98,41 @@ export default function SystemAnalytics() {
                 </p>
                 <div className="bg-slate-900 text-slate-50 p-4 rounded-lg font-mono text-xs overflow-x-auto direction-ltr text-left relative group">
                     <pre>
-{`-- Run this in Supabase SQL Editor
+{`-- Run this in Supabase SQL Editor (Fixes 401 & 400 Errors)
+-- 1. Reset
+drop view if exists public.analytics_logs_view;
 drop table if exists public.user_activity_logs;
+
+-- 2. Create Table (References auth.users directly for safety)
 create table public.user_activity_logs (
     id uuid default uuid_generate_v4() primary key,
-    -- Ensure user_id references public.employees and matches auth.uid()
-    user_id uuid references public.employees(id) on delete cascade not null,
+    user_id uuid references auth.users not null,
     action_type text not null,
     path text,
     details jsonb, 
     created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+
+-- 3. Security
 alter table public.user_activity_logs enable row level security;
 grant all on public.user_activity_logs to authenticated;
 grant all on public.user_activity_logs to service_role;
 
 create policy "Admins can view all logs" on public.user_activity_logs for select
     using ( exists ( select 1 from public.employees where id = auth.uid() and role = 'admin' ) );
-create policy "Users can insert logs" on public.user_activity_logs for insert
+create policy "Users can insert own logs" on public.user_activity_logs for insert
     with check ( auth.uid() = user_id );
 create policy "Users can view own logs" on public.user_activity_logs for select
-    using ( auth.uid() = user_id );`}
+    using ( auth.uid() = user_id );
+
+-- 4. Create View for Frontend
+create or replace view public.analytics_logs_view as
+select l.id, l.user_id, l.action_type, l.path, l.created_at, e.full_name, e.avatar_url
+from public.user_activity_logs l
+left join public.employees e on l.user_id = e.id;
+
+grant select on public.analytics_logs_view to authenticated;
+grant select on public.analytics_logs_view to service_role;`}
                     </pre>
                 </div>
                 <div className="flex justify-end">
