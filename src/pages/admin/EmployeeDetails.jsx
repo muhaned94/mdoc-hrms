@@ -258,8 +258,7 @@ export default function EmployeeDetails() {
           setSendingMessage(false)
       }
   }
-  }
-  }
+
 
   const handleChange = (e) => {
     const { name, value } = e.target
