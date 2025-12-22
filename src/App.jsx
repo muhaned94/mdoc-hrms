@@ -26,6 +26,7 @@ const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
 
+import GoogleAnalytics from './components/analytics/GoogleAnalytics'
 import ActivityTracker from './components/analytics/ActivityTracker'
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
@@ -33,6 +34,7 @@ const Loading = () => <div className="p-10 text-center text-slate-500">جاري 
 function App() {
   return (
     <Suspense fallback={<Loading />}>
+      <GoogleAnalytics />
       <ActivityTracker />
       <Routes>
         <Route path="/login" element={<Login />} />
