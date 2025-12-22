@@ -43,11 +43,7 @@ export default function AddEmployee() {
     graduation_year: '',
     graduation_certificate_url: '',
     // Detailed Address
-    governorate: '',
-    city: '',
-    mahalla: '',
-    zgaq: '',
-    zgaq: '',
+    address: '',
     dar: '',
     address: ''
   })
@@ -369,16 +365,7 @@ export default function AddEmployee() {
                 <span className="text-xs font-bold text-slate-500 uppercase">معلومات الاتصال والحالة الاجتماعية</span>
            </div>
 
-           <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-slate-700 block mb-1">عنوان السكن</label>
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                <input name="governorate" value={formData.governorate} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="المحافظة" />
-                <input name="city" value={formData.city} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="المدينة/القضاء" />
-                <input name="mahalla" value={formData.mahalla} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="محلة" />
-                <input name="zgaq" value={formData.zgaq} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="زقاق" />
-                <input name="dar" value={formData.dar} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="دار" />
-            </div>
-          </div>
+
 
           <div className="md:col-span-2 space-y-2">
             <label className="text-sm font-medium text-slate-700">العنوان الكامل (نصي)</label>
