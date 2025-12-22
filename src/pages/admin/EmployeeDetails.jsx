@@ -627,16 +627,7 @@ export default function EmployeeDetails() {
                             <input name="email" value={employee.email || ''} onChange={handleChange} className="w-full p-2 border rounded" />
                         </div>
                         
-                         <div className="space-y-1 md:col-span-2">
-                            <label className="text-sm text-slate-500">العنوان (تفاصيل)</label>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
-                                <input name="governorate" value={employee.governorate || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="المحافظة" />
-                                <input name="city" value={employee.city || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="المدينة" />
-                                <input name="mahalla" value={employee.mahalla || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="محلة" />
-                                <input name="zgaq" value={employee.zgaq || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="زقاق" />
-                                <input name="dar" value={employee.dar || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="دار" />
-                            </div>
-                        </div>
+
 
                          <div className="space-y-1">
                             <label className="text-sm text-slate-500">الحالة الاجتماعية</label>

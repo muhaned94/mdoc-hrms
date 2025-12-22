@@ -187,11 +187,7 @@ export default function Profile() {
                     <div>
                         <p className="text-xs text-slate-400">العنوان</p>
                         <p className="text-sm font-medium text-slate-700">
-                          {employee.governorate ? (
-                             `${employee.governorate || ''} - ${employee.city || ''} - م ${employee.mahalla || '-'} - ز ${employee.zgaq || '-'} - د ${employee.dar || '-'}`
-                          ) : (
-                             employee.address || 'غير محدد'
-                          )}
+                          {employee.address || 'غير محدد'}
                         </p>
                     </div>
                 </div>
