@@ -49,10 +49,10 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-slate-100 font-sans" dir="rtl">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center">
-         <h1 className="text-xl font-bold text-primary">MDOC Admin</h1>
          <button onClick={() => setSidebarOpen(!sidebarOpen)}>
             {sidebarOpen ? <X /> : <Menu />}
          </button>
+         <h1 className="text-xl font-bold text-primary">MDOC Admin</h1>
       </div>
 
       {/* Sidebar */}
