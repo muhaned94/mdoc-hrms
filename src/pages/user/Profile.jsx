@@ -156,12 +156,15 @@ export default function Profile() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                         <Calendar size={18} />
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+                        <Calendar size={18} />
                     </div>
                     <div>
                         <p className="text-xs text-slate-400">تاريخ التعيين</p>
                         <p className="font-medium text-sm">{formatDate(employee.hire_date)}</p>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -185,7 +188,7 @@ export default function Profile() {
                         <p className="text-xs text-slate-400">العنوان</p>
                         <p className="text-sm font-medium text-slate-700">
                           {employee.governorate ? (
-                             `${employee.governorate} - ${employee.city} - م ${employee.mahalla || '-'} - ز ${employee.zgaq || '-'} - د ${employee.dar || '-'}`
+                             `${employee.governorate || ''} - ${employee.city || ''} - م ${employee.mahalla || '-'} - ز ${employee.zgaq || '-'} - د ${employee.dar || '-'}`
                           ) : (
                              employee.address || 'غير محدد'
                           )}

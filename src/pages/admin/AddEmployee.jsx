@@ -47,7 +47,9 @@ export default function AddEmployee() {
     city: '',
     mahalla: '',
     zgaq: '',
-    dar: ''
+    zgaq: '',
+    dar: '',
+    address: ''
   })
 
   const handleChange = (e) => {
@@ -376,6 +378,11 @@ export default function AddEmployee() {
                 <input name="zgaq" value={formData.zgaq} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="زقاق" />
                 <input name="dar" value={formData.dar} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="دار" />
             </div>
+          </div>
+
+          <div className="md:col-span-2 space-y-2">
+            <label className="text-sm font-medium text-slate-700">العنوان الكامل (نصي)</label>
+            <input name="address" value={formData.address} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="مثال: بغداد - الكرادة - قرب..." />
           </div>
           
           <div className="space-y-2">
