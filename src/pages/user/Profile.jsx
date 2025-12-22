@@ -20,6 +20,11 @@ export default function Profile() {
 
   const userId = session?.user?.id
 
+  // Calculate generic stats for display
+  const serviceDuration = employee?.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0) : { display: '0', yearsDecimal: 0 }
+  const gradeInfo = employee?.certificate ? calculateJobGrade(employee.certificate, serviceDuration.yearsDecimal) : { display: '-' }
+
+
   useEffect(() => {
     if (authLoading) return
     if (!userId) {
@@ -335,3 +340,15 @@ export default function Profile() {
     </div>
   )
 }
+
+const InfoItem = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-3 text-slate-600">
+    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
+      <Icon size={18} />
+    </div>
+    <div>
+      <p className="text-xs text-slate-400">{label}</p>
+      <p className="font-medium text-sm">{value}</p>
+    </div>
+  </div>
+)
