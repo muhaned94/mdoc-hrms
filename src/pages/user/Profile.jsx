@@ -165,7 +165,6 @@ export default function Profile() {
                 </div>
             </div>
         </div>
-      </div>
 
       {/* New Section: Personal & Contact Details */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
