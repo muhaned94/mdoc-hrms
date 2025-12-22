@@ -151,36 +151,6 @@ export default function Profile() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                {/* ... existing fields ... */}
-                <div className="flex items-center gap-3 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                        <MapPin size={18} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">مكان العمل</p>
-                        <p className="font-medium text-sm">{employee.work_location}</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                        <Briefcase size={18} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">القسم / المنصب</p>
-                        <p className="font-medium text-sm">{employee.position}</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
-                        <Award size={18} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">الشهادة / الاختصاص</p>
-                        <p className="font-medium text-sm">{employee.certificate} - {employee.specialization}</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3 text-slate-600">
-                    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                          <Calendar size={18} />
                     </div>
                     <div>
