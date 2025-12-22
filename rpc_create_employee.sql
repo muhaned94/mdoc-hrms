@@ -1,3 +1,5 @@
+drop function if exists public.create_employee(uuid, jsonb);
+
 create or replace function public.create_employee(
     p_admin_id uuid, -- ID of the admin performing the action (for verification)
     p_employee_data jsonb
@@ -52,6 +54,7 @@ begin
     graduation_year,
     graduation_certificate_url,
     -- Detailed Address
+    address,
     governorate,
     city,
     mahalla,
@@ -86,6 +89,7 @@ begin
     (p_employee_data->>'graduation_year')::int,
     p_employee_data->>'graduation_certificate_url',
     -- Detailed Address Values
+    p_employee_data->>'address',
     p_employee_data->>'governorate',
     p_employee_data->>'city',
     p_employee_data->>'mahalla',

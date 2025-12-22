@@ -135,11 +135,9 @@ export default function AddEmployee() {
         'الجامعة': 'جامعة بغداد',
         'الكلية': 'كلية الهندسة',
         'سنة التخرج': '2012',
-        'المحافظة': 'بغداد',
-        'المدينة': 'الكرادة',
-        'محلة': '901',
-        'زقاق': '12',
-        'دار': '5',
+
+        'سنة التخرج': '2012',
+        'العنوان': 'بغداد - الكرادة',
         'كلمة المرور': '123456',
         'الدورات': 'دورة سلامة:2023-01-01'
       }
@@ -225,11 +223,8 @@ export default function AddEmployee() {
                 graduation_year: row['سنة التخرج'] || '',
                 
                 // Address
-                governorate: row['المحافظة'] || '',
-                city: row['المدينة'] || '',
-                mahalla: row['محلة'] || '',
-                zgaq: row['زقاق'] || '',
-                dar: row['دار'] || '',
+
+                address: row['العنوان'] || row['Address'] || '',
 
                 visible_password: String(rawPassword),
                 role: 'user'
