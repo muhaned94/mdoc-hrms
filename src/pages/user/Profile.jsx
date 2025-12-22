@@ -341,6 +341,7 @@ export default function Profile() {
   )
 }
 
+// Helper Component for Profile Info
 const InfoItem = ({ icon: Icon, label, value }) => (
   <div className="flex items-center gap-3 text-slate-600">
     <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
