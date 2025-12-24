@@ -189,14 +189,11 @@ export default function Documents() {
                         <span className="text-xs font-medium">ملف PDF</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                       <a href={employee[doc.key]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg" title="عرض">
-                          <Eye size={18} />
-                       </a>
-                       <button onClick={() => handleDeleteFile(doc)} disabled={deleting[doc.id]} className="p-2 bg-white rounded-full text-red-500 hover:bg-slate-50 transition-colors shadow-lg" title="حذف">
-                          {deleting[doc.id] ? <Loader2 size={18} className="animate-spin" /> : <Trash2 size={18} />}
-                       </button>
-                    </div>
+                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <a href={employee[doc.key]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg" title="عرض">
+                           <Eye size={18} />
+                        </a>
+                     </div>
                   </div>
                 ) : (
                   <label className="block">

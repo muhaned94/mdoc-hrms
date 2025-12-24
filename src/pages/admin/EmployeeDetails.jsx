@@ -263,6 +263,54 @@ export default function EmployeeDetails() {
       }
   }
 
+  // --- Official Documents Handlers (Admin Only) ---
+  const handleDeleteDocument = async (docKey, docName) => {
+    if (!confirm(`هل أنت متأكد من حذف ${docName}؟`)) return
+    try {
+        const { error } = await supabase.from('employees').update({ [docKey]: null }).eq('id', id)
+        if (error) throw error
+        setEmployee(prev => ({ ...prev, [docKey]: null }))
+    } catch (err) {
+        alert('فشل حذف المستمسك: ' + err.message)
+    }
+  }
+
+  const handleOfficialDocUpload = async (e, docKey) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    try {
+        const ext = file.name.split('.').pop()
+        const fileName = `${id}/${docKey}_${Date.now()}.${ext}`
+
+        // 1. Upload to Storage
+        const { error: uploadError } = await supabase.storage
+            .from('documents')
+            .upload(fileName, file, { upsert: true })
+
+        if (uploadError) throw uploadError
+
+        // 2. Get Public URL
+        const { data: { publicUrl } } = supabase.storage
+            .from('documents')
+            .getPublicUrl(fileName)
+
+        // 3. Update Database
+        const { error: updateError } = await supabase
+            .from('employees')
+            .update({ [docKey]: publicUrl })
+            .eq('id', id)
+
+        if (updateError) throw updateError
+
+        setEmployee(prev => ({ ...prev, [docKey]: publicUrl }))
+        alert('تم رفع المستمسك بنجاح')
+    } catch (err) {
+        console.error(err)
+        alert('فشل رفع المستمسك: ' + err.message)
+    }
+  }
+
 
 
 
@@ -736,16 +784,38 @@ export default function EmployeeDetails() {
                                     {employee[doc.key] ? 'متوفر' : 'غير متوفر'}
                                 </span>
                             </div>
-                            {employee[doc.key] && (
-                                <a 
-                                    href={employee[doc.key]} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-xs font-bold text-primary hover:underline hover:bg-sky-50 px-2 py-1 rounded transition-colors"
-                                >
-                                    فتح
-                                </a>
-                            )}
+                            <div className="flex items-center gap-2">
+                                {employee[doc.key] ? (
+                                    <>
+                                        <a 
+                                            href={employee[doc.key]} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-xs font-bold text-primary hover:underline hover:bg-sky-50 px-2 py-1 rounded transition-colors"
+                                        >
+                                            فتح
+                                        </a>
+                                        <button 
+                                            onClick={() => handleDeleteDocument(doc.key, doc.name)}
+                                            className="text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
+                                            title="حذف"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </>
+                                ) : (
+                                    <label className="cursor-pointer text-xs font-bold text-white bg-primary hover:bg-sky-600 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                                        <Upload size={14} />
+                                        رفع
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            onChange={(e) => handleOfficialDocUpload(e, doc.key)}
+                                            accept=".jpg,.jpeg,.png,.pdf"
+                                        />
+                                    </label>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
