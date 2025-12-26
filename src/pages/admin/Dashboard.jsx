@@ -80,9 +80,11 @@ export default function AdminDashboard() {
           const { data: orders } = await supabase.from('admin_orders').select('*')
           const { data: slips } = await supabase.from('salary_slips').select('*')
           const { data: courses } = await supabase.from('courses').select('*')
+          const { data: messages } = await supabase.from('messages').select('*')
+          const { data: views } = await supabase.from('announcement_views').select('*')
 
           const backupData = {
-              version: '1.1', // Incremented version
+              version: '1.2', // Incremented version
               timestamp,
               tables: {
                   // Remove unused detailed address fields from backup
@@ -91,7 +93,9 @@ export default function AdminDashboard() {
                   appreciation_letters: letters || [],
                   admin_orders: orders || [],
                   salary_slips: slips || [],
-                  courses: courses || []
+                  courses: courses || [],
+                  messages: messages || [],
+                  announcement_views: views || []
               }
           }
 
@@ -106,7 +110,7 @@ export default function AdminDashboard() {
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
 
-          alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nتشمل: الموظفين، الإعلانات، كتب الشكر، الأوامر الإدارية، أشرطة الراتب، والدورات.')
+          alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nتشمل: الموظفين، الإعلانات، كتب الشكر، الأوامر، الرواتب، الدورات، الرسائل، ومشاهدات الإعلانات.')
 
       } catch (err) {
           console.error("Backup failed:", err)
@@ -163,6 +167,18 @@ export default function AdminDashboard() {
               if (backup.tables.courses?.length > 0) {
                   const { error: courseErr } = await supabase.from('courses').upsert(backup.tables.courses)
                   if (courseErr) throw courseErr
+              }
+
+              // Restore Messages
+              if (backup.tables.messages?.length > 0) {
+                  const { error: msgErr } = await supabase.from('messages').upsert(backup.tables.messages)
+                  if (msgErr) throw msgErr
+              }
+
+              // Restore Announcement Views
+              if (backup.tables.announcement_views?.length > 0) {
+                  const { error: viewErr } = await supabase.from('announcement_views').upsert(backup.tables.announcement_views)
+                  if (viewErr) throw viewErr
               }
 
               alert('تم استعادة النظام بنجاح! 🎉\nسيتم تحديث الصفحة الآن.')
