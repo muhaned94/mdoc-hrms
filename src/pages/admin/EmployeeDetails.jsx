@@ -867,6 +867,13 @@ export default function EmployeeDetails() {
                                         <Eye size={18} />
                                     </a>
                                      <button 
+                                        onClick={() => handleEditLetterTitle(doc.id)}
+                                        className="p-2 text-slate-400 hover:text-primary hover:bg-sky-50 rounded-lg transition-colors"
+                                        title="تعديل العنوان"
+                                    >
+                                        <Edit3 size={18} />
+                                    </button>
+                                     <button 
                                         onClick={() => handleDeleteLetter(doc.id, doc.bonus_months)}
                                         className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         title="حذف"

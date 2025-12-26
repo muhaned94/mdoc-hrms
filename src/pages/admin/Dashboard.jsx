@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Users, UserPlus, Clock, Sun, Moon, DatabaseBackup, Download, FileSpreadsheet, Upload, RefreshCw } from 'lucide-react'
+import { Users, UserPlus, Clock, Sun, Moon, DatabaseBackup, Download, FileSpreadsheet, Upload, RefreshCw, Bell, Gift, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import * as XLSX from 'xlsx'
@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   })
   const [locationStats, setLocationStats] = useState([])
   const [recentEmployees, setRecentEmployees] = useState([])
+  const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -60,6 +61,65 @@ export default function AdminDashboard() {
         .limit(5)
       
       setRecentEmployees(recent || [])
+
+      // --- Calculate Notifications (Smart Alerts) ---
+      const today = new Date()
+      // Reset time portion for accurate day diff
+      today.setHours(0, 0, 0, 0)
+      
+      const alerts = []
+
+      data.forEach(emp => {
+          if (emp.birth_date) {
+              const dob = new Date(emp.birth_date)
+              // Create date for this year
+              let bdayTarget = new Date(today.getFullYear(), dob.getMonth(), dob.getDate())
+              
+              // If birthday passed this year, check next year
+              if (bdayTarget < today) {
+                  bdayTarget.setFullYear(today.getFullYear() + 1)
+              }
+              
+              const diffTime = bdayTarget - today
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) 
+
+              if (diffDays >= 0 && diffDays <= 7) {
+                  alerts.push({
+                      type: 'birthday',
+                      message: `عيد ميلاد ${emp.full_name}`,
+                      date: bdayTarget.toLocaleDateString('ar-EG'),
+                      id: emp.id
+                  })
+              }
+          }
+
+          if (emp.hire_date) {
+              const hire = new Date(emp.hire_date)
+              let annivTarget = new Date(today.getFullYear(), hire.getMonth(), hire.getDate())
+              
+              if (annivTarget < today) {
+                  annivTarget.setFullYear(today.getFullYear() + 1)
+              }
+              
+              const diffTime = annivTarget - today
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+              if (diffDays >= 0 && diffDays <= 7) {
+                  const years = annivTarget.getFullYear() - hire.getFullYear()
+                  if (years > 0) {
+                      alerts.push({
+                          type: 'anniversary',
+                          message: `ذكرى تعيين ${emp.full_name} (${years} سنوات)`,
+                          date: annivTarget.toLocaleDateString('ar-EG'),
+                          id: emp.id
+                      })
+                  }
+              }
+          }
+      })
+      
+      setNotifications(alerts)
+
     } catch (error) {
       console.error(error)
     } finally {
@@ -196,10 +256,39 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-800 mb-2">لوحة التحكم</h2>
-        <p className="text-slate-500">نظرة عامة على الموارد البشرية</p>
+      <div className="flex items-center justify-between">
+        <div>
+            <h2 className="text-2xl font-bold text-slate-800 mb-2">لوحة التحكم</h2>
+            <p className="text-slate-500">نظرة عامة على الموارد البشرية</p>
+        </div>
+        
+        {/* Notifications Check - Only show if exist */}
+        {notifications.length > 0 && (
+             <div className="flex gap-2">
+                 <div className="bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-lg flex items-center gap-2 animate-in slide-in-from-top duration-500">
+                     <Bell size={18} className="animate-bounce" />
+                     <span className="font-bold text-sm">لديك {notifications.length} تنبيهات ذكية</span>
+                 </div>
+             </div>
+        )}
       </div>
+
+      {/* Notifications Section */}
+      {notifications.length > 0 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {notifications.map((note, idx) => (
+                  <Link key={idx} to={`/admin/employees/${note.id}`} className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all flex items-center gap-4 group">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 ${note.type === 'birthday' ? 'bg-pink-500' : 'bg-sky-500'}`}>
+                          {note.type === 'birthday' ? <Gift size={20} /> : <Calendar size={20} />}
+                      </div>
+                      <div>
+                          <p className="font-bold text-slate-800 text-sm group-hover:text-primary transition-colors">{note.message}</p>
+                          <p className="text-xs text-slate-400">{note.date}</p>
+                      </div>
+                  </Link>
+              ))}
+          </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
