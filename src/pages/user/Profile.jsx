@@ -59,17 +59,15 @@ export default function Profile() {
       const filtered = data ? data.filter(a => a.target_location === 'all' || a.target_location === location) : []
       setAnnouncements(filtered)
 
-      // Increment view count for these announcements
-      // Optimistic update: we don't need to wait for this to finish or refresh
+      // Record views (Unique per employee via RPC)
       if (filtered.length > 0) {
-          const ids = filtered.map(a => a.id)
-          // Using RPC function would be better for atomic increment, but direct update with current value + 1 is risky for concurrency.
-          // However, given the constraints, we will iterate/update or use an RPC if available.
-          // Since we don't have a custom RPC 'increment_view_count', we'll rely on the fact that for simple counters in this context exact precision isn't mission critical.
-          // BUT, to be safer, we should ideally use an RPC.
-          // For now, let's just trigger an update for each ID.
           filtered.forEach(async (ann) => {
-              await supabase.from('announcements').update({ view_count: (ann.view_count || 0) + 1 }).eq('id', ann.id)
+              // We use an RPC function that handles "insert if not exists" logic server-side
+              // to ensure we don't count the same user multiple times for the same announcement.
+              await supabase.rpc('record_announcement_view', { 
+                  ann_id: ann.id, 
+                  emp_id: userId 
+              })
           })
       }
     } catch (err) {

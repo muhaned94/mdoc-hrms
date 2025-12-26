@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown, Clock } from 'lucide-react'
+import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown, Clock, Printer, Download } from 'lucide-react'
 import { formatDate } from '../../utils/dateUtils'
 import { Link } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 
 export default function EmployeeGrid() {
   const [employees, setEmployees] = useState([])
@@ -51,6 +52,28 @@ export default function EmployeeGrid() {
         years--
     }
     return Math.max(0, years)
+  }
+
+  const handleExport = () => {
+      const dataToExport = filteredEmployees.map(emp => ({
+          'الاسم': emp.full_name,
+          'رقم الشركة': emp.company_id,
+          'العنوان الوظيفي': emp.job_title,
+          'موقع العمل': emp.work_location,
+          'نظام الدوام': emp.work_schedule === 'morning' ? 'صباحي' : 'مناوب',
+          'رقم الهاتف': emp.phone_number,
+          'الراتب الكلي': emp.total_salary,
+          'تاريخ التعيين': formatDate(emp.hire_date)
+      }))
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Employees")
+      XLSX.writeFile(wb, `employees_grid_export_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
+  const handlePrint = () => {
+      window.print()
   }
 
   // Filter & Sort Logic
@@ -170,14 +193,30 @@ export default function EmployeeGrid() {
   if (loading) return <div className="p-10 text-center text-slate-500">جاري تحميل البيانات...</div>
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="space-y-6 print:p-0 print:space-y-0">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Database className="text-primary" />
                 سجل الموظفين الشامل
             </h1>
             <p className="text-slate-500 text-sm">عرض تفصيلي لجميع بيانات الموظفين - يمكنك الضغط على عناوين الجدول للترتيب</p>
+        </div>
+        <div className="flex gap-2">
+            <button 
+                onClick={handlePrint}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg transition-colors"
+            >
+                <Printer size={20} />
+                <span className="hidden sm:inline">طباعة</span>
+            </button>
+            <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors"
+            >
+                <Download size={20} />
+                <span className="hidden sm:inline">تصدير Excel</span>
+            </button>
         </div>
       </div>
 
@@ -199,7 +238,7 @@ export default function EmployeeGrid() {
                     <select
                         value={jobFilter}
                         onChange={(e) => setJobFilter(e.target.value)}
-                        className="w-full appearance-none pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل العناوين الوظيفية</option>
                         {uniqueJobs.map(job => (
@@ -213,7 +252,7 @@ export default function EmployeeGrid() {
                     <select
                         value={workSysFilter}
                         onChange={(e) => setWorkSysFilter(e.target.value)}
-                        className="w-full appearance-none pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل أنظمة العمل</option>
                         <option value="morning">صباحي</option>
@@ -226,7 +265,7 @@ export default function EmployeeGrid() {
                     <select
                          value={locationFilter}
                          onChange={(e) => setLocationFilter(e.target.value)}
-                         className="w-full appearance-none pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                         className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل المواقع</option>
                         {uniqueLocations.map(loc => (
