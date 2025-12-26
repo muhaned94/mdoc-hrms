@@ -158,14 +158,22 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                {locationStats.slice(0, 4).map((entry, index) => (
-                    <div key={entry.name} className="flex items-center gap-1 text-[10px] bg-slate-50 px-2 py-1 rounded-full">
-                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                        <span className="text-slate-600 truncate max-w-[80px]">{entry.name}</span>
+            <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                {locationStats.slice(0, 6).map((entry, index) => (
+                    <div key={entry.name} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border border-slate-100">
+                         <div className="flex items-center gap-1.5 overflow-hidden">
+                            <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                            <span className="text-slate-600 truncate">{entry.name}</span>
+                         </div>
+                         <span className="font-bold text-slate-800">{entry.value}</span>
                     </div>
                 ))}
             </div>
+            {locationStats.length > 6 && (
+                <div className="mt-2 text-center text-[10px] text-slate-400">
+                    +{locationStats.length - 6} مواقع أخرى
+                </div>
+            )}
          </div>
       </div>
 

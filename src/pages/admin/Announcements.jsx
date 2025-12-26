@@ -7,6 +7,7 @@ export default function Announcements() {
   const [announcements, setAnnouncements] = useState([])
   const [loading, setLoading] = useState(true)
   const [posting, setPosting] = useState(false)
+  const [locations, setLocations] = useState([])
   const [newAnnouncement, setNewAnnouncement] = useState({ 
     title: '', 
     content: '', 
@@ -15,12 +16,24 @@ export default function Announcements() {
   })
   const [error, setError] = useState(null)
 
-  // Pre-defined locations (could be fetched dynamically)
-  const locations = ['المقر الرئيسي', 'موقع 1', 'موقع 2', 'موقع 3', 'مصفى']
-
   useEffect(() => {
     fetchAnnouncements()
+    fetchLocations()
   }, [])
+
+  const fetchLocations = async () => {
+    try {
+        const { data } = await supabase
+            .from('employees')
+            .select('work_location')
+        
+        // Extract unique locations and filter out nulls
+        const uniqueLocs = [...new Set(data.map(item => item.work_location).filter(Boolean))]
+        setLocations(uniqueLocs)
+    } catch (e) {
+        console.error('Error fetching locations', e)
+    }
+  }
 
   const fetchAnnouncements = async () => {
     try {
@@ -120,11 +133,13 @@ export default function Announcements() {
               />
               <select
                 value={newAnnouncement.target_location}
-                onChange={e => setNewAnnouncement({...newAnnouncement, target_location: e.target.value})}
-                 className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-primary/20 outline-none bg-white"
+                onChange={(e) => setNewAnnouncement({...newAnnouncement, target_location: e.target.value})}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-primary text-sm"
               >
-                  <option value="all">كل المواقع (عام)</option>
-                  {locations.map(loc => <option key={loc} value={loc}>{loc}</option>)}
+                <option value="all">كل المواقع (عام)</option>
+                {locations.map(loc => (
+                    <option key={loc} value={loc}>{loc}</option>
+                ))}
               </select>
           </div>
           

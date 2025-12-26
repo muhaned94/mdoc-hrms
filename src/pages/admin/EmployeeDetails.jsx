@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle } from 'lucide-react'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
@@ -135,7 +135,7 @@ export default function EmployeeDetails() {
       if (empErr) throw empErr
 
       const { error: updErr } = await supabase.from('employees').update({ 
-          bonus_service_months: Math.max(0, (emp.bonus_service_months || 0) - bonusValue) 
+          bonus_service_months: (emp.bonus_service_months || 0) - bonusValue 
       }).eq('id', id)
       if (updErr) throw updErr
 
@@ -825,57 +825,60 @@ export default function EmployeeDetails() {
             </div>
             
             {/* Appreciation Letters */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 ring-2 ring-amber-50">
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                    <Star className="text-amber-500" size={20} />
-                    كتب الشكر والتقدير
-                </h3>
-                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1">
-                    {letters.length === 0 && (
-                        <div className="py-8 bg-slate-50 rounded-lg border border-dashed border-slate-200 text-center">
-                            <p className="text-xs text-slate-400">لا توجد كتب شكر مسجلة</p>
-                        </div>
-                    )}
-                    {letters.map(doc => (
-                        <div key={doc.id} className="group/item flex flex-col bg-white p-3 rounded-lg border border-slate-100 hover:border-amber-200 shadow-sm transition-all">
-                            <div className="flex items-start justify-between mb-2">
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-bold text-slate-700 leading-tight mb-1">{doc.title}</span>
-                                    <div className="flex items-center gap-2">
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${doc.bonus_months >= 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                            {doc.bonus_months >= 0 ? `+${doc.bonus_months} شهر قدم` : `${doc.bonus_months} شهر خصم`}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 ring-2 ring-slate-50">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                <FileText className="text-slate-500" size={20} />
+                الكتب الرسمية (شكر / عقوبات)
+            </h3>
+            <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar mb-6 p-1">
+                {letters.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-100 rounded-lg">
+                        لا توجد كتب مسجلة
+                    </div>
+                ) : (
+                    letters.map(doc => {
+                        const isSanction = doc.bonus_months < 0
+                        return (
+                            <div key={doc.id} className={`flex items-start justify-between p-4 rounded-xl border transition-all hover:shadow-md ${isSanction ? 'bg-red-50/50 border-red-100' : 'bg-amber-50/50 border-amber-100'}`}>
+                                <div className="flex gap-4">
+                                    <div className={`p-3 rounded-lg ${isSanction ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                        {isSanction ? <AlertTriangle size={24} /> : <Star size={24} />}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isSanction ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'}`}>
+                                                {isSanction ? 'عقوبة إدارية' : 'كتاب شكر'}
+                                            </span>
+                                            <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
+                                        </div>
+                                        <span className="text-sm font-bold text-slate-800 leading-tight mb-1">{doc.title}</span>
+                                        <span className={`text-xs font-bold ${isSanction ? 'text-red-600' : 'text-amber-600'}`}>
+                                            {isSanction ? `تأخير ترفيع / خصم قدم (${Math.abs(doc.bonus_months)} شهر)` : `قدم ممتاز (${doc.bonus_months} شهر)`}
                                         </span>
-                                        <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                    <button 
-                                        onClick={() => handleEditLetterTitle(doc.id)}
-                                        className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
-                                        title="تعديل العنوان"
+                                <div className="flex flex-col gap-2">
+                                    <a 
+                                        href={doc.file_url} 
+                                        target="_blank" 
+                                        className="p-2 text-slate-400 hover:text-primary hover:bg-slate-100 rounded-lg transition-colors"
+                                        title="عرض الملف"
                                     >
-                                        <Edit3 size={14} />
-                                    </button>
-                                    <button 
+                                        <Eye size={18} />
+                                    </a>
+                                     <button 
                                         onClick={() => handleDeleteLetter(doc.id, doc.bonus_months)}
-                                        className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                                         title="حذف"
                                     >
-                                        <Trash2 size={14} />
+                                        <Trash2 size={18} />
                                     </button>
                                 </div>
                             </div>
-                            <a 
-                                href={doc.file_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="mt-2 text-center py-1.5 bg-slate-50 text-xs font-bold text-primary rounded-md group-hover/item:bg-amber-500 group-hover/item:text-white transition-all shadow-sm"
-                            >
-                                عرض الكتاب
-                            </a>
-                        </div>
-                    ))}
-                </div>
+                        )
+                    })
+                )}
+            </div>
                 
                 <div className="flex gap-2 mb-3 bg-slate-50 p-1 rounded-lg">
                     <button 
