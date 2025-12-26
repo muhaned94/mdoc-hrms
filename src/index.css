@@ -18,7 +18,8 @@
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     background-color: white !important;
-    width: 1280px !important; /* Force desktop width */
+    width: 1280px !important;
+    /* Force desktop width */
     max-width: none !important;
     font-size: 12px !important;
   }
@@ -41,6 +42,47 @@
 
   /* Hide print-specific buttons if any remain */
   .print\:hidden {
+    display: none !important;
+  }
+
+  /* --- FORCE DESKTOP LAYOUT --- */
+  /* Override Tailwind responsive classes to be active in print */
+
+  /* Dashboard Stats Grid */
+  .lg\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  /* Employee Details Grid */
+  .lg\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .lg\:col-span-2 {
+    grid-column: span 2 / span 2 !important;
+  }
+
+  /* Medium Grids */
+  .md\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .md\:grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* Flex adjustments */
+  .md\:flex-row {
+    flex-direction: row !important;
+  }
+
+  .md\:items-center {
+    align-items: center !important;
+  }
+
+  /* Hide sidebar/navigation elements if they exist and aren't hidden */
+  nav,
+  aside {
     display: none !important;
   }
 }
