@@ -77,16 +77,21 @@ export default function AdminDashboard() {
           const { data: employees } = await supabase.from('employees').select('*')
           const { data: announcements } = await supabase.from('announcements').select('*')
           const { data: letters } = await supabase.from('appreciation_letters').select('*')
-          // Add other tables if any exist
+          const { data: orders } = await supabase.from('admin_orders').select('*')
+          const { data: slips } = await supabase.from('salary_slips').select('*')
+          const { data: courses } = await supabase.from('courses').select('*')
 
           const backupData = {
-              version: '1.0',
+              version: '1.1', // Incremented version
               timestamp,
               tables: {
                   // Remove unused detailed address fields from backup
                   employees: (employees || []).map(({ governorate, city, mahalla, zgaq, dar, ...rest }) => rest),
                   announcements: announcements || [],
-                  appreciation_letters: letters || []
+                  appreciation_letters: letters || [],
+                  admin_orders: orders || [],
+                  salary_slips: slips || [],
+                  courses: courses || []
               }
           }
 
@@ -101,7 +106,7 @@ export default function AdminDashboard() {
           document.body.removeChild(a)
           URL.revokeObjectURL(url)
 
-          alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nاحتفظ بهذا الملف في مكان آمن.')
+          alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nتشمل: الموظفين، الإعلانات، كتب الشكر، الأوامر الإدارية، أشرطة الراتب، والدورات.')
 
       } catch (err) {
           console.error("Backup failed:", err)
@@ -140,6 +145,24 @@ export default function AdminDashboard() {
               if (backup.tables.appreciation_letters?.length > 0) {
                   const { error: letErr } = await supabase.from('appreciation_letters').upsert(backup.tables.appreciation_letters)
                   if (letErr) throw letErr
+              }
+
+              // Restore Admin Orders
+              if (backup.tables.admin_orders?.length > 0) {
+                  const { error: ordErr } = await supabase.from('admin_orders').upsert(backup.tables.admin_orders)
+                  if (ordErr) throw ordErr
+              }
+
+              // Restore Salary Slips
+              if (backup.tables.salary_slips?.length > 0) {
+                  const { error: slipErr } = await supabase.from('salary_slips').upsert(backup.tables.salary_slips)
+                  if (slipErr) throw slipErr
+              }
+
+              // Restore Courses
+              if (backup.tables.courses?.length > 0) {
+                  const { error: courseErr } = await supabase.from('courses').upsert(backup.tables.courses)
+                  if (courseErr) throw courseErr
               }
 
               alert('تم استعادة النظام بنجاح! 🎉\nسيتم تحديث الصفحة الآن.')
