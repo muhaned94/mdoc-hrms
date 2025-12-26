@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown, Clock, Printer, Download } from 'lucide-react'
+import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown, Clock, Download } from 'lucide-react'
 import { formatDate } from '../../utils/dateUtils'
 import { Link } from 'react-router-dom'
 import * as XLSX from 'xlsx'
@@ -78,10 +78,6 @@ export default function EmployeeGrid() {
       const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, "Employees")
       XLSX.writeFile(wb, `employees_grid_export_${new Date().toISOString().slice(0,10)}.xlsx`)
-  }
-
-  const handlePrint = () => {
-      window.print()
   }
 
   // Filter & Sort Logic
@@ -201,21 +197,8 @@ export default function EmployeeGrid() {
   if (loading) return <div className="p-10 text-center text-slate-500">جاري تحميل البيانات...</div>
 
   return (
-    <div className="space-y-6 print:p-0 print:space-y-0">
-      <style>
-        {`
-          @media print {
-            @page { size: landscape; margin: 10mm; }
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .print-fit-table { width: 100% !important; font-size: 9px !important; }
-            .print-fit-table th, .print-fit-table td { padding: 4px !important; white-space: normal !important; }
-            .print-hidden { display: none !important; }
-            /* Hide scrollbars and allow table to expand */
-            .overflow-x-auto { overflow: visible !important; }
-          }
-        `}
-      </style>
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Database className="text-primary" />
@@ -225,13 +208,6 @@ export default function EmployeeGrid() {
         </div>
         <div className="flex gap-2">
             <button 
-                onClick={handlePrint}
-                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg transition-colors"
-            >
-                <Printer size={20} />
-                <span className="hidden sm:inline">طباعة</span>
-            </button>
-            <button 
                 onClick={handleExport}
                 className="flex items-center gap-2 bg-white border border-slate-200 text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors"
             >
@@ -240,6 +216,7 @@ export default function EmployeeGrid() {
             </button>
         </div>
       </div>
+
 
       {/* Search & Filter Bar */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 space-y-4 md:space-y-0 md:flex md:items-center md:gap-4">

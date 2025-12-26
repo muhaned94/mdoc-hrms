@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Plus, FileSpreadsheet, Eye, Edit, Trash2, Printer, Download } from 'lucide-react'
+import { Search, Filter, Plus, FileSpreadsheet, Eye, Edit, Trash2, Download } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 
