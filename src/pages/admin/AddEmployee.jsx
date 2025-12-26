@@ -42,9 +42,7 @@ export default function AddEmployee() {
     college_name: '',
     graduation_year: '',
     graduation_certificate_url: '',
-    // Detailed Address
-    address: '',
-    dar: '',
+    // Detailed Address (Combined)
     address: ''
   })
 

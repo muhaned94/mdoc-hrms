@@ -83,7 +83,8 @@ export default function AdminDashboard() {
               version: '1.0',
               timestamp,
               tables: {
-                  employees: employees || [],
+                  // Remove unused detailed address fields from backup
+                  employees: (employees || []).map(({ governorate, city, mahalla, zgaq, dar, ...rest }) => rest),
                   announcements: announcements || [],
                   appreciation_letters: letters || []
               }
