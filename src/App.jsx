@@ -19,6 +19,7 @@ const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
 const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
+const OrgChart = lazy(() => import('./pages/admin/OrgChart'))
 
 // Lazy Load User Pages
 const UserProfile = lazy(() => import('./pages/user/Profile'))
@@ -52,6 +53,7 @@ function App() {
           <Route path="complaints" element={<AdminReports />} />
           <Route path="messages" element={<SentMessages />} />
           <Route path="employees-grid" element={<EmployeeGrid />} />
+          <Route path="org-chart" element={<OrgChart />} />
         </Route>
 
         <Route path="/user" element={<UserLayout />}>
