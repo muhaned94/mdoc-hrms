@@ -56,14 +56,22 @@ export default function EmployeeGrid() {
 
   const handleExport = () => {
       const dataToExport = filteredEmployees.map(emp => ({
-          'الاسم': emp.full_name,
+          'الاسم الكامل': emp.full_name,
           'رقم الشركة': emp.company_id,
+          'المنصب': emp.position,
           'العنوان الوظيفي': emp.job_title,
           'موقع العمل': emp.work_location,
           'نظام الدوام': emp.work_schedule === 'morning' ? 'صباحي' : 'مناوب',
+          'عنوان السكن': emp.address,
           'رقم الهاتف': emp.phone_number,
+          'البريد الإلكتروني': emp.email,
           'الراتب الكلي': emp.total_salary,
-          'تاريخ التعيين': formatDate(emp.hire_date)
+          'تاريخ التعيين': formatDate(emp.hire_date),
+          'سنوات الخدمة': calculateYearsOfService(emp.hire_date),
+          'التحصيل الدراسي': emp.certificate,
+          'التخصص': emp.specialization,
+          'تاريخ الميلاد': formatDate(emp.birth_date),
+          'تاريخ الإضافة': formatDate(emp.created_at)
       }))
 
       const ws = XLSX.utils.json_to_sheet(dataToExport)
@@ -194,6 +202,19 @@ export default function EmployeeGrid() {
 
   return (
     <div className="space-y-6 print:p-0 print:space-y-0">
+      <style>
+        {`
+          @media print {
+            @page { size: landscape; margin: 10mm; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .print-fit-table { width: 100% !important; font-size: 9px !important; }
+            .print-fit-table th, .print-fit-table td { padding: 4px !important; white-space: normal !important; }
+            .print-hidden { display: none !important; }
+            /* Hide scrollbars and allow table to expand */
+            .overflow-x-auto { overflow: visible !important; }
+          }
+        `}
+      </style>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 print:hidden">
         <div>
             <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
@@ -280,7 +301,7 @@ export default function EmployeeGrid() {
       {/* Large Grid Table */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
          <div className="overflow-x-auto">
-             <table className="w-full text-sm text-right whitespace-nowrap">
+             <table className="w-full text-sm text-right whitespace-nowrap print-fit-table">
                  <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
                      <tr>
                          <th className="p-4 border-l border-slate-100">م</th>
@@ -332,7 +353,7 @@ export default function EmployeeGrid() {
                  </tbody>
              </table>
          </div>
-         <div className="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between">
+         <div className="p-4 border-t border-slate-100 bg-slate-50 text-xs text-slate-500 flex justify-between print:hidden">
              <span>العدد الكلي: {filteredEmployees.length} موظف</span>
              <span>قم بالتمرير أفقيًا لعرض المزيد من البيانات &larr;</span>
          </div>
