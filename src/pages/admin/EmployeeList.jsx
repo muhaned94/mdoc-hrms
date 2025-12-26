@@ -238,11 +238,13 @@ export default function EmployeeList() {
                     <td className="px-6 py-4 font-medium text-slate-900">{emp.company_id}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                          {emp.full_name?.charAt(0)}
-                        </div>
-                        <Link to={`/admin/employees/${emp.id}`} className="font-bold text-slate-700 hover:text-primary hover:underline">
-                            {emp.full_name}
+                        <Link to={`/admin/employees/${emp.id}`} className="flex items-center gap-3 group/link">
+                            <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 group-hover/link:bg-primary group-hover/link:text-white transition-colors">
+                            {emp.full_name?.charAt(0)}
+                            </div>
+                            <span className="font-bold text-slate-700 group-hover/link:text-primary group-hover/link:underline">
+                                {emp.full_name}
+                            </span>
                         </Link>
                       </div>
                     </td>

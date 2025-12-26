@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown } from 'lucide-react'
+import { Search, Filter, Database, Briefcase, MapPin, Calendar, DollarSign, FileText, ArrowUpDown, Clock } from 'lucide-react'
 import { formatDate } from '../../utils/dateUtils'
+import { Link } from 'react-router-dom'
 
 export default function EmployeeGrid() {
   const [employees, setEmployees] = useState([])
@@ -9,6 +10,7 @@ export default function EmployeeGrid() {
   const [searchTerm, setSearchTerm] = useState('')
   const [jobFilter, setJobFilter] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
+  const [workSysFilter, setWorkSysFilter] = useState('')
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' })
 
   useEffect(() => {
@@ -61,7 +63,8 @@ export default function EmployeeGrid() {
         
         const matchesJob = jobFilter ? emp.job_title === jobFilter : true
         const matchesLocation = locationFilter ? emp.work_location === locationFilter : true
-        return matchesSearch && matchesJob && matchesLocation
+        const matchesWorkSys = workSysFilter ? emp.work_schedule === workSysFilter : true
+        return matchesSearch && matchesJob && matchesLocation && matchesWorkSys
       })
 
       if (sortConfig.key) {
@@ -204,6 +207,19 @@ export default function EmployeeGrid() {
                         ))}
                     </select>
                     <Briefcase className="absolute right-2.5 top-2.5 text-slate-400 pointer-events-none" size={16} />
+                </div>
+
+                <div className="relative min-w-[150px]">
+                    <select
+                        value={workSysFilter}
+                        onChange={(e) => setWorkSysFilter(e.target.value)}
+                        className="w-full appearance-none pl-8 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                    >
+                        <option value="">كل أنظمة العمل</option>
+                        <option value="morning">صباحي</option>
+                        <option value="shift">مناوبات</option>
+                    </select>
+                    <Clock className="absolute right-2.5 top-2.5 text-slate-400 pointer-events-none" size={16} />
                 </div>
 
                 <div className="relative min-w-[150px]">

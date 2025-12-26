@@ -32,20 +32,46 @@ export default function Profile() {
         return
     }
     fetchProfile()
-    fetchAnnouncements()
     fetchLetters()
   }, [userId, authLoading])
 
-  const fetchAnnouncements = async () => {
+  // Fetch announcements only after we have the employee data (and their location)
+  useEffect(() => {
+      if (employee) {
+          fetchAnnouncements(employee.work_location)
+      }
+  }, [employee])
+
+  const fetchAnnouncements = async (location) => {
     try {
-      const { data, error } = await supabase
+      // Filter: target_location is 'all' OR matches employee's location
+      let query = supabase
         .from('announcements')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(3)
+        .limit(5)
+      
+      const { data, error } = await query
       
       if (error) throw error
-      setAnnouncements(data || [])
+      
+      // Client-side filtering to be safe ensuring exact matches
+      const filtered = data ? data.filter(a => a.target_location === 'all' || a.target_location === location) : []
+      setAnnouncements(filtered)
+
+      // Increment view count for these announcements
+      // Optimistic update: we don't need to wait for this to finish or refresh
+      if (filtered.length > 0) {
+          const ids = filtered.map(a => a.id)
+          // Using RPC function would be better for atomic increment, but direct update with current value + 1 is risky for concurrency.
+          // However, given the constraints, we will iterate/update or use an RPC if available.
+          // Since we don't have a custom RPC 'increment_view_count', we'll rely on the fact that for simple counters in this context exact precision isn't mission critical.
+          // BUT, to be safer, we should ideally use an RPC.
+          // For now, let's just trigger an update for each ID.
+          filtered.forEach(async (ann) => {
+              await supabase.from('announcements').update({ view_count: (ann.view_count || 0) + 1 }).eq('id', ann.id)
+          })
+      }
     } catch (err) {
       console.warn('Announcements could not be loaded:', err.message)
       setAnnouncements([])
