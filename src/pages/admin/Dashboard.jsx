@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Users, UserPlus, Clock, Sun, Moon } from 'lucide-react'
+import { Users, UserPlus, Clock, Sun, Moon, DatabaseBackup, Download, FileSpreadsheet, Upload, RefreshCw } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import * as XLSX from 'xlsx'
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
@@ -66,6 +67,91 @@ export default function AdminDashboard() {
     }
   }
 
+  const fileInputRef = useRef(null)
+
+  const handleBackup = async () => {
+      try {
+          const timestamp = new Date().toISOString()
+          
+          // Fetch ALL Data
+          const { data: employees } = await supabase.from('employees').select('*')
+          const { data: announcements } = await supabase.from('announcements').select('*')
+          const { data: letters } = await supabase.from('appreciation_letters').select('*')
+          // Add other tables if any exist
+
+          const backupData = {
+              version: '1.0',
+              timestamp,
+              tables: {
+                  employees: employees || [],
+                  announcements: announcements || [],
+                  appreciation_letters: letters || []
+              }
+          }
+
+          const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' })
+          const url = URL.createObjectURL(blob)
+          
+          const a = document.createElement('a')
+          a.href = url
+          a.download = `MDOC_Full_Backup_${timestamp.slice(0,10)}.json`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+          URL.revokeObjectURL(url)
+
+          alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nاحتفظ بهذا الملف في مكان آمن.')
+
+      } catch (err) {
+          console.error("Backup failed:", err)
+          alert('حدث خطأ أثناء النسخ الاحتياطي: ' + err.message)
+      }
+  }
+
+  const handleRestore = async (event) => {
+      const file = event.target.files[0]
+      if (!file) return
+
+      if (!window.confirm('⚠️ تحذير: هذه العملية ستقوم باستبدال/تحديث البيانات الحالية بالبيانات الموجودة في ملف النسخة الاحتياطية.\nهل أنت متأكد من المتابعة؟')) {
+          return
+      }
+
+      const reader = new FileReader()
+      reader.onload = async (e) => {
+          try {
+              const backup = JSON.parse(e.target.result)
+              
+              if (!backup.tables) throw new Error('ملف غير صالح')
+
+              // Restore Employees
+              if (backup.tables.employees?.length > 0) {
+                  const { error: empErr } = await supabase.from('employees').upsert(backup.tables.employees)
+                  if (empErr) throw empErr
+              }
+
+              // Restore Announcements
+              if (backup.tables.announcements?.length > 0) {
+                   const { error: annErr } = await supabase.from('announcements').upsert(backup.tables.announcements)
+                   if (annErr) throw annErr
+              }
+
+              // Restore Letters
+              if (backup.tables.appreciation_letters?.length > 0) {
+                  const { error: letErr } = await supabase.from('appreciation_letters').upsert(backup.tables.appreciation_letters)
+                  if (letErr) throw letErr
+              }
+
+              alert('تم استعادة النظام بنجاح! 🎉\nسيتم تحديث الصفحة الآن.')
+              window.location.reload()
+
+          } catch (err) {
+              console.error("Restore failed:", err)
+              alert('فشلت عملية الاستعادة: ' + err.message)
+          }
+      }
+      reader.readAsText(file)
+  }
+
   if (loading) return <div className="p-8 text-center">جاري تحميل الإحصائيات...</div>
 
   return (
@@ -120,7 +206,51 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+         <div className="bg-gradient-to-br from-indigo-800 to-slate-900 rounded-2xl p-6 text-white relative overflow-hidden group shadow-lg border border-slate-700 md:col-span-1">
+            <div className="absolute top-0 left-0 p-4 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all pointer-events-none">
+                <DatabaseBackup size={140} />
+            </div>
+            
+            <div className="relative z-10 flex flex-col h-full justify-between gap-4">
+                <div>
+                    <h3 className="text-xl font-bold mb-1 flex items-center gap-2">
+                        <DatabaseBackup size={22} className="text-emerald-400" />
+                        النسخ الاحتياطي والاستعادة
+                    </h3>
+                    <p className="text-slate-300 text-xs leading-relaxed">
+                        حفظ جميع بيانات النظام والمستمسكات في ملف آمن، أو استرجاع النظام من نسخة سابقة.
+                    </p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                    <button 
+                        onClick={handleBackup}
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white py-2 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors w-full shadow-lg"
+                    >
+                        <Download size={16} />
+                        تنزيل نسخة كاملة
+                    </button>
+                    
+                    <div className="relative">
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleRestore}
+                            accept=".json"
+                            className="hidden"
+                        />
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            className="bg-slate-700 hover:bg-slate-600 text-slate-200 py-2 px-4 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-colors w-full border border-slate-600"
+                        >
+                            <Upload size={16} />
+                            استرجاع بيانات
+                        </button>
+                    </div>
+                </div>
+            </div>
+         </div>
          <Link to="/admin/add-employee" className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-8 text-white relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer block">
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 group-hover:opacity-20 transition-all">
                 <UserPlus size={120} />
