@@ -7,3 +7,40 @@
     @apply bg-slate-50 text-slate-900;
   }
 }
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 5mm;
+  }
+
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    background-color: white !important;
+    width: 1280px !important; /* Force desktop width */
+    max-width: none !important;
+    font-size: 12px !important;
+  }
+
+  /* Force standard desktop grid layouts */
+  .grid {
+    display: grid !important;
+  }
+
+  /* Ensure tables expand */
+  table {
+    width: 100% !important;
+  }
+
+  /* Hide scrollbars but show content */
+  .overflow-x-auto {
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  /* Hide print-specific buttons if any remain */
+  .print\:hidden {
+    display: none !important;
+  }
+}
