@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3 } from 'lucide-react'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
@@ -65,6 +65,9 @@ export default function EmployeeDetails() {
   const [messageOpen, setMessageOpen] = useState(false)
   const [messageData, setMessageData] = useState({ title: '', body: '' })
   const [sendingMessage, setSendingMessage] = useState(false)
+
+  // Letters State
+  const [letterType, setLetterType] = useState('thanks') // 'thanks' | 'sanction'
 
   useEffect(() => {
     fetchEmployee()
@@ -839,7 +842,9 @@ export default function EmployeeDetails() {
                                 <div className="flex flex-col">
                                     <span className="text-sm font-bold text-slate-700 leading-tight mb-1">{doc.title}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-bold">+{doc.bonus_months} شهر</span>
+                                        <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${doc.bonus_months >= 0 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                            {doc.bonus_months >= 0 ? `+${doc.bonus_months} شهر قدم` : `${doc.bonus_months} شهر خصم`}
+                                        </span>
                                         <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
                                     </div>
                                 </div>
@@ -872,25 +877,62 @@ export default function EmployeeDetails() {
                     ))}
                 </div>
                 
-                <div className="flex gap-2 mb-3">
+                <div className="flex gap-2 mb-3 bg-slate-50 p-1 rounded-lg">
                     <button 
-                        onClick={() => setBonusMonths(1)}
-                        className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 1 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                        onClick={() => setLetterType('thanks')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'thanks' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:bg-white/50'}`}
                     >
-                        +1 شهر
+                        شكر وتقدير
                     </button>
                     <button 
-                        onClick={() => setBonusMonths(6)}
-                        className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 6 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                        onClick={() => setLetterType('sanction')}
+                        className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'sanction' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400 hover:bg-white/50'}`}
                     >
-                        +6 أشهر
+                        عقوبة / خصم
                     </button>
                 </div>
 
-                <label className="block w-full text-center border-2 border-dashed border-amber-200 rounded-lg p-3 cursor-pointer hover:bg-amber-50 transition-colors">
+                {letterType === 'thanks' ? (
+                    <div className="flex gap-2 mb-3">
+                        <button 
+                            onClick={() => setBonusMonths(1)}
+                            className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 1 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                        >
+                            +1 شهر قدم
+                        </button>
+                        <button 
+                            onClick={() => setBonusMonths(6)}
+                            className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 6 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                        >
+                            +6 أشهر قدم
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-2 mb-3">
+                         <span className="text-xs font-bold text-red-500">مدة الخصم (أشهر):</span>
+                         <input 
+                            type="number" 
+                            min="1"
+                            value={Math.abs(bonusMonths)}
+                            onChange={(e) => setBonusMonths(-Math.abs(e.target.value))}
+                            className="w-16 p-1 text-sm border border-red-200 rounded text-center text-red-600 font-bold focus:outline-none focus:border-red-500"
+                         />
+                    </div>
+                )}
+
+                <label className={`block w-full text-center border-2 border-dashed rounded-lg p-3 cursor-pointer transition-colors ${letterType === 'thanks' ? 'border-amber-200 hover:bg-amber-50' : 'border-red-200 hover:bg-red-50'}`}>
                     <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'letter')} />
-                    <Upload className="mx-auto text-amber-400 mb-1" size={18} />
-                    <span className="text-xs text-amber-600 font-bold">{uploadingLetter ? 'جاري الرفع...' : 'رفع كتاب شكر'}</span>
+                    {letterType === 'thanks' ? (
+                        <>
+                            <Upload className="mx-auto text-amber-400 mb-1" size={18} />
+                            <span className="text-xs text-amber-600 font-bold">{uploadingLetter ? 'جاري الرفع...' : 'رفع كتاب شكر'}</span>
+                        </>
+                    ) : (
+                        <>
+                            <AlertTriangle className="mx-auto text-red-400 mb-1" size={18} />
+                            <span className="text-xs text-red-600 font-bold">{uploadingLetter ? 'جاري الرفع...' : 'رفع كتاب عقوبة'}</span>
+                        </>
+                    )}
                 </label>
             </div>
 

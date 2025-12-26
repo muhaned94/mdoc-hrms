@@ -94,12 +94,12 @@ export default function Profile() {
     <div className="max-w-5xl mx-auto space-y-6 pb-20">
       {/* Announcements Bar */}
       {announcements.length > 0 && (
-        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 overflow-hidden relative">
+        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 overflow-hidden relative">
             <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-primary text-white rounded-lg animate-pulse">
+                <div className="p-2 bg-red-500 text-white rounded-lg animate-pulse">
                     <Megaphone size={16} />
                 </div>
-                <h3 className="font-bold text-primary">إعلانات وتعميمات هامة</h3>
+                <h3 className="font-bold text-red-700">إعلانات وتعميمات هامة</h3>
             </div>
             <div className="space-y-3">
                 {announcements.map(ann => (
@@ -147,11 +147,7 @@ export default function Profile() {
                     <p className="text-slate-500 text-sm">رقم الشركة: {employee.company_id}</p>
                 </div>
                 <div className="flex gap-2">
-                    {/* Default to male if gender is 'male' OR null/undefined (legacy compatibility) */}
-                   {(!employee.gender || employee.gender === 'male') ? 
-                         <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">ذكر</span>
-                       : <span className="px-3 py-1 bg-pink-50 text-pink-600 rounded-full text-xs font-bold">أنثى</span>
-                    }
+                    {/* Gender badge removed as requested */}
                 </div>
             </div>
 

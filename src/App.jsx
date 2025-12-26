@@ -1,15 +1,26 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
-import Login from './pages/Login' // Keep Login eager for fast time-to-interactive
+
+// Components
+import Login from './pages/Login'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
+import GoogleAnalytics from './components/analytics/GoogleAnalytics'
+import ActivityTracker from './components/analytics/ActivityTracker'
 
-// Lazy Load Pages
+// Lazy Load Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
 const EmployeeList = lazy(() => import('./pages/admin/EmployeeList'))
 const AddEmployee = lazy(() => import('./pages/admin/AddEmployee'))
 const EmployeeDetails = lazy(() => import('./pages/admin/EmployeeDetails'))
+const Announcements = lazy(() => import('./pages/admin/Announcements'))
+const Reports = lazy(() => import('./pages/admin/Reports'))
+const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
+const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
+const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
+const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
 
+// Lazy Load User Pages
 const UserProfile = lazy(() => import('./pages/user/Profile'))
 const Settings = lazy(() => import('./pages/user/Settings'))
 const Salary = lazy(() => import('./pages/user/Salary'))
@@ -17,17 +28,8 @@ const Orders = lazy(() => import('./pages/user/Orders'))
 const Courses = lazy(() => import('./pages/user/Courses'))
 const Documents = lazy(() => import('./pages/user/Documents'))
 const Appreciation = lazy(() => import('./pages/user/Appreciation'))
-const Announcements = lazy(() => import('./pages/admin/Announcements'))
-const Reports = lazy(() => import('./pages/admin/Reports')) // Analytics
-const AdminReports = lazy(() => import('./pages/admin/AdminReports')) // Complaints
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
-const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
-const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
-const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
-
-import GoogleAnalytics from './components/analytics/GoogleAnalytics'
-import ActivityTracker from './components/analytics/ActivityTracker'
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -45,10 +47,10 @@ function App() {
           <Route path="employees/:id" element={<EmployeeDetails />} />
           <Route path="add-employee" element={<AddEmployee />} />
           <Route path="announcements" element={<Announcements />} />
-          <Route path="reports" element={<Reports />} /> {/* Analytics */}
-          <Route path="analytics" element={<SystemAnalytics />} /> {/* New System Analytics */}
-          <Route path="complaints" element={<AdminReports />} /> {/* Complaints System */}
-          <Route path="messages" element={<SentMessages />} /> {/* Sent Messages */}
+          <Route path="reports" element={<Reports />} />
+          <Route path="analytics" element={<SystemAnalytics />} />
+          <Route path="complaints" element={<AdminReports />} />
+          <Route path="messages" element={<SentMessages />} />
           <Route path="employees-grid" element={<EmployeeGrid />} />
         </Route>
 

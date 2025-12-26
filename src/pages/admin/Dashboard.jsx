@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { Users, UserPlus, Clock, Sun, Moon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+
+const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -10,6 +13,7 @@ export default function AdminDashboard() {
     shift: 0,
     newHires: 0
   })
+  const [locationStats, setLocationStats] = useState([])
   const [recentEmployees, setRecentEmployees] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -34,6 +38,17 @@ export default function AdminDashboard() {
       const newHires = data.filter(e => new Date(e.hire_date) > oneYearAgo).length
 
       setStats({ total, morning, shift, newHires })
+      
+      // Calculate Location Stats
+      const locs = {}
+      data.forEach(e => {
+        const loc = e.work_location || 'غير محدد'
+        locs[loc] = (locs[loc] || 0) + 1
+      })
+      
+      const locStats = Object.entries(locs).map(([name, value]) => ({ name, value }))
+                         .sort((a, b) => b.value - a.value)
+      setLocationStats(locStats)
       
       // Fetch 5 most recent employees
       const { data: recent } = await supabase
@@ -116,23 +131,40 @@ export default function AdminDashboard() {
             </div>
          </Link>
 
-         <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm flex flex-col">
-            <h3 className="text-xl font-bold text-slate-800 mb-4">روابط سريعة</h3>
-            <div className="space-y-3 flex-1">
-                <Link to="/admin/employees" className="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 border border-slate-100 transition-colors">
-                    <span className="flex items-center gap-2">
-                        <Users size={18} className="text-slate-400" />
-                        <span className="text-slate-700">دليل الموظفين</span>
-                    </span>
-                    <span className="text-xs text-primary font-bold">عرض</span>
-                </Link>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 opacity-50 cursor-not-allowed">
-                    <span className="flex items-center gap-2">
-                        <Clock size={18} className="text-slate-400" />
-                        <span className="text-slate-700">طلبات الإجازات</span>
-                    </span>
-                    <span className="text-[10px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded">قريباً</span>
+         <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col">
+            <h3 className="text-xl font-bold text-slate-800 mb-4">توزيع مواقع العمل</h3>
+            <div className="h-64 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                        <Pie
+                            data={locationStats}
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                        >
+                            {locationStats.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    </PieChart>
+                </ResponsiveContainer>
+                {/* Center Text */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="text-center">
+                        <span className="block text-3xl font-bold text-slate-800">{stats.total}</span>
+                        <span className="text-xs text-slate-400">موظف</span>
+                    </div>
                 </div>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                {locationStats.slice(0, 4).map((entry, index) => (
+                    <div key={entry.name} className="flex items-center gap-1 text-[10px] bg-slate-50 px-2 py-1 rounded-full">
+                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                        <span className="text-slate-600 truncate max-w-[80px]">{entry.name}</span>
+                    </div>
+                ))}
             </div>
          </div>
       </div>

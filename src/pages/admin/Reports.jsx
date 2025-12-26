@@ -214,32 +214,32 @@ export default function Reports() {
         {/* Location Pie Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
             <h3 className="font-bold text-slate-800 mb-6">توزيع الموظفين حسب الموقع</h3>
-            <div className="h-[300px] w-full flex items-center flex-col md:flex-row">
+            <div className="h-[400px] w-full flex items-center flex-col lg:flex-row gap-8">
                 <div className="w-full h-full flex-1 min-w-0">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
                                 data={getSalaryByLocation().map(l => ({ name: l.name, value: l.employeesCount }))}
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
+                                innerRadius={80}
+                                outerRadius={120}
+                                paddingAngle={2}
                                 dataKey="value"
+                                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                             >
                                 {getSalaryByLocation().map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                             </Pie>
                             <Tooltip />
-                            <Legend verticalAlign="bottom" height={36}/>
                         </PieChart>
                     </ResponsiveContainer>
                 </div>
-                <div className="md:w-32 space-y-4 text-sm mt-4 md:mt-0">
+                <div className="lg:w-48 space-y-3 text-sm overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
                     {getSalaryByLocation().map((item, idx) => (
-                        <div key={item.name} className="flex flex-col">
-                            <span className="text-slate-400 text-xs">{item.name}</span>
-                            <span className="font-bold" style={{color: COLORS[idx % COLORS.length]}}>
-                                {item.employeesCount} ({Math.round(item.employeesCount / (stats.totalEmployees || 1) * 100)}%)
+                        <div key={item.name} className="flex justify-between items-center p-2 rounded hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all">
+                            <span className="text-slate-500 font-medium text-xs">{item.name}</span>
+                            <span className="font-bold bg-slate-100 px-2 py-0.5 rounded text-xs" style={{color: COLORS[idx % COLORS.length]}}>
+                                {item.employeesCount}
                             </span>
                         </div>
                     ))}

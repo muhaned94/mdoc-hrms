@@ -93,15 +93,17 @@ export default function Appreciation() {
             <div className="text-slate-500 font-medium">لا توجد كتب شكر مسجلة حالياً</div>
           </div>
         ) : (
-          letters.map((letter) => (
-            <div key={letter.id} className="bg-white rounded-xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition-all group border-r-4 border-r-amber-500">
+          letters.map((letter) => {
+            const isSanction = letter.bonus_months < 0
+            return (
+            <div key={letter.id} className={`bg-white rounded-xl shadow-sm border p-6 hover:shadow-md transition-all group border-r-4 ${isSanction ? 'border-red-100 border-r-red-500' : 'border-slate-100 border-r-amber-500'}`}>
               <div className="flex justify-between items-start mb-4">
-                <div className="p-3 bg-amber-50 rounded-lg text-amber-600 group-hover:bg-amber-500 group-hover:text-white transition-colors">
-                  <FileText size={24} />
+                <div className={`p-3 rounded-lg transition-colors ${isSanction ? 'bg-red-50 text-red-600 group-hover:bg-red-500 group-hover:text-white' : 'bg-amber-50 text-amber-600 group-hover:bg-amber-500 group-hover:text-white'}`}>
+                  {isSanction ? <FileText size={24} /> : <Star size={24} />}
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-200">
-                    +{letter.bonus_months} شهر
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${isSanction ? 'bg-red-50 text-red-700 border-red-100' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
+                    {isSanction ? `${letter.bonus_months} شهر خصم` : `+${letter.bonus_months} شهر قدم`}
                   </span>
                   <span className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                     <Calendar size={10} />
@@ -118,13 +120,13 @@ export default function Appreciation() {
                 href={letter.file_url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-2 bg-slate-50 text-slate-600 rounded-lg group-hover:bg-primary group-hover:text-white transition-all font-bold text-sm shadow-sm"
+                className={`flex items-center justify-center gap-2 w-full py-2 bg-slate-50 text-slate-600 rounded-lg transition-all font-bold text-sm shadow-sm ${isSanction ? 'group-hover:bg-red-500 group-hover:text-white' : 'group-hover:bg-primary group-hover:text-white'}`}
               >
                 <ExternalLink size={16} />
                 عرض الكتاب
               </a>
             </div>
-          ))
+          )})
         )}
       </div>
     </div>

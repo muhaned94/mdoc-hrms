@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import { Search, Filter, Plus, FileSpreadsheet, Eye, Edit, Trash2 } from 'lucide-react'
+import { Search, Filter, Plus, FileSpreadsheet, Eye, Edit, Trash2, Printer, Download } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import * as XLSX from 'xlsx'
 
 export default function EmployeeList() {
   const [employees, setEmployees] = useState([])
@@ -72,6 +73,27 @@ export default function EmployeeList() {
       }
   }
 
+  const handleExport = () => {
+      const dataToExport = filteredEmployees.map(emp => ({
+          'الاسم': emp.full_name,
+          'رقم الشركة': emp.company_id,
+          'العنوان الوظيفي': emp.job_title,
+          'موقع العمل': emp.work_location,
+          'نظام الدوام': emp.work_schedule === 'morning' ? 'صباحي' : 'مناوب',
+          'رقم الهاتف': emp.phone_number,
+          'الشهادة': emp.certificate
+      }))
+
+      const ws = XLSX.utils.json_to_sheet(dataToExport)
+      const wb = XLSX.utils.book_new()
+      XLSX.utils.book_append_sheet(wb, ws, "Employees")
+      XLSX.writeFile(wb, `employees_export_${new Date().toISOString().slice(0,10)}.xlsx`)
+  }
+
+  const handlePrint = () => {
+      window.print()
+  }
+
   // Get unique locations for the filter
   const locations = [...new Set(employees.map(emp => emp.work_location).filter(Boolean))].sort()
 
@@ -89,10 +111,25 @@ export default function EmployeeList() {
   })
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6 print:p-0 print:space-y-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 print:hidden">
         <h1 className="text-2xl font-bold text-slate-800">إدارة الموظفين</h1>
         <div className="flex gap-2">
+            <button 
+                onClick={handlePrint}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 px-4 py-2 rounded-lg transition-colors"
+            >
+                <Printer size={20} />
+                <span className="hidden sm:inline">طباعة</span>
+            </button>
+            <button 
+                onClick={handleExport}
+                className="flex items-center gap-2 bg-white border border-slate-200 text-green-600 hover:bg-green-50 px-4 py-2 rounded-lg transition-colors"
+            >
+                <Download size={20} />
+                <span className="hidden sm:inline">تصدير Excel</span>
+            </button>
+
             {selectedIds.length > 0 && (
                 <button 
                     onClick={handleBulkDelete}
@@ -113,7 +150,7 @@ export default function EmployeeList() {
         </div>
       </div>
 
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-3 gap-4 print:hidden">
         {/* Search */}
         <div className="relative md:col-span-1">
           <Search className="absolute right-3 top-3 text-slate-400" size={18} />
@@ -204,7 +241,9 @@ export default function EmployeeList() {
                         <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
                           {emp.full_name?.charAt(0)}
                         </div>
-                        <span>{emp.full_name}</span>
+                        <Link to={`/admin/employees/${emp.id}`} className="font-bold text-slate-700 hover:text-primary hover:underline">
+                            {emp.full_name}
+                        </Link>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-slate-600">{emp.job_title}</td>
