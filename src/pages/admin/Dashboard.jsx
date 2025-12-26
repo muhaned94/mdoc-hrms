@@ -54,6 +54,7 @@ export default function AdminDashboard() {
       const { data: recent } = await supabase
         .from('employees')
         .select('*')
+        .not('hire_date', 'is', null) // Filter out nulls to ensure we get actual recent hires
         .order('hire_date', { ascending: false })
         .limit(5)
       
@@ -206,7 +207,7 @@ export default function AdminDashboard() {
                                 </div>
                             </td>
                             <td className="p-4 text-slate-600 text-sm">{emp.job_title}</td>
-                            <td className="p-4 text-slate-500 text-sm">{new Date(emp.hire_date).toLocaleDateString('ar-EG')}</td>
+                            <td className="p-4 text-slate-500 text-sm">{emp.hire_date ? new Date(emp.hire_date).toLocaleDateString('ar-EG') : '-'}</td>
                             <td className="p-4 text-slate-500 text-sm">{emp.work_location || '-'}</td>
                             <td className="p-4">
                                 <Link to={`/admin/employees/${emp.id}`} className="text-primary hover:underline font-bold text-xs text-left block">

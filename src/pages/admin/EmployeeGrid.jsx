@@ -259,7 +259,7 @@ export default function EmployeeGrid() {
                     <select
                         value={jobFilter}
                         onChange={(e) => setJobFilter(e.target.value)}
-                        className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        className="w-full appearance-none pr-10 pl-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل العناوين الوظيفية</option>
                         {uniqueJobs.map(job => (
@@ -273,7 +273,7 @@ export default function EmployeeGrid() {
                     <select
                         value={workSysFilter}
                         onChange={(e) => setWorkSysFilter(e.target.value)}
-                        className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                        className="w-full appearance-none pr-10 pl-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل أنظمة العمل</option>
                         <option value="morning">صباحي</option>
@@ -286,7 +286,7 @@ export default function EmployeeGrid() {
                     <select
                          value={locationFilter}
                          onChange={(e) => setLocationFilter(e.target.value)}
-                         className="w-full appearance-none pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
+                         className="w-full appearance-none pr-10 pl-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-primary"
                     >
                         <option value="">كل المواقع</option>
                         {uniqueLocations.map(loc => (
@@ -327,10 +327,12 @@ export default function EmployeeGrid() {
                          <tr key={emp.id} className="hover:bg-blue-50/50 transition-colors">
                              <td className="p-4 text-center text-slate-400 border-l border-slate-100">{index + 1}</td>
                              <td className="p-4 text-slate-600 font-mono border-l border-slate-100 font-bold">{emp.company_id}</td>
-                             <td className="p-4 font-bold text-slate-800 border-l border-slate-100 flex items-center gap-2">
-                                 <img src={emp.avatar_url || `https://ui-avatars.com/api/?name=${emp.full_name}&background=random`} className="w-6 h-6 rounded-full" />
-                                 {emp.full_name}
-                             </td>
+                              <td className="p-4 font-bold text-slate-800 border-l border-slate-100">
+                                  <Link to={`/admin/employees/${emp.id}`} className="flex items-center gap-2 hover:text-primary transition-colors group">
+                                      <img src={emp.avatar_url || `https://ui-avatars.com/api/?name=${emp.full_name}&background=random`} className="w-8 h-8 rounded-full border-2 border-white shadow-sm group-hover:border-primary transition-colors" />
+                                      <span className="group-hover:underline">{emp.full_name}</span>
+                                  </Link>
+                              </td>
                              <td className="p-4 text-slate-700 border-l border-slate-100">{emp.position || '-'}</td>
                              <td className="p-4 text-blue-600 font-medium border-l border-slate-100">{emp.job_title}</td>
                              <td className="p-4 text-slate-600 border-l border-slate-100">{emp.work_location}</td>
