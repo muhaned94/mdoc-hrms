@@ -31,6 +31,7 @@ const Documents = lazy(() => import('./pages/user/Documents'))
 const Appreciation = lazy(() => import('./pages/user/Appreciation'))
 const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
+const PersonalInfo = lazy(() => import('./pages/user/PersonalInfo'))
 
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
@@ -41,7 +42,7 @@ function App() {
       <ActivityTracker />
       <Routes>
         <Route path="/login" element={<Login />} />
-        
+
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="employees" element={<EmployeeList />} />
@@ -59,6 +60,7 @@ function App() {
         <Route path="/user" element={<UserLayout />}>
           <Route index element={<Navigate to="/user/profile" replace />} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="personal-info" element={<PersonalInfo />} />
           <Route path="settings" element={<Settings />} />
           <Route path="salary" element={<Salary />} />
           <Route path="orders" element={<Orders />} />

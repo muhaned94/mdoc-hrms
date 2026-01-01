@@ -1,373 +1,311 @@
+
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
-  User, Briefcase, Calendar, MapPin, GraduationCap,
-  Settings, LogOut, ChevronRight, Download, Megaphone, Clock, Award, Star,
-  Phone, Mail, Home, Heart, FileText
+    User, Calendar, GraduationCap,
+    Megaphone, Clock, CreditCard,
+    ChevronLeft, Mail, Star, Phone, Home, Heart, Award, Briefcase, FileText, Bell
 } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 
 export default function Profile() {
-  const { session, signOut, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
-  const [employee, setEmployee] = useState(null)
-  const [announcements, setAnnouncements] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [letters, setLetters] = useState([])
+    const { session, loading: authLoading } = useAuth()
+    const [employee, setEmployee] = useState(null)
 
-  const userId = session?.user?.id
+    // Dashboard Data State
+    const [announcements, setAnnouncements] = useState([])
+    const [unreadMessages, setUnreadMessages] = useState(0)
+    const [courseDeficit, setCourseDeficit] = useState(0)
+    const [loading, setLoading] = useState(true)
 
-  // Calculate generic stats for display
-  const serviceDuration = employee?.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0) : { display: '0', yearsDecimal: 0 }
-  const gradeInfo = employee?.certificate ? calculateJobGrade(employee.certificate, serviceDuration.yearsDecimal) : { display: '-' }
+    const userId = session?.user?.id
+
+    // Calculate generic stats for display
+    const serviceDuration = employee?.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0) : { display: '0', yearsDecimal: 0 }
+    const gradeInfo = employee?.certificate ? calculateJobGrade(employee.certificate, serviceDuration.yearsDecimal) : { display: '-' }
 
 
-  useEffect(() => {
-    if (authLoading) return
-    if (!userId) {
-        setLoading(false)
-        return
+    useEffect(() => {
+        if (authLoading) return
+        if (!userId) {
+            setLoading(false)
+            return
+        }
+        fetchDashboardData()
+    }, [userId, authLoading])
+
+    const fetchDashboardData = async () => {
+        try {
+            // 1. Fetch Employee Basic Info
+            const { data: empData, error: empError } = await supabase
+                .from('employees')
+                .select('*')
+                .eq('id', userId)
+                .single()
+
+            if (empError) throw empError
+            setEmployee(empData)
+
+            // 2. Fetch Announcements (With Expiration Fix)
+            if (empData) {
+                fetchAnnouncements(empData.work_location)
+            }
+
+            // 3. Fetch Unread Messages Count
+            const { count: msgCount } = await supabase
+                .from('messages')
+                .select('*', { count: 'exact', head: true })
+                .eq('receiver_id', userId)
+                .eq('is_read', false)
+
+            setUnreadMessages(msgCount || 0)
+
+            // 4. Calculate Course Status
+            const { data: courses } = await supabase
+                .from('courses')
+                .select('id')
+                .eq('employee_id', userId)
+
+            if (empData && courses) {
+                const serviceYears = calculateServiceDuration(empData.hire_date, empData.bonus_service_months || 0).yearsDecimal
+                const gInfo = calculateJobGrade(empData.certificate, serviceYears)
+                const numericGrade = gInfo.grade || 10
+
+                const required = numericGrade >= 6 ? 4 : 5
+                const current = courses.length
+                const deficit = Math.max(required - current, 0)
+                setCourseDeficit(deficit)
+            }
+
+        } catch (error) {
+            console.error('Error fetching dashboard data:', error)
+        } finally {
+            setLoading(false)
+        }
     }
-    fetchProfile()
-    fetchLetters()
-  }, [userId, authLoading])
 
-  // Fetch announcements only after we have the employee data (and their location)
-  useEffect(() => {
-      if (employee) {
-          fetchAnnouncements(employee.work_location)
-      }
-  }, [employee])
+    const fetchAnnouncements = async (location) => {
+        try {
+            let query = supabase
+                .from('announcements')
+                .select('*')
+                .or(`expiration_date.is.null,expiration_date.gte.${new Date().toISOString().split('T')[0]}`)
+                .order('created_at', { ascending: false })
+                .limit(5)
 
-  const fetchAnnouncements = async (location) => {
-    try {
-      // Filter: target_location is 'all' OR matches employee's location
-      let query = supabase
-        .from('announcements')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5)
-      
-      const { data, error } = await query
-      
-      if (error) throw error
-      
-      // Client-side filtering to be safe ensuring exact matches
-      const filtered = data ? data.filter(a => a.target_location === 'all' || a.target_location === location) : []
-      setAnnouncements(filtered)
+            const { data, error } = await query
 
-      // Record views (Unique per employee via RPC)
-      if (filtered.length > 0) {
-          filtered.forEach(async (ann) => {
-              // We use an RPC function that handles "insert if not exists" logic server-side
-              // to ensure we don't count the same user multiple times for the same announcement.
-              await supabase.rpc('record_announcement_view', { 
-                  ann_id: ann.id, 
-                  emp_id: userId 
-              })
-          })
-      }
-    } catch (err) {
-      console.warn('Announcements could not be loaded:', err.message)
-      setAnnouncements([])
+            if (error) throw error
+
+            const filtered = data ? data.filter(a => a.target_location === 'all' || a.target_location === location) : []
+            setAnnouncements(filtered)
+
+            if (filtered.length > 0) {
+                filtered.forEach(async (ann) => {
+                    await supabase.rpc('record_announcement_view', {
+                        ann_id: ann.id,
+                        emp_id: userId
+                    })
+                })
+            }
+        } catch (err) {
+            console.warn('Announcements Error:', err.message)
+        }
     }
-  }
 
-  const fetchProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('employees')
-        .select('*')
-        .eq('id', userId)
-        .single()
-
-      if (error) throw error
-      setEmployee(data)
-      if (data) fetchLetters(data.id)
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    } finally {
-      setLoading(false)
+    if (loading || authLoading) {
+        return <div className="p-8 text-center text-slate-500">جاري تحميل لوحة التحكم...</div>
     }
-  }
 
-  const fetchLetters = async (empId) => {
-    if (!empId) return
-    const { data } = await supabase.from('appreciation_letters').select('*').eq('employee_id', empId).order('created_at', { ascending: false })
-    setLetters(data || [])
-  }
+    if (!employee) {
+        return <div className="p-8 text-center text-red-500">حدث خطأ في تحميل البيانات</div>
+    }
 
-  if (loading || authLoading) {
-    return <div className="p-8 text-center text-slate-500">جاري تحميل الملف الشخصي...</div>
-  }
-
-  if (!employee) {
     return (
-        <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg">
-            عذراً، لم يتم العثور على بيانات الموظف المرتبطة بهذا الحساب.
-            <br />
-            ID: {userId}
-        </div>
-    )
-  }
+        <div className="max-w-5xl mx-auto space-y-6 pb-20">
 
-  return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-20">
-      {/* Announcements Bar */}
-      {announcements.length > 0 && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 overflow-hidden relative">
-            <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-red-500 text-white rounded-lg animate-pulse">
-                    <Megaphone size={16} />
+            {/* Welcome Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-800">مرحباً، {employee.full_name.split(' ')[0]} 👋</h1>
+                    <p className="text-slate-500 text-sm">أهلاً بك في البوابة الإلكترونية للموظفين</p>
                 </div>
-                <h3 className="font-bold text-red-700">إعلانات وتعميمات هامة</h3>
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md bg-slate-200">
+                    <img src={employee.avatar_url || `https://ui-avatars.com/api/?name=${employee.full_name}&background=random`} alt="Avatar" className="w-full h-full object-cover" />
+                </div>
             </div>
-            <div className="space-y-3">
-                {announcements.map(ann => (
-                    <div key={ann.id} className="bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
-                        <div className="flex justify-between items-start gap-4">
-                            <h4 className="font-bold text-slate-800 text-sm">{ann.title}</h4>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
-                                <Clock size={10} />
-                                {formatDate(ann.created_at)}
+
+            {/* Announcements Bar */}
+            {announcements.length > 0 && (
+                <div className="bg-red-50 border border-red-100 rounded-2xl p-4 overflow-hidden relative">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="p-2 bg-red-500 text-white rounded-lg animate-pulse">
+                            <Megaphone size={16} />
+                        </div>
+                        <h3 className="font-bold text-red-700">إعلانات وتعميمات هامة</h3>
+                    </div>
+                    <div className="space-y-3">
+                        {announcements.map(ann => (
+                            <div key={ann.id} className="bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
+                                <div className="flex justify-between items-start gap-4">
+                                    <h4 className="font-bold text-slate-800 text-sm">{ann.title}</h4>
+                                    <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
+                                        <Clock size={10} />
+                                        {formatDate(ann.created_at)}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-slate-600 mt-1 line-clamp-2">{ann.content}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Main Stats Grid (Enhanced Colors) */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl shadow-sm border border-blue-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-blue-400 text-xs mb-1 font-bold">مدة الخدمة</p>
+                    <p className="text-xl font-black text-blue-700">
+                        {serviceDuration.display}
+                    </p>
+                    <p className="text-[10px] text-blue-400/70 mt-1">تشمل كتب الشكر</p>
+                </div>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl shadow-sm border border-amber-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-amber-400 text-xs mb-1 font-bold">رصيد الإجازات</p>
+                    <p className="text-2xl font-black text-amber-600">{employee.leave_balance}</p>
+                    <p className="text-[10px] text-amber-400/70 mt-1">يوم</p>
+                </div>
+                <div className="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-slate-400 text-xs mb-1 font-bold">نظام الدوام</p>
+                    <p className="text-lg font-black text-slate-700">
+                        {employee.work_schedule === 'morning' ? 'صباحي' : 'مناوب'}
+                    </p>
+                </div>
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl shadow-sm border border-emerald-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-emerald-400 text-xs mb-1 font-bold">الدرجة الوظيفية</p>
+                    <p className="text-lg font-black text-emerald-600">
+                        {gradeInfo.display}
+                    </p>
+                    <p className="text-[10px] text-emerald-400/70 mt-1">الدرجة الحالية</p>
+                </div>
+            </div>
+
+            {/* Interactive Colorful Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Personal Info Card */}
+                <Link to="/user/personal-info" className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-3xl p-6 text-white relative overflow-hidden group shadow-lg shadow-indigo-200/50 transition-all hover:shadow-indigo-300 hover:-translate-y-1 hover:rotate-[0.5deg]">
+                    <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-500">
+                        <User size={140} />
+                    </div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div>
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
+                                <User size={24} className="text-white" />
+                            </div>
+                            <h3 className="text-2xl font-black mb-2 tracking-tight">المعلومات الشخصية</h3>
+                            <p className="text-indigo-100 text-sm leading-relaxed opacity-90 font-medium max-w-xs">ملفك الشخصي، المؤهلات العلمية، والسجل الوظيفي التفصيلي.</p>
+                        </div>
+                        <div className="mt-8 flex items-center gap-2 text-xs font-bold bg-white/10 w-fit px-4 py-2 rounded-xl backdrop-blur-sm group-hover:bg-white/20 transition-all border border-white/5">
+                            <span>عرض التفاصيل</span>
+                            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        </div>
+                    </div>
+                </Link>
+
+                {/* Messages Card */}
+                <Link to="/user/messages" className="bg-gradient-to-br from-sky-500 to-blue-600 rounded-3xl p-6 text-white relative overflow-hidden group shadow-lg shadow-sky-200/50 transition-all hover:shadow-sky-300 hover:-translate-y-1 hover:rotate-[0.5deg]">
+                    <div className="absolute -bottom-4 -left-4 p-8 opacity-10 group-hover:scale-125 transition-transform duration-500 rotate-12">
+                        <Mail size={140} />
+                    </div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="flex justify-between items-start">
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
+                                <Mail size={24} className="text-white" />
+                            </div>
+                            {unreadMessages > 0 ? (
+                                <span className="bg-rose-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-rose-500/30 animate-pulse flex items-center gap-1.5 border border-white/20">
+                                    <Bell size={12} fill="currentColor" />
+                                    {unreadMessages} جديد
+                                </span>
+                            ) : (
+                                <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                                    محدث
+                                </span>
+                            )}
+                        </div>
+
+                        <div>
+                            <h3 className="text-2xl font-black mb-2 tracking-tight">الرسائل والتبليغات</h3>
+                            <p className="text-sky-100 text-sm leading-relaxed opacity-90 font-medium">
+                                {unreadMessages > 0
+                                    ? `لديك ${unreadMessages} رسائل غير مقروءة تتطلب انتباهك الفوري.`
+                                    : 'صندوق الوارد الخاص بك محدث، لا توجد إشعارات جديدة.'}
+                            </p>
+                        </div>
+                    </div>
+                </Link>
+
+                {/* Courses Card */}
+                <Link to="/user/courses" className={`rounded-3xl p-6 text-white relative overflow-hidden group shadow-lg transition-all hover:-translate-y-1 hover:rotate-[0.5deg] ${courseDeficit > 0 ? 'bg-gradient-to-br from-orange-500 to-red-500 shadow-orange-200 hover:shadow-orange-300' : 'bg-gradient-to-br from-emerald-500 to-teal-600 shadow-emerald-200 hover:shadow-emerald-300'}`}>
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 p-8 opacity-10 group-hover:scale-125 transition-transform duration-500 scale-110">
+                        <GraduationCap size={140} />
+                    </div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="flex justify-between items-start">
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
+                                <GraduationCap size={24} className="text-white" />
+                            </div>
+                            {courseDeficit > 0 ? (
+                                <span className="bg-white/90 text-red-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                                    ⚠️ مطلوب إجراء
+                                </span>
+                            ) : (
+                                <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1.5 border border-white/10">
+                                    <Star size={12} fill="currentColor" /> مكتمل
+                                </span>
+                            )}
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-black mb-2 tracking-tight">الدورات والتدريب</h3>
+                            <p className="text-white/90 text-sm leading-relaxed font-medium">
+                                {courseDeficit > 0
+                                    ? `تنبيه: أنت بحاجة للمشاركة في ${courseDeficit} دورات إضافية.`
+                                    : 'ممتاز! لقد استوفيت جميع متطلبات الدورات التدريبية.'}
+                            </p>
+                        </div>
+                    </div>
+                </Link>
+
+                {/* Salary Card */}
+                <Link to="/user/salary" className="bg-gradient-to-br from-fuchsia-600 to-purple-700 rounded-3xl p-6 text-white relative overflow-hidden group shadow-lg shadow-fuchsia-200/50 transition-all hover:shadow-fuchsia-300 hover:-translate-y-1 hover:rotate-[0.5deg]">
+                    <div className="absolute bottom-0 left-0 p-8 opacity-10 group-hover:scale-125 transition-transform duration-500">
+                        <CreditCard size={140} />
+                    </div>
+                    <div className="relative z-10 flex flex-col h-full justify-between">
+                        <div className="flex justify-between items-start">
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md shadow-inner border border-white/10 group-hover:bg-white/30 transition-colors">
+                                <CreditCard size={24} className="text-white" />
+                            </div>
+                            <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
+                                الراتب الكلي
                             </span>
                         </div>
-                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">{ann.content}</p>
-                    </div>
-                ))}
-            </div>
-        </div>
-      )}
-
-      {/* Profile Header */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">
-        <div className="h-32 bg-gradient-to-r from-sky-500 to-indigo-600"></div>
-        <div className="px-6 pb-6">
-            <div className="relative flex justify-between items-end -mt-12 mb-4">
-                <div className="relative">
-                    <div className="w-24 h-24 rounded-full border-4 border-white bg-slate-200 overflow-hidden shadow-lg">
-                        {employee.avatar_url ? (
-                            <img src={employee.avatar_url} alt={employee.full_name} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-2xl">
-                                {employee.full_name?.charAt(0)}
+                        <div>
+                            <h3 className="text-2xl font-black mb-1 tracking-tight">تفاصيل الراتب</h3>
+                            <p className="text-fuchsia-100 text-xs mb-3 opacity-80 font-medium">عرض شريط الراتب والحوافز الشهرية</p>
+                            <div className="flex items-baseline gap-1 text-white">
+                                <span className="text-4xl font-black tracking-tighter drop-shadow-sm">{employee.total_salary?.toLocaleString()}</span>
+                                <span className="text-sm font-medium opacity-80">د.ع</span>
                             </div>
-                        )}
-                    </div>
-                </div>
-                <div className="mb-1 text-left hidden sm:block">
-                     <span className="bg-sky-50 text-sky-700 px-3 py-1 rounded-full text-sm font-medium border border-sky-100">
-                        {employee.job_title}
-                     </span>
-                </div>
-            </div>
-            
-                <div className="flex justify-between items-start flex-wrap gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">{employee.full_name}</h1>
-                    <p className="text-slate-500 text-sm">رقم الشركة: {employee.company_id}</p>
-                </div>
-                <div className="flex gap-2">
-                    {/* Gender badge removed as requested */}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Calendar size={18} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">تاريخ التعيين</p>
-                        <p className="font-medium text-sm">{formatDate(employee.hire_date)}</p>
-                    </div>
-                </div>
-                </div>
-            </div>
-        </div>
-
-      {/* New Section: Personal & Contact Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-         {/* Contact Info */}
-         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                    <User size={18} />
-                </div>
-                <span>المعلومات الشخصية والاتصال</span>
-            </h3>
-            <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Home size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">العنوان</p>
-                        <p className="text-sm font-medium text-slate-700">
-                          {employee.address || 'غير محدد'}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Phone size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">رقم الهاتف</p>
-                        <p className="text-sm font-medium text-slate-700 font-mono" dir="ltr">{employee.phone_number || 'غير محدد'}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Mail size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">البريد الإلكتروني</p>
-                        <p className="text-sm font-medium text-slate-700">{employee.email || 'غير محدد'}</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Heart size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">الحالة الاجتماعية</p>
-                         <p className="text-sm font-medium text-slate-700">
-                            {employee.marital_status === 'single' && 'أعزب/باكر'}
-                            {employee.marital_status === 'married' && 'متزوج'}
-                            {employee.marital_status === 'divorced' && 'مطلق'}
-                            {employee.marital_status === 'widowed' && 'أرمل'}
-                            {(!employee.marital_status) && 'غير محدد'}
-                            {employee.spouse_name && <span className="text-xs text-slate-500 mr-1">({employee.spouse_name})</span>}
-                        </p>
-                    </div>
-                </div>
-            </div>
-         </div>
-
-         {/* Education Info */}
-         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                    <GraduationCap size={18} />
-                </div>
-                <span>التعليم والمؤهلات</span>
-            </h3>
-            <div className="space-y-4">
-                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Award size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">المؤهل العلمي</p>
-                        <p className="text-sm font-medium text-slate-700">{employee.certificate} في {employee.specialization}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Briefcase size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">الجامعة / الكلية</p>
-                         <p className="text-sm font-medium text-slate-700">
-                             {employee.university_name || '-'} {employee.college_name ? ` - ${employee.college_name}` : ''}
-                         </p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-                        <Calendar size={16} />
-                    </div>
-                    <div>
-                        <p className="text-xs text-slate-400">سنة التخرج</p>
-                        <p className="text-sm font-medium text-slate-700">{employee.graduation_year || '-'}</p>
-                    </div>
-                </div>
-                
-                {employee.graduation_certificate_url && (
-                    <a href={employee.graduation_certificate_url} target="_blank" rel="noreferrer" className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200 mt-2 text-primary hover:bg-slate-100 transition-colors cursor-pointer">
-                         <FileText size={18} />
-                         <span className="text-sm font-bold">عرض نسخة الشهادة</span>
-                    </a>
-                )}
-            </div>
-         </div>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">مدة الخدمة</p>
-                <p className="text-xl font-bold text-primary">
-                    {employee?.hire_date ? calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0).display : '0 يوم'}
-                </p>
-                <p className="text-xs text-slate-400">تشمل كتب الشكر ({employee?.bonus_service_months || 0} شهر)</p>
-            </div>
-             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">رصيد الإجازات</p>
-                <p className="text-2xl font-bold text-amber-500">{employee.leave_balance}</p>
-                <p className="text-xs text-slate-400">يوم</p>
-            </div>
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">نظام الدوام</p>
-                <p className="text-lg font-bold text-slate-700">
-                    {employee.work_schedule === 'morning' ? 'صباحي' : 'مناوب'}
-                </p>
-            </div>
-             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">الدرجة الوظيفية</p>
-                <p className="text-lg font-bold text-sky-600">
-                    {employee?.hire_date && employee?.certificate ? 
-                        calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months || 0).yearsDecimal).display 
-                        : '-'}
-                </p>
-                <p className="text-xs text-slate-400">حسب التحصيل والخدمة</p>
-            </div>
-             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 text-center">
-                <p className="text-slate-400 text-xs mb-1">الحالة</p>
-                <span className="inline-block w-3 h-3 bg-green-500 rounded-full"></span>
-                <span className="text-sm font-medium text-green-600 mr-2">نشط</span>
-            </div>
-      </div>
-
-      {/* Letters List */}
-      {letters.length > 0 && (
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <Star className="text-amber-500" size={20} />
-                كتب الشكر والتقدير المستلمة
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {letters.map(letter => (
-                    <div key={letter.id} className="flex items-center justify-between p-4 bg-amber-50 rounded-xl border border-amber-100">
-                        <div className="flex flex-col">
-                            <span className="font-bold text-slate-900 text-sm">{letter.title}</span>
-                            <span className="text-xs text-amber-700">أضاف {letter.bonus_months} أشهر للخدمة</span>
                         </div>
-                        <a href={letter.file_url} target="_blank" className="bg-white text-amber-600 p-2 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                            عرض الكتاب
-                        </a>
                     </div>
-                ))}
+                </Link>
+
             </div>
         </div>
-      )}
-    </div>
-  )
+    )
 }
-
-// Helper Component for Profile Info
-const InfoItem = ({ icon: Icon, label, value }) => (
-  <div className="flex items-center gap-3 text-slate-600">
-    <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400 shrink-0">
-      <Icon size={18} />
-    </div>
-    <div>
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className="font-medium text-sm">{value}</p>
-    </div>
-  </div>
-)
