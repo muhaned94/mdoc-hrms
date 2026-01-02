@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../../services/api';
+import { supabase } from '../../../lib/supabase';
 import CompanyMap from '../../../components/common/CompanyMap/CompanyMap';
 import {
     Box,
@@ -22,10 +22,15 @@ const CompanyTreePage = () => {
 
     const fetchTreeData = async () => {
         try {
-            const response = await api.get('/company-structure/tree');
-            if (response.data.success) {
-                const data = buildHierarchy(response.data.data);
-                setTreeData(data);
+            const { data, error } = await supabase
+                .from('company_structure')
+                .select('*');
+
+            if (error) throw error;
+
+            if (data) {
+                const hierarchy = buildHierarchy(data);
+                setTreeData(hierarchy);
             }
         } catch (error) {
             console.error('Error fetching tree data:', error);
