@@ -1,3 +1,4 @@
+```javascript
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 
@@ -5,6 +6,7 @@ import { lazy, Suspense } from 'react'
 import Login from './pages/Login'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
+import CompanyTreePage from './pages/admin/structure/CompanyTreePage';
 import GoogleAnalytics from './components/analytics/GoogleAnalytics'
 import ActivityTracker from './components/analytics/ActivityTracker'
 
@@ -19,7 +21,6 @@ const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
 const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
-const OrgChart = lazy(() => import('./pages/admin/OrgChart'))
 
 // Lazy Load User Pages
 const UserProfile = lazy(() => import('./pages/user/Profile'))
@@ -54,7 +55,7 @@ function App() {
           <Route path="complaints" element={<AdminReports />} />
           <Route path="messages" element={<SentMessages />} />
           <Route path="employees-grid" element={<EmployeeGrid />} />
-          <Route path="org-chart" element={<OrgChart />} />
+          <Route path="org-chart" element={<CompanyTreePage />} />
         </Route>
 
         <Route path="/user" element={<UserLayout />}>

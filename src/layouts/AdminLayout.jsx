@@ -21,10 +21,10 @@ export default function AdminLayout() {
 
   const fetchPendingReports = async () => {
     const { count, error } = await supabase
-        .from('reports')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending')
-    
+      .from('reports')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+
     if (!error) setPendingReports(count || 0)
   }
 
@@ -42,7 +42,7 @@ export default function AdminLayout() {
     { label: 'تحليل النظام', path: '/admin/analytics', icon: Activity },
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
     { label: 'سجل الموظفين الشامل', path: '/admin/employees-grid', icon: Database },
-    { label: 'الهيكل التنظيمي', path: '/admin/org-chart', icon: GitGraph },
+    { label: 'مخطط شجرة الشركة', path: '/admin/org-chart', icon: GitGraph },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
   ]
 
@@ -50,10 +50,10 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-slate-100 font-sans" dir="rtl">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center">
-         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-            {sidebarOpen ? <X /> : <Menu />}
-         </button>
-         <h1 className="text-xl font-bold text-primary">MDOC Admin</h1>
+        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+          {sidebarOpen ? <X /> : <Menu />}
+        </button>
+        <h1 className="text-xl font-bold text-primary">MDOC Admin</h1>
       </div>
 
       {/* Sidebar */}
@@ -71,11 +71,10 @@ export default function AdminLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center justify-between p-3 rounded-lg transition-colors ${
-                location.pathname === item.path
-                  ? 'bg-primary text-white'
-                  : 'text-slate-600 hover:bg-slate-50'
-              }`}
+              className={`flex items-center justify-between p-3 rounded-lg transition-colors ${location.pathname === item.path
+                ? 'bg-primary text-white'
+                : 'text-slate-600 hover:bg-slate-50'
+                }`}
             >
               <div className="flex items-center space-x-3 space-x-reverse">
                 <item.icon size={20} />
@@ -83,7 +82,7 @@ export default function AdminLayout() {
               </div>
               {item.badge > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                    {item.badge}
+                  {item.badge}
                 </span>
               )}
             </Link>
@@ -102,9 +101,9 @@ export default function AdminLayout() {
 
       {/* Overlay */}
       {sidebarOpen && (
-        <div 
-            className="fixed inset-0 bg-black/50 z-0 md:hidden"
-            onClick={() => setSidebarOpen(false)}
+        <div
+          className="fixed inset-0 bg-black/50 z-0 md:hidden"
+          onClick={() => setSidebarOpen(false)}
         ></div>
       )}
 

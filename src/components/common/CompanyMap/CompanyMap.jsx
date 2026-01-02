@@ -1,5 +1,4 @@
 
-// CompanyMap v1.1 - Updated Layout
 import React, { useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
     Controls,
