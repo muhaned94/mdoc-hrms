@@ -1,0 +1,74 @@
+
+.company-map-container {
+    width: 100%;
+    height: 80vh;
+    background-color: #ffffff;
+}
+
+/* Common Text Style */
+.node-label {
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none; /* Let clicks pass through if needed */
+}
+
+/* Manager Node - Red Box */
+.node-manager {
+    background-color: #FF0000;
+    color: white;
+    border: 2px solid #800000;
+    border-radius: 4px;
+    padding: 15px 25px;
+    min-width: 180px;
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+/* Assistant Node - Brown Circle */
+.node-assistant {
+    background-color: #8B4513; /* SaddleBrown/Brown */
+    color: white;
+    border: 2px solid #5A2D0C;
+    border-radius: 50%;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* Authority Node - Green Circle */
+.node-authority {
+    background-color: #6B8E23; /* OliveDrab/Greenish */
+    color: white;
+    border: 2px solid #3F5311;
+    border-radius: 50%;
+    width: 110px;
+    height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* Department Node - Blue Rectangle */
+.node-department {
+    background-color: #4682B4; /* SteelBlue */
+    color: white;
+    border: 1px solid #2F5779;
+    border-radius: 2px;
+    padding: 10px;
+    width: 140px;
+    min-height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 12px;
+}
