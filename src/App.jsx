@@ -1,7 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
-
-// Components
 import Login from './pages/Login'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
@@ -9,7 +7,6 @@ import CompanyTreePage from './pages/admin/structure/CompanyTreePage';
 import GoogleAnalytics from './components/analytics/GoogleAnalytics'
 import ActivityTracker from './components/analytics/ActivityTracker'
 
-// Lazy Load Admin Pages
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
 const EmployeeList = lazy(() => import('./pages/admin/EmployeeList'))
 const AddEmployee = lazy(() => import('./pages/admin/AddEmployee'))
@@ -21,7 +18,6 @@ const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
 
-// Lazy Load User Pages
 const UserProfile = lazy(() => import('./pages/user/Profile'))
 const Settings = lazy(() => import('./pages/user/Settings'))
 const Salary = lazy(() => import('./pages/user/Salary'))
@@ -42,7 +38,6 @@ function App() {
       <ActivityTracker />
       <Routes>
         <Route path="/login" element={<Login />} />
-
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="employees" element={<EmployeeList />} />
@@ -56,7 +51,6 @@ function App() {
           <Route path="employees-grid" element={<EmployeeGrid />} />
           <Route path="org-chart" element={<CompanyTreePage />} />
         </Route>
-
         <Route path="/user" element={<UserLayout />}>
           <Route index element={<Navigate to="/user/profile" replace />} />
           <Route path="profile" element={<UserProfile />} />
@@ -70,7 +64,6 @@ function App() {
           <Route path="appreciation" element={<Appreciation />} />
           <Route path="messages" element={<Messages />} />
         </Route>
-
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Suspense>
