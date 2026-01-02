@@ -1,74 +1,96 @@
-
 .company-map-container {
     width: 100%;
-    height: 80vh;
-    background-color: #ffffff;
+    height: 100%;
+    background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%);
 }
 
 /* Common Text Style */
 .node-label {
-    font-size: 14px;
-    font-weight: bold;
+    font-size: 13px;
+    font-weight: 700;
     text-align: center;
-    line-height: 1.2;
-    pointer-events: none; /* Let clicks pass through if needed */
+    line-height: 1.4;
+    color: inherit;
+    font-family: 'Inter', sans-serif;
 }
 
 /* Manager Node - Red Box */
 .node-manager {
-    background-color: #FF0000;
+    background: linear-gradient(135deg, #ef4444 0%, #991b1b 100%);
     color: white;
-    border: 2px solid #800000;
-    border-radius: 4px;
-    padding: 15px 25px;
-    min-width: 180px;
-    min-height: 60px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 20px 30px;
+    min-width: 220px;
+    min-height: 70px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.3), 0 8px 10px -6px rgba(239, 68, 68, 0.3);
+    transition: all 0.3s ease;
+}
+
+.node-manager:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.4);
 }
 
 /* Assistant Node - Brown Circle */
 .node-assistant {
-    background-color: #8B4513; /* SaddleBrown/Brown */
+    background: linear-gradient(135deg, #92400e 0%, #451a03 100%);
     color: white;
-    border: 2px solid #5A2D0C;
-    border-radius: 50%;
-    width: 100px;
-    height: 100px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-}
-
-/* Authority Node - Green Circle */
-.node-authority {
-    background-color: #6B8E23; /* OliveDrab/Greenish */
-    color: white;
-    border: 2px solid #3F5311;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     width: 110px;
     height: 110px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 15px -3px rgba(146, 64, 14, 0.2);
+    transition: all 0.3s ease;
+}
+
+.node-assistant:hover {
+    transform: translateY(-5px);
+}
+
+/* Authority Node - Green Circle */
+.node-authority {
+    background: linear-gradient(135deg, #10b981 0%, #064e3b 100%);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+    transition: all 0.3s ease;
+}
+
+.node-authority:hover {
+    transform: translateY(5px);
 }
 
 /* Department Node - Blue Rectangle */
 .node-department {
-    background-color: #4682B4; /* SteelBlue */
-    color: white;
-    border: 1px solid #2F5779;
-    border-radius: 2px;
-    padding: 10px;
-    width: 140px;
-    min-height: 50px;
+    background: white;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 18px;
+    width: 160px;
+    min-height: 55px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    font-size: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.node-department:hover {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.1);
 }

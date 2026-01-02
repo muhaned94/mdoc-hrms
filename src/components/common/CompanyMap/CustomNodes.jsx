@@ -7,9 +7,10 @@ import './CompanyMap.css';
 export const ManagerNode = memo(({ data }) => {
     return (
         <div className="node-manager">
-            {/* Handles for connections from all sides */}
-            <Handle type="target" position={Position.Top} id="top" style={{ opacity: 0 }} />
-            <Handle type="target" position={Position.Bottom} id="bottom" style={{ opacity: 0 }} />
+            {/* Target Handles */}
+            <Handle type="target" position={Position.Top} id="t-top" style={{ opacity: 0 }} />
+
+            {/* Source Handles */}
             <Handle type="source" position={Position.Top} id="s-top" style={{ opacity: 0 }} />
             <Handle type="source" position={Position.Bottom} id="s-bottom" style={{ opacity: 0 }} />
             <Handle type="source" position={Position.Left} id="s-left" style={{ opacity: 0 }} />
@@ -24,7 +25,7 @@ export const ManagerNode = memo(({ data }) => {
 export const AssistantNode = memo(({ data }) => {
     return (
         <div className="node-assistant">
-            <Handle type="target" position={Position.Bottom} style={{ opacity: 0 }} />
+            <Handle type="target" position={Position.Bottom} id="t-bottom" style={{ opacity: 0 }} />
             <div className="node-label">{data.label}</div>
         </div>
     );
@@ -34,8 +35,8 @@ export const AssistantNode = memo(({ data }) => {
 export const AuthorityNode = memo(({ data }) => {
     return (
         <div className="node-authority">
-            <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
-            <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
+            <Handle type="target" position={Position.Top} id="t-top" style={{ opacity: 0 }} />
+            <Handle type="source" position={Position.Bottom} id="s-bottom" style={{ opacity: 0 }} />
             <div className="node-label">{data.label}</div>
         </div>
     );
@@ -45,7 +46,6 @@ export const AuthorityNode = memo(({ data }) => {
 export const DepartmentNode = memo(({ data }) => {
     return (
         <div className="node-department">
-            {/* Generic handles for flexibility */}
             <Handle type="target" position={Position.Top} id="t-top" style={{ opacity: 0 }} />
             <Handle type="target" position={Position.Left} id="t-left" style={{ opacity: 0 }} />
             <Handle type="target" position={Position.Right} id="t-right" style={{ opacity: 0 }} />

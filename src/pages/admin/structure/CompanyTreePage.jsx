@@ -46,11 +46,18 @@ const CompanyTreePage = () => {
             if (node.parent_id) {
                 const parent = nodeMap.get(node.parent_id);
                 if (parent) parent.children.push(mappedNode);
+                else rootNodes.push(mappedNode); // Parent not in list
             } else {
                 rootNodes.push(mappedNode);
             }
         });
-        return rootNodes.length > 0 ? rootNodes[0] : null;
+
+        if (rootNodes.length === 0) return null;
+        if (rootNodes.length === 1) return rootNodes[0];
+
+        // Multiple roots - create a virtual one or return the first one
+        // For HRMS, usually there's one General Manager
+        return rootNodes.find(n => (n.name || '').includes('مدير عام')) || rootNodes[0];
     };
 
     if (loading) {
