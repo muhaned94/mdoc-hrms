@@ -3,7 +3,6 @@ import { lazy, Suspense } from 'react'
 import Login from './pages/Login'
 import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
-import CompanyTreePage from './pages/admin/structure/CompanyTreePage';
 import GoogleAnalytics from './components/analytics/GoogleAnalytics'
 import ActivityTracker from './components/analytics/ActivityTracker'
 
@@ -49,7 +48,6 @@ function App() {
           <Route path="complaints" element={<AdminReports />} />
           <Route path="messages" element={<SentMessages />} />
           <Route path="employees-grid" element={<EmployeeGrid />} />
-          <Route path="org-chart" element={<CompanyTreePage />} />
         </Route>
         <Route path="/user" element={<UserLayout />}>
           <Route index element={<Navigate to="/user/profile" replace />} />

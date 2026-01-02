@@ -42,7 +42,6 @@ export default function AdminLayout() {
     { label: 'تحليل النظام', path: '/admin/analytics', icon: Activity },
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
     { label: 'سجل الموظفين الشامل', path: '/admin/employees-grid', icon: Database },
-    { label: 'مخطط شجرة الشركة', path: '/admin/org-chart', icon: GitGraph },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
   ]
 
