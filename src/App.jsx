@@ -30,6 +30,8 @@ const ReportIssue = lazy(() => import('./pages/user/ReportIssue'))
 const Messages = lazy(() => import('./pages/user/Messages'))
 const PersonalInfo = lazy(() => import('./pages/user/PersonalInfo'))
 
+import ProtectedRoute from './components/common/ProtectedRoute'
+
 const Loading = () => <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
 function App() {
@@ -39,33 +41,42 @@ function App() {
       <ActivityTracker />
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="employees" element={<EmployeeList />} />
-          <Route path="employees/:id" element={<EmployeeDetails />} />
-          <Route path="add-employee" element={<AddEmployee />} />
-          <Route path="announcements" element={<Announcements />} />
-          <Route path="circulars" element={<AdminCirculars />} />
-          <Route path="reports" element={<Reports />} />
-          <Route path="analytics" element={<SystemAnalytics />} />
-          <Route path="complaints" element={<AdminReports />} />
-          <Route path="messages" element={<SentMessages />} />
-          <Route path="employees-grid" element={<EmployeeGrid />} />
+
+        {/* Protected Admin Routes */}
+        <Route element={<ProtectedRoute adminOnly={true} />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="employees" element={<EmployeeList />} />
+            <Route path="employees/:id" element={<EmployeeDetails />} />
+            <Route path="add-employee" element={<AddEmployee />} />
+            <Route path="announcements" element={<Announcements />} />
+            <Route path="circulars" element={<AdminCirculars />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="analytics" element={<SystemAnalytics />} />
+            <Route path="complaints" element={<AdminReports />} />
+            <Route path="messages" element={<SentMessages />} />
+            <Route path="employees-grid" element={<EmployeeGrid />} />
+          </Route>
         </Route>
-        <Route path="/user" element={<UserLayout />}>
-          <Route index element={<Navigate to="/user/profile" replace />} />
-          <Route path="profile" element={<UserProfile />} />
-          <Route path="personal-info" element={<PersonalInfo />} />
-          <Route path="settings" element={<Settings />} />
-          <Route path="salary" element={<Salary />} />
-          <Route path="orders" element={<Orders />} />
-          <Route path="circulars" element={<UserCirculars />} />
-          <Route path="courses" element={<Courses />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="support" element={<ReportIssue />} />
-          <Route path="appreciation" element={<Appreciation />} />
-          <Route path="messages" element={<Messages />} />
+
+        {/* Protected User Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/user" element={<UserLayout />}>
+            <Route index element={<Navigate to="/user/profile" replace />} />
+            <Route path="profile" element={<UserProfile />} />
+            <Route path="personal-info" element={<PersonalInfo />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="salary" element={<Salary />} />
+            <Route path="orders" element={<Orders />} />
+            <Route path="circulars" element={<UserCirculars />} />
+            <Route path="courses" element={<Courses />} />
+            <Route path="documents" element={<Documents />} />
+            <Route path="support" element={<ReportIssue />} />
+            <Route path="appreciation" element={<Appreciation />} />
+            <Route path="messages" element={<Messages />} />
+          </Route>
         </Route>
+
         <Route path="/" element={<Navigate to="/login" replace />} />
       </Routes>
     </Suspense>
