@@ -1,7 +1,7 @@
 
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -38,6 +38,7 @@ export default function AdminLayout() {
     { label: 'الموظفين', path: '/admin/employees', icon: Users },
     { label: 'إضافة موظف', path: '/admin/add-employee', icon: UserPlus },
     { label: 'الإعلانات', path: '/admin/announcements', icon: Megaphone },
+    { label: 'التعاميم والكتب', path: '/admin/circulars', icon: FileText },
     { label: 'التقارير', path: '/admin/reports', icon: BarChart3 },
     { label: 'تحليل النظام', path: '/admin/analytics', icon: Activity },
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
@@ -46,7 +47,7 @@ export default function AdminLayout() {
   ]
 
   return (
-    <div className="flex h-screen bg-slate-100 font-sans" dir="rtl">
+    <div className="flex h-screen bg-slate-50 font-sans" dir="rtl">
       {/* Mobile Header */}
       <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center">
         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -70,14 +71,14 @@ export default function AdminLayout() {
               key={item.path}
               to={item.path}
               onClick={() => setSidebarOpen(false)}
-              className={`flex items-center justify-between p-3 rounded-lg transition-colors ${location.pathname === item.path
-                ? 'bg-primary text-white'
-                : 'text-slate-600 hover:bg-slate-50'
+              className={`flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${location.pathname === item.path
+                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
                 }`}
             >
               <div className="flex items-center space-x-3 space-x-reverse">
-                <item.icon size={20} />
-                <span>{item.label}</span>
+                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 group-hover:text-primary'} />
+                <span className="font-medium">{item.label}</span>
               </div>
               {item.badge > 0 && (
                 <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
@@ -90,10 +91,10 @@ export default function AdminLayout() {
         <div className="p-4 border-t">
           <button
             onClick={handleSignOut}
-            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
           >
             <LogOut size={20} />
-            <span>تسجيل الخروج</span>
+            <span className="font-medium">تسجيل الخروج</span>
           </button>
         </div>
       </aside>
@@ -107,7 +108,7 @@ export default function AdminLayout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8">
+      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full">
         <Outlet />
       </main>
     </div>

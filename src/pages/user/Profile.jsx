@@ -125,17 +125,32 @@ export default function Profile() {
     }
 
     return (
-        <div className="max-w-5xl mx-auto space-y-6 pb-20">
+        <div className="space-y-6 pb-20">
 
-            {/* Welcome Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800">مرحباً، {employee.full_name.split(' ')[0]} 👋</h1>
-                    <p className="text-slate-500 text-sm">أهلاً بك في البوابة الإلكترونية للموظفين</p>
+            {/* Unified Gradient Header */}
+            <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
+                <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-6 text-center md:text-right">
+                        <div className="w-20 h-20 rounded-full overflow-hidden border-4 border-white/30 shadow-xl bg-white/20 backdrop-blur-sm">
+                            <img src={employee.avatar_url || `https://ui-avatars.com/api/?name=${employee.full_name}&background=random`} alt="Avatar" className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-black mb-1">مرحباً، {employee.full_name.split(' ')[0]} 👋</h1>
+                            <p className="text-sky-100 font-medium opacity-90">أهلاً بك في بوابة الموظف الذكية</p>
+                        </div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-center min-w-[140px]">
+                        <span className="text-xs font-bold block mb-1 opacity-80 uppercase tracking-wider">الحالة الآن</span>
+                        <div className="flex items-center justify-center gap-2">
+                            <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                            <span className="text-lg font-black italic">نشط</span>
+                        </div>
+                    </div>
                 </div>
-                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-md bg-slate-200">
-                    <img src={employee.avatar_url || `https://ui-avatars.com/api/?name=${employee.full_name}&background=random`} alt="Avatar" className="w-full h-full object-cover" />
-                </div>
+
+                {/* Decorative Background Icons */}
+                <User className="absolute -bottom-10 -right-10 text-white/10 w-48 h-48 -rotate-12" />
+                <Home className="absolute -top-10 -left-10 text-white/5 w-32 h-32 rotate-12" />
             </div>
 
             {/* Announcements Bar */}

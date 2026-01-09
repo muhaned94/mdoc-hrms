@@ -2,15 +2,15 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Lock, Save, User, Loader } from 'lucide-react'
+import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck } from 'lucide-react'
 
 export default function Settings() {
-  const { session, signOut, loading: authLoading } = useAuth() 
+  const { session, signOut, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [employee, setEmployee] = useState(null)
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
-  
+
   // Password State
   const [newPassword, setNewPassword] = useState('')
   const [changingPassword, setChangingPassword] = useState(false)
@@ -20,8 +20,8 @@ export default function Settings() {
   useEffect(() => {
     if (authLoading) return
     if (!userId) {
-        setLoading(false)
-        return
+      setLoading(false)
+      return
     }
     fetchProfile()
   }, [userId, authLoading])
@@ -71,8 +71,8 @@ export default function Settings() {
       // 2. Update DB via RPC (Bypasses RLS)
       const { error: updateError } = await supabase
         .rpc('update_employee_settings', {
-            p_employee_id: targetId,
-            p_avatar_url: publicUrl
+          p_employee_id: targetId,
+          p_avatar_url: publicUrl
         })
 
       if (updateError) throw updateError
@@ -90,26 +90,26 @@ export default function Settings() {
     e.preventDefault()
     setChangingPassword(true)
     try {
-        const targetId = employee?.id || userId
-        if (!targetId) throw new Error('User ID missing')
+      const targetId = employee?.id || userId
+      if (!targetId) throw new Error('User ID missing')
 
-        // Update via RPC
-        const { error } = await supabase
-            .rpc('update_employee_settings', {
-                p_employee_id: targetId,
-                p_visible_password: newPassword
-            })
+      // Update via RPC
+      const { error } = await supabase
+        .rpc('update_employee_settings', {
+          p_employee_id: targetId,
+          p_visible_password: newPassword
+        })
 
-        if (error) throw error
-        
-        alert('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.')
-        await signOut() // Force logout
-        navigate('/login')
-        setNewPassword('')
+      if (error) throw error
+
+      alert('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.')
+      await signOut() // Force logout
+      navigate('/login')
+      setNewPassword('')
     } catch (err) {
-        alert('فشل تغيير كلمة المرور: ' + err.message)
+      alert('فشل تغيير كلمة المرور: ' + err.message)
     } finally {
-        setChangingPassword(false)
+      setChangingPassword(false)
     }
   }
 
@@ -117,75 +117,90 @@ export default function Settings() {
 
   if (!employee) {
     return (
-        <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg">
-            عذراً، لم يتم العثور على بيانات الموظف. يرجى تسجيل الدخول مجدداً.
-        </div>
+      <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg">
+        عذراً، لم يتم العثور على بيانات الموظف. يرجى تسجيل الدخول مجدداً.
+      </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">الإعدادات</h1>
+    <div className="space-y-6">
+      {/* Unified Gradient Header */}
+      <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden mb-8">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-center md:text-right">
+            <h1 className="text-3xl font-black mb-2 flex items-center gap-3 justify-center md:justify-start">
+              <SettingsIcon className="fill-current/20" size={32} />
+              إعدادات الحساب
+            </h1>
+            <p className="text-sky-100 font-medium opacity-90">إدارة الصورة الشخصية وكلمة المرور</p>
+          </div>
+        </div>
+
+        {/* Decorations */}
+        <SettingsIcon className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
+        <ShieldCheck className="absolute -top-6 -right-6 text-white/10 w-32 h-32 -rotate-12" />
+      </div>
 
       {/* Avatar Section */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 border-b pb-2">
-            <Camera className="text-primary" size={20} />
-            تغيير الصورة الشخصية
+          <Camera className="text-primary" size={20} />
+          تغيير الصورة الشخصية
         </h3>
-        
+
         <div className="flex flex-col items-center gap-4">
-             <div className="relative">
-                <div className="w-32 h-32 rounded-full border-4 border-slate-100 bg-slate-200 overflow-hidden shadow-inner">
-                    {employee?.avatar_url ? (
-                        <img src={employee.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-4xl">
-                            {employee?.full_name?.charAt(0)}
-                        </div>
-                    )}
+          <div className="relative">
+            <div className="w-32 h-32 rounded-full border-4 border-slate-100 bg-slate-200 overflow-hidden shadow-inner">
+              {employee?.avatar_url ? (
+                <img src={employee.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-4xl">
+                  {employee?.full_name?.charAt(0)}
                 </div>
-                 <label className="absolute bottom-0 right-0 bg-primary hover:bg-sky-600 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-110">
-                    <Camera size={20} />
-                    <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
-                </label>
+              )}
             </div>
-            <p className="text-sm text-slate-500">اضغط على الكاميرا لتغيير الصورة</p>
+            <label className="absolute bottom-0 right-0 bg-primary hover:bg-sky-600 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-110">
+              <Camera size={20} />
+              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
+            </label>
+          </div>
+          <p className="text-sm text-slate-500">اضغط على الكاميرا لتغيير الصورة</p>
         </div>
       </div>
 
       {/* Password Section */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
         <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 border-b pb-2">
-            <Lock className="text-amber-500" size={20} />
-            تغيير كلمة المرور
+          <Lock className="text-amber-500" size={20} />
+          تغيير كلمة المرور
         </h3>
         <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div>
-                <label className="text-sm text-slate-600 mb-1 block font-medium">كلمة المرور الجديدة</label>
-                <div className="relative">
-                    <input 
-                        type="text" 
-                        required
-                        minLength={6}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full p-3 border rounded-lg bg-slate-50 font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                        placeholder="أدخل كلمة المرور الجديدة"
-                    />
-                    <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
-                </div>
-                <p className="text-xs text-slate-400 mt-1">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
+          <div>
+            <label className="text-sm text-slate-600 mb-1 block font-medium">كلمة المرور الجديدة</label>
+            <div className="relative">
+              <input
+                type="text"
+                required
+                minLength={6}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full p-3 border rounded-lg bg-slate-50 font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                placeholder="أدخل كلمة المرور الجديدة"
+              />
+              <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
             </div>
-            
-            <button 
-                type="submit" 
-                disabled={changingPassword}
-                className="w-full bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 font-medium"
-            >
-                {changingPassword ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
-                <span>حفظ كلمة المرور الجديدة</span>
-            </button>
+            <p className="text-xs text-slate-400 mt-1">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
+          </div>
+
+          <button
+            type="submit"
+            disabled={changingPassword}
+            className="w-full bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 font-medium"
+          >
+            {changingPassword ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
+            <span>حفظ كلمة المرور الجديدة</span>
+          </button>
         </form>
       </div>
     </div>

@@ -271,7 +271,7 @@ export default function AddEmployee() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-800">إضافة موظف جديد</h1>
         <button

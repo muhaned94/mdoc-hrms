@@ -11,6 +11,7 @@ const EmployeeList = lazy(() => import('./pages/admin/EmployeeList'))
 const AddEmployee = lazy(() => import('./pages/admin/AddEmployee'))
 const EmployeeDetails = lazy(() => import('./pages/admin/EmployeeDetails'))
 const Announcements = lazy(() => import('./pages/admin/Announcements'))
+const AdminCirculars = lazy(() => import('./pages/admin/Circulars'))
 const Reports = lazy(() => import('./pages/admin/Reports'))
 const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
 const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
@@ -21,6 +22,7 @@ const UserProfile = lazy(() => import('./pages/user/Profile'))
 const Settings = lazy(() => import('./pages/user/Settings'))
 const Salary = lazy(() => import('./pages/user/Salary'))
 const Orders = lazy(() => import('./pages/user/Orders'))
+const UserCirculars = lazy(() => import('./pages/user/Circulars'))
 const Courses = lazy(() => import('./pages/user/Courses'))
 const Documents = lazy(() => import('./pages/user/Documents'))
 const Appreciation = lazy(() => import('./pages/user/Appreciation'))
@@ -43,6 +45,7 @@ function App() {
           <Route path="employees/:id" element={<EmployeeDetails />} />
           <Route path="add-employee" element={<AddEmployee />} />
           <Route path="announcements" element={<Announcements />} />
+          <Route path="circulars" element={<AdminCirculars />} />
           <Route path="reports" element={<Reports />} />
           <Route path="analytics" element={<SystemAnalytics />} />
           <Route path="complaints" element={<AdminReports />} />
@@ -56,6 +59,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="salary" element={<Salary />} />
           <Route path="orders" element={<Orders />} />
+          <Route path="circulars" element={<UserCirculars />} />
           <Route path="courses" element={<Courses />} />
           <Route path="documents" element={<Documents />} />
           <Route path="support" element={<ReportIssue />} />

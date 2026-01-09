@@ -20,11 +20,14 @@ export default function UserLayout() {
     if (!loading && !user) navigate('/login')
   }, [user, loading, navigate])
 
-  // Fetch Unread Messages Count
   useEffect(() => {
     if (user) {
       fetchUnreadCount()
-      const interval = setInterval(fetchUnreadCount, 30000)
+      fetchNewCircularsCount()
+      const interval = setInterval(() => {
+        fetchUnreadCount()
+        fetchNewCircularsCount()
+      }, 30000)
       return () => clearInterval(interval)
     }
   }, [user])
@@ -43,6 +46,26 @@ export default function UserLayout() {
     }
   }
 
+  const [newCircularsCount, setNewCircularsCount] = useState(0)
+
+  const fetchNewCircularsCount = async () => {
+    try {
+      const lastCheck = localStorage.getItem('last_circulars_check')
+
+      let query = supabase.from('circulars').select('*', { count: 'exact', head: true })
+
+      if (lastCheck) {
+        query = query.gt('created_at', lastCheck)
+      }
+
+      const { count, error } = await query
+
+      if (!error) setNewCircularsCount(count || 0)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
@@ -56,7 +79,8 @@ export default function UserLayout() {
     { label: 'الراتب', path: '/user/salary', icon: Wallet },
     { label: 'الرسائل', path: '/user/messages', icon: Mail, badge: unreadCount },
     { label: 'الأوامر الإدارية', path: '/user/orders', icon: FileText },
-    { label: 'كتب الشكر', path: '/user/appreciation', icon: Award },
+    { label: 'التعاميم الادارية', path: '/user/circulars', icon: Files, badge: newCircularsCount },
+    { label: ' كتب الشكر والعقوبات', path: '/user/appreciation', icon: Award },
     { label: 'الدورات', path: '/user/courses', icon: GraduationCap },
     { label: 'المستمسكات', path: '/user/documents', icon: Files },
     { label: 'الدعم والشكاوي', path: '/user/support', icon: LifeBuoy },
@@ -104,8 +128,8 @@ export default function UserLayout() {
               to={item.path}
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${location.pathname === item.path
-                  ? 'bg-primary text-white shadow-md shadow-primary/20'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
                 }`}
             >
               <div className="flex items-center space-x-3 space-x-reverse">
@@ -114,8 +138,8 @@ export default function UserLayout() {
               </div>
               {item.badge > 0 && (
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${location.pathname === item.path
-                    ? 'bg-white text-primary'
-                    : 'bg-red-500 text-white'
+                  ? 'bg-white text-primary'
+                  : 'bg-red-500 text-white'
                   }`}>
                   {item.badge}
                 </span>

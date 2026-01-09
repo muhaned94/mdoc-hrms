@@ -118,7 +118,7 @@ export default function Documents() {
 
       // Note: We are not deleting from storage here for safety (soft delete in DB)
       // but in a production app you might want to cleanup storage as well.
-      
+
       setEmployee(prev => ({ ...prev, [docType.key]: null }))
     } catch (error) {
       console.error('Error deleting file:', error)
@@ -141,26 +141,36 @@ export default function Documents() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 pb-20" dir="rtl">
-      <div className="relative overflow-hidden bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16"></div>
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 mb-2">المستمسكات الرسمية</h1>
-            <p className="text-slate-500 max-w-md">يرجى رفع النسخ الأصلية والواضحة لضمان سرعة إنجاز المعاملات الإدارية.</p>
+    <div className="space-y-8 pb-20" dir="rtl">
+      {/* Unified Gradient Header */}
+      <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden mb-8">
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="text-center md:text-right">
+            <h1 className="text-3xl font-black mb-2 flex items-center gap-3 justify-center md:justify-start">
+              <FileText className="fill-current/20" size={32} />
+              المستمسكات الرسمية
+            </h1>
+            <p className="text-sky-100 font-medium opacity-90 max-w-md">يرجى رفع النسخ الأصلية والواضحة لضمان سرعة إنجاز المعاملات.</p>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl border border-amber-100 text-amber-700 text-sm">
-            <Info size={18} />
-            <span>الحد الأقصى لكل ملف: 5MB</span>
+
+          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-center flex items-center gap-3">
+            <Info size={24} className="opacity-80" />
+            <div className="text-left">
+              <span className="text-[10px] font-bold block opacity-70 uppercase">الحد الأقصى</span>
+              <span className="text-sm font-black italic">5MB للملف</span>
+            </div>
           </div>
         </div>
+
+        {/* Decorations */}
+        <FileText className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {DOCUMENT_TYPES.map((doc) => {
           const isUploaded = !!employee[doc.key]
           const isImage = employee[doc.key]?.match(/\.(jpg|jpeg|png|webp)$/i)
-          
+
           return (
             <div key={doc.id} className="group bg-white rounded-2xl border border-slate-200 hover:border-primary/30 transition-all duration-300 overflow-hidden flex flex-col">
               <div className="p-6 flex-1">
@@ -170,8 +180,8 @@ export default function Documents() {
                   </div>
                   {isUploaded && (
                     <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full text-xs font-bold">
-                       <CheckCircle size={14} />
-                       تم الرفع
+                      <CheckCircle size={14} />
+                      تم الرفع
                     </div>
                   )}
                 </div>
@@ -189,11 +199,11 @@ export default function Documents() {
                         <span className="text-xs font-medium">ملف PDF</span>
                       </div>
                     )}
-                     <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                        <a href={employee[doc.key]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg" title="عرض">
-                           <Eye size={18} />
-                        </a>
-                     </div>
+                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                      <a href={employee[doc.key]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg" title="عرض">
+                        <Eye size={18} />
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <label className="block">
@@ -205,24 +215,24 @@ export default function Documents() {
                       accept=".jpg,.jpeg,.png,.pdf"
                     />
                     <div className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group/upload">
-                        {uploading[doc.id] ? (
-                            <Loader2 className="animate-spin text-primary" size={32} />
-                        ) : (
-                            <>
-                                <div className="p-3 bg-slate-50 rounded-full text-slate-400 group-hover/upload:bg-white group-hover/upload:text-primary transition-colors">
-                                    <Upload size={24} />
-                                </div>
-                                <span className="text-sm font-bold text-slate-500 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
-                            </>
-                        )}
+                      {uploading[doc.id] ? (
+                        <Loader2 className="animate-spin text-primary" size={32} />
+                      ) : (
+                        <>
+                          <div className="p-3 bg-slate-50 rounded-full text-slate-400 group-hover/upload:bg-white group-hover/upload:text-primary transition-colors">
+                            <Upload size={24} />
+                          </div>
+                          <span className="text-sm font-bold text-slate-500 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
+                        </>
+                      )}
                     </div>
                   </label>
                 )}
               </div>
-              
+
               <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-500">
-                 <span>الحالة: {isUploaded ? 'مكتمل' : 'مطلوب'}</span>
-                 {!isUploaded && <span className="text-amber-500 animate-pulse">بانتظار الإجراء</span>}
+                <span>الحالة: {isUploaded ? 'مكتمل' : 'مطلوب'}</span>
+                {!isUploaded && <span className="text-amber-500 animate-pulse">بانتظار الإجراء</span>}
               </div>
             </div>
           )

@@ -61,15 +61,9 @@ export default function PersonalInfo() {
     }
 
     return (
-        <div className="max-w-4xl mx-auto space-y-6 pb-20">
+        <div className="space-y-6 pb-20">
 
-            {/* Header & Back Button */}
-            <div className="flex items-center gap-4 mb-4">
-                <Link to="/user/profile" className="p-2 bg-white hover:bg-slate-50 rounded-full border border-slate-200 text-slate-500 transition-colors">
-                    <ArrowRight size={20} />
-                </Link>
-                <h1 className="text-2xl font-bold text-slate-800">المعلومات الشخصية والوظيفية</h1>
-            </div>
+
 
             {/* Profile Header */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden relative">

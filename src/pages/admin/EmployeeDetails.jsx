@@ -462,7 +462,7 @@ export default function EmployeeDetails() {
     if (!employee) return <div className="text-center p-10">الموظف غير موجود</div>
 
     return (
-        <div className="space-y-6 max-w-6xl mx-auto">
+        <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <button onClick={() => navigate('/admin/employees')} className="p-2 hover:bg-slate-200 rounded-full">
                     <ArrowRight size={24} />
