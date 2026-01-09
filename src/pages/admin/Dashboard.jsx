@@ -142,13 +142,9 @@ export default function AdminDashboard() {
             const { data: courses } = await supabase.from('courses').select('*')
             const { data: messages } = await supabase.from('messages').select('*')
             const { data: views } = await supabase.from('announcement_views').select('*')
-            const { data: circulars } = await supabase.from('circulars').select('*')
-            const { data: reports } = await supabase.from('reports').select('*')
-            const { data: notifications } = await supabase.from('notifications').select('*')
-            const { data: logs } = await supabase.from('user_activity_logs').select('*')
 
             const backupData = {
-                version: '1.3', // Incremented version for new tables
+                version: '1.2', // Incremented version
                 timestamp,
                 tables: {
                     // Remove unused detailed address fields from backup
@@ -159,11 +155,7 @@ export default function AdminDashboard() {
                     salary_slips: slips || [],
                     courses: courses || [],
                     messages: messages || [],
-                    announcement_views: views || [],
-                    circulars: circulars || [],
-                    reports: reports || [],
-                    notifications: notifications || [],
-                    user_activity_logs: logs || []
+                    announcement_views: views || []
                 }
             }
 
@@ -178,7 +170,7 @@ export default function AdminDashboard() {
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
 
-            alert('تم تحميل النسخة الاحتياطية للنظام بالكامل ✅\nتشمل: الموظفين، التعاميم، الإعلانات، كتب الشكر، الأوامر، الرواتب، الدورات، الرسائل، التقارير، والتنبيهات.')
+            alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅\nتشمل: الموظفين، الإعلانات، كتب الشكر، الأوامر، الرواتب، الدورات، الرسائل، ومشاهدات الإعلانات.')
 
         } catch (err) {
             console.error("Backup failed:", err)
@@ -247,30 +239,6 @@ export default function AdminDashboard() {
                 if (backup.tables.announcement_views?.length > 0) {
                     const { error: viewErr } = await supabase.from('announcement_views').upsert(backup.tables.announcement_views)
                     if (viewErr) throw viewErr
-                }
-
-                // Restore Circulars
-                if (backup.tables.circulars?.length > 0) {
-                    const { error: circErr } = await supabase.from('circulars').upsert(backup.tables.circulars)
-                    if (circErr) throw circErr
-                }
-
-                // Restore Reports
-                if (backup.tables.reports?.length > 0) {
-                    const { error: repErr } = await supabase.from('reports').upsert(backup.tables.reports)
-                    if (repErr) throw repErr
-                }
-
-                // Restore Notifications
-                if (backup.tables.notifications?.length > 0) {
-                    const { error: noteErr } = await supabase.from('notifications').upsert(backup.tables.notifications)
-                    if (noteErr) throw noteErr
-                }
-
-                // Restore Activity Logs
-                if (backup.tables.user_activity_logs?.length > 0) {
-                    const { error: logErr } = await supabase.from('user_activity_logs').upsert(backup.tables.user_activity_logs)
-                    if (logErr) throw logErr
                 }
 
                 alert('تم استعادة النظام بنجاح! 🎉\nسيتم تحديث الصفحة الآن.')
