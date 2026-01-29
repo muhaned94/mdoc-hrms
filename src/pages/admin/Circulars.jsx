@@ -78,8 +78,7 @@ export default function Circulars() {
                 .insert([{
                     title: newCircular.title,
                     file_url: publicUrl,
-                    file_path: filePath,
-                    created_by: user?.id
+                    file_path: filePath
                 }])
 
             if (dbError) throw dbError
