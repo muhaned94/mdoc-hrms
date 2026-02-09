@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
+import UserQRCode from '../../components/UserQRCode'
 
 export default function EmployeeDetails() {
     const { id } = useParams()
@@ -482,6 +483,8 @@ export default function EmployeeDetails() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Info Form */}
                 <div className="lg:col-span-2 space-y-6">
+                    <UserQRCode employee={employee} />
+
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                             <UserCog className="text-primary" size={20} />

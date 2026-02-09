@@ -1,52 +1,63 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Lock, Building2 } from 'lucide-react'
+import { Lock, Building2, ScanLine } from 'lucide-react'
+import { Scanner } from '@yudiel/react-qr-scanner'; // We might need this type if using TS, but here just import for consistency if needed. Actually we made a custom component.
+import QRCodeScannerComponent from '../components/QRCodeScanner'; // Renamed to avoid confusion with library Scanner
 
 export default function Login() {
   const [companyId, setCompanyId] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [showScanner, setShowScanner] = useState(false)
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
+  const handleLogin = async (e, scannedCredentials = null) => {
+    if (e) e.preventDefault()
+
+    // If scanned, use those credentials
+    const loginCompanyId = scannedCredentials ? scannedCredentials.companyId : companyId
+    const loginPassword = scannedCredentials ? scannedCredentials.password : password
+
+    if (!loginCompanyId || !loginPassword) {
+      setError('يرجى ادخال البيانات او مسح الباركود بشكل صحيح')
+      return
+    }
+
     setLoading(true)
     setError(null)
 
     try {
       // 1. Try to Login via RPC (Secure Function)
       const { data: employee, error: rpcError } = await supabase
-        .rpc('login_employee', { 
-            p_company_id: companyId, 
-            p_password: password 
+        .rpc('login_employee', {
+          p_company_id: loginCompanyId,
+          p_password: loginPassword
         })
 
       if (rpcError) throw rpcError
 
       if (!employee) {
-         throw new Error('بيانات الدخول غير صحيحة')
+        throw new Error('بيانات الدخول غير صحيحة')
       }
 
       // 2. Create a "Virtual Session"
-      // Since we are using custom auth to support "Visible Passwords", we simulate a session.
-      // In a real production app, this is insecure.
       const sessionData = {
         user: {
-            id: employee.id,
-            email: `${employee.company_id}@mdoc.hrms`,
-            user_metadata: {
-                role: employee.role,
-                full_name: employee.full_name
-            }
+          id: employee.id,
+          email: `${employee.company_id}@mdoc.hrms`,
+          user_metadata: {
+            role: employee.role,
+            full_name: employee.full_name
+          }
         },
         access_token: 'marketing-token', // Dummy
       }
 
       // Save to LocalStorage (Simple Auth)
       localStorage.setItem('mdoc_session', JSON.stringify(sessionData))
-      
+
       // Update AuthContext listeners
       window.dispatchEvent(new Event('storage'))
       window.dispatchEvent(new Event('mdoc-auth-update'))
@@ -62,11 +73,42 @@ export default function Login() {
       console.error(err)
     } finally {
       setLoading(false)
+      setShowScanner(false) // Close scanner if open
+    }
+  }
+
+  const handleScan = (rawValue) => {
+    try {
+      if (!rawValue) return;
+      // rawValue should be a JSON string: {"companyId": "...", "password": "..."}
+      // Some scanners wrap the result in an object array, handled in our component.
+
+      // Simple validation if it's JSON
+      const data = JSON.parse(rawValue);
+
+      if (data && data.companyId && data.password) {
+        // Successfully parsed credentials
+        handleLogin(null, data);
+      } else {
+        setError("رمز QR غير صالح. تأكد من استخدام بطاقة الموظف الصحيحة.");
+        setShowScanner(false);
+      }
+    } catch (e) {
+      console.error("Scan Error:", e);
+      setError("خطأ في قراءة الرمز. حاول مرة أخرى.");
+      setShowScanner(false);
     }
   }
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4" dir="rtl">
+      {showScanner && (
+        <QRCodeScannerComponent
+          onScan={handleScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div className="text-center mb-8">
           <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -82,7 +124,7 @@ export default function Login() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={(e) => handleLogin(e)} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">رقم الشركة</label>
             <div className="relative">
@@ -92,7 +134,7 @@ export default function Login() {
                 onChange={(e) => setCompanyId(e.target.value)}
                 className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 placeholder="أدخل رقم الشركة"
-                required
+                required={!showScanner} // Only required if not scanning
               />
               <Building2 className="absolute left-3 top-3.5 text-slate-400" size={18} />
             </div>
@@ -107,19 +149,30 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
                 placeholder="••••••••"
-                required
+                required={!showScanner}
               />
               <Lock className="absolute left-3 top-3.5 text-slate-400" size={18} />
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
-          </button>
+          <div className="flex flex-col gap-3">
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-primary hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowScanner(true)}
+              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            >
+              <ScanLine size={20} />
+              تسجيل الدخول بالباركود
+            </button>
+          </div>
         </form>
       </div>
     </div>
