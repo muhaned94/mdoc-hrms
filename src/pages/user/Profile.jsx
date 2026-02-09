@@ -155,24 +155,24 @@ export default function Profile() {
 
             {/* Announcements Bar */}
             {announcements.length > 0 && (
-                <div className="bg-red-50 border border-red-100 rounded-2xl p-4 overflow-hidden relative">
+                <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/20 rounded-2xl p-4 overflow-hidden relative">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="p-2 bg-red-500 text-white rounded-lg animate-pulse">
                             <Megaphone size={16} />
                         </div>
-                        <h3 className="font-bold text-red-700">إعلانات وتعميمات هامة</h3>
+                        <h3 className="font-bold text-red-700 dark:text-red-400">إعلانات وتعميمات هامة</h3>
                     </div>
                     <div className="space-y-3">
                         {announcements.map(ann => (
-                            <div key={ann.id} className="bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-primary/10 hover:border-primary/30 transition-all">
+                            <div key={ann.id} className="bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm p-3 rounded-xl border border-primary/10 dark:border-slate-700 hover:border-primary/30 transition-all">
                                 <div className="flex justify-between items-start gap-4">
-                                    <h4 className="font-bold text-slate-800 text-sm">{ann.title}</h4>
-                                    <span className="text-[10px] text-slate-400 flex items-center gap-1 shrink-0">
+                                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{ann.title}</h4>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0">
                                         <Clock size={10} />
                                         {formatDate(ann.created_at)}
                                     </span>
                                 </div>
-                                <p className="text-xs text-slate-600 mt-1 line-clamp-2">{ann.content}</p>
+                                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2">{ann.content}</p>
                             </div>
                         ))}
                     </div>
@@ -181,27 +181,27 @@ export default function Profile() {
 
             {/* Main Stats Grid (Enhanced Colors) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-xl shadow-sm border border-blue-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
-                    <p className="text-blue-400 text-xs mb-1 font-bold">مدة الخدمة</p>
-                    <p className="text-xl font-black text-blue-700">
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900 p-4 rounded-xl shadow-sm border border-blue-100 dark:border-slate-700 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-blue-400 dark:text-blue-400 text-xs mb-1 font-bold">مدة الخدمة</p>
+                    <p className="text-xl font-black text-blue-700 dark:text-blue-500">
                         {serviceDuration.display}
                     </p>
                     <p className="text-[10px] text-blue-400/70 mt-1">تشمل كتب الشكر</p>
                 </div>
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 p-4 rounded-xl shadow-sm border border-amber-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
-                    <p className="text-amber-400 text-xs mb-1 font-bold">رصيد الإجازات</p>
-                    <p className="text-2xl font-black text-amber-600">{employee.leave_balance}</p>
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 p-4 rounded-xl shadow-sm border border-amber-100 dark:border-slate-700 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-amber-400 dark:text-amber-400 text-xs mb-1 font-bold">رصيد الإجازات</p>
+                    <p className="text-2xl font-black text-amber-600 dark:text-amber-500">{employee.leave_balance}</p>
                     <p className="text-[10px] text-amber-400/70 mt-1">يوم</p>
                 </div>
-                <div className="bg-gradient-to-br from-slate-50 to-gray-100 p-4 rounded-xl shadow-sm border border-slate-200 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
-                    <p className="text-slate-400 text-xs mb-1 font-bold">نظام الدوام</p>
-                    <p className="text-lg font-black text-slate-700">
+                <div className="bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-800 dark:to-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-slate-400 dark:text-slate-400 text-xs mb-1 font-bold">نظام الدوام</p>
+                    <p className="text-lg font-black text-slate-700 dark:text-slate-300">
                         {employee.work_schedule === 'morning' ? 'صباحي' : 'مناوب'}
                     </p>
                 </div>
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 p-4 rounded-xl shadow-sm border border-emerald-100 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
-                    <p className="text-emerald-400 text-xs mb-1 font-bold">الدرجة الوظيفية</p>
-                    <p className="text-lg font-black text-emerald-600">
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-slate-800 dark:to-slate-900 p-4 rounded-xl shadow-sm border border-emerald-100 dark:border-slate-700 text-center flex flex-col items-center justify-center h-full hover:shadow-md transition-all">
+                    <p className="text-emerald-400 dark:text-emerald-400 text-xs mb-1 font-bold">الدرجة الوظيفية</p>
+                    <p className="text-lg font-black text-emerald-600 dark:text-emerald-500">
                         {gradeInfo.display}
                     </p>
                     <p className="text-[10px] text-emerald-400/70 mt-1">الدرجة الحالية</p>

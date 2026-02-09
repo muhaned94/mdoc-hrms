@@ -1,17 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Lock, Building2, ScanLine } from 'lucide-react'
-import { Scanner } from '@yudiel/react-qr-scanner'; // We might need this type if using TS, but here just import for consistency if needed. Actually we made a custom component.
-import QRCodeScannerComponent from '../components/QRCodeScanner'; // Renamed to avoid confusion with library Scanner
+import { Scanner } from '@yudiel/react-qr-scanner';
+import QRCodeScannerComponent from '../components/QRCodeScanner';
+import { useSettings } from '../context/SettingsContext'
 
 export default function Login() {
+  const { settings, loading: settingsLoading } = useSettings()
   const [companyId, setCompanyId] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showScanner, setShowScanner] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!settingsLoading && settings.login_method === 'qr') {
+      setShowScanner(true)
+    }
+  }, [settings.login_method, settingsLoading])
 
   const handleLogin = async (e, scannedCredentials = null) => {
     if (e) e.preventDefault()
@@ -125,53 +133,65 @@ export default function Login() {
         )}
 
         <form onSubmit={(e) => handleLogin(e)} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">رقم الشركة</label>
-            <div className="relative">
-              <input
-                type="text"
-                value={companyId}
-                onChange={(e) => setCompanyId(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                placeholder="أدخل رقم الشركة"
-                required={!showScanner} // Only required if not scanning
-              />
-              <Building2 className="absolute left-3 top-3.5 text-slate-400" size={18} />
-            </div>
-          </div>
+          {(settings.login_method === 'password' || settings.login_method === 'both') && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">رقم الشركة</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={companyId}
+                    onChange={(e) => setCompanyId(e.target.value)}
+                    className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    placeholder="أدخل رقم الشركة"
+                    required={!showScanner}
+                  />
+                  <Building2 className="absolute left-3 top-3.5 text-slate-400" size={18} />
+                </div>
+              </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">كلمة المرور</label>
-            <div className="relative">
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
-                placeholder="••••••••"
-                required={!showScanner}
-              />
-              <Lock className="absolute left-3 top-3.5 text-slate-400" size={18} />
-            </div>
-          </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">كلمة المرور</label>
+                <div className="relative">
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    placeholder="••••••••"
+                    required={!showScanner}
+                  />
+                  <Lock className="absolute left-3 top-3.5 text-slate-400" size={18} />
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="flex flex-col gap-3">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
-            </button>
+            {(settings.login_method === 'password' || settings.login_method === 'both') && (
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
+              </button>
+            )}
 
-            <button
-              type="button"
-              onClick={() => setShowScanner(true)}
-              className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-            >
-              <ScanLine size={20} />
-              تسجيل الدخول بالباركود
-            </button>
+            {(settings.login_method === 'qr' || settings.login_method === 'both') && (
+              <button
+                type="button"
+                onClick={() => setShowScanner(true)}
+                className={`w-full font-bold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2
+                  ${settings.login_method === 'qr'
+                    ? 'bg-primary hover:bg-sky-600 text-white shadow-lg shadow-sky-500/30'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                  }`}
+              >
+                <ScanLine size={20} />
+                {settings.login_method === 'qr' ? 'اضغط للمسح الضوئي' : 'تسجيل الدخول بالباركود'}
+              </button>
+            )}
           </div>
         </form>
       </div>

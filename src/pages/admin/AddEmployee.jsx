@@ -271,30 +271,30 @@ export default function AddEmployee() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">إضافة موظف جديد</h1>
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">إضافة موظف جديد</h1>
         <button
           onClick={() => navigate('/admin/employees')}
-          className="text-slate-500 hover:text-slate-700"
+          className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
         >
           <X size={24} />
         </button>
       </div>
 
       {/* Excel Import */}
-      <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-xl flex items-center justify-between flex-wrap gap-4">
+      <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-900/30 p-6 rounded-xl flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="bg-indigo-100 p-3 rounded-lg text-indigo-600">
+          <div className="bg-indigo-100 dark:bg-indigo-500/20 p-3 rounded-lg text-indigo-600 dark:text-indigo-400">
             <FileSpreadsheet size={24} />
           </div>
           <div>
-            <h3 className="font-bold text-indigo-900">استيراد من Excel</h3>
-            <p className="text-sm text-indigo-700">قم برفع ملف يحتوي على بيانات الموظفين دفعة واحدة</p>
+            <h3 className="font-bold text-indigo-900 dark:text-indigo-200">استيراد من Excel</h3>
+            <p className="text-sm text-indigo-700 dark:text-indigo-300">قم برفع ملف يحتوي على بيانات الموظفين دفعة واحدة</p>
           </div>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleDownloadTemplate}
-            className="bg-white border border-indigo-200 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-50 transition-colors text-sm font-medium"
+            className="bg-white dark:bg-slate-800 border border-indigo-200 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-lg hover:bg-indigo-50 dark:hover:bg-slate-700 transition-colors text-sm font-medium"
           >
             تحميل النموذج
           </button>
@@ -307,11 +307,11 @@ export default function AddEmployee() {
       </div>
 
       {/* Manual Form */}
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-        <h3 className="font-bold text-lg mb-6 pb-2 border-b">البيانات الشخصية والوظيفية</h3>
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <h3 className="font-bold text-lg mb-6 pb-2 border-b dark:border-slate-700 text-slate-800 dark:text-white">البيانات الشخصية والوظيفية</h3>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6 flex items-center gap-2">
+          <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg mb-6 flex items-center gap-2">
             <AlertCircle size={20} />
             <span>{error}</span>
           </div>
@@ -327,54 +327,54 @@ export default function AddEmployee() {
         <form onSubmit={handleManualSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* Section: Basic Info */}
-          <div className="md:col-span-2 bg-slate-50 p-3 rounded mb-2 border border-slate-200">
-            <span className="text-xs font-bold text-slate-500 uppercase">المعلومات الأساسية</span>
+          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mb-2 border border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">المعلومات الأساسية</span>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">رقم الشركة</label>
-            <input required name="company_id" value={formData.company_id} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">رقم الشركة</label>
+            <input required name="company_id" value={formData.company_id} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الاسم الرباعي</label>
-            <input required name="full_name" value={formData.full_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الاسم الرباعي</label>
+            <input required name="full_name" value={formData.full_name} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">تاريخ الميلاد</label>
-            <input type="date" name="birth_date" value={formData.birth_date} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">تاريخ الميلاد</label>
+            <input type="date" name="birth_date" value={formData.birth_date} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الجنس</label>
-            <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الجنس</label>
+            <select name="gender" value={formData.gender} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
               <option value="male">ذكر</option>
               <option value="female">أنثى</option>
             </select>
           </div>
 
           {/* Section: Contact & Personal */}
-          <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
-            <span className="text-xs font-bold text-slate-500 uppercase">معلومات الاتصال والحالة الاجتماعية</span>
+          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mt-4 border border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">معلومات الاتصال والحالة الاجتماعية</span>
           </div>
 
 
 
           <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-medium text-slate-700">العنوان الكامل (نصي)</label>
-            <input name="address" value={formData.address} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="مثال: بغداد - الكرادة - قرب..." />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">العنوان الكامل (نصي)</label>
+            <input name="address" value={formData.address} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="مثال: بغداد - الكرادة - قرب..." />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">رقم الهاتف</label>
-            <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className="w-full p-2 border rounded-lg text-left" placeholder="07xxxxxxxxx" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">رقم الهاتف</label>
+            <input type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} className="w-full p-2 border rounded-lg text-left dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="07xxxxxxxxx" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">البريد الإلكتروني</label>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded-lg text-left" placeholder="example@domain.com" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">البريد الإلكتروني</label>
+            <input type="email" name="email" value={formData.email} onChange={handleChange} className="w-full p-2 border rounded-lg text-left dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="example@domain.com" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الحالة الاجتماعية</label>
-            <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الحالة الاجتماعية</label>
+            <select name="marital_status" value={formData.marital_status} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
               <option value="single">أعزب/باكر</option>
               <option value="married">متزوج</option>
               <option value="divorced">مطلق</option>
@@ -384,113 +384,113 @@ export default function AddEmployee() {
 
           {formData.marital_status === 'married' && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">اسم الزوج/الزوجة</label>
-              <input name="spouse_name" value={formData.spouse_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">اسم الزوج/الزوجة</label>
+              <input name="spouse_name" value={formData.spouse_name} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
             </div>
           )}
 
           {/* Section: Education */}
-          <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
-            <span className="text-xs font-bold text-slate-500 uppercase">التحصيل الدراسي والشهادة</span>
+          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mt-4 border border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">التحصيل الدراسي والشهادة</span>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الشهادة / التحصيل</label>
-            <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="مثال: بكالوريوس" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الشهادة / التحصيل</label>
+            <input name="certificate" value={formData.certificate} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="مثال: بكالوريوس" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الاختصاص</label>
-            <input name="specialization" value={formData.specialization} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="مثال: هندسة حاسبات" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الاختصاص</label>
+            <input name="specialization" value={formData.specialization} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="مثال: هندسة حاسبات" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الجامعة</label>
-            <input name="university_name" value={formData.university_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الجامعة</label>
+            <input name="university_name" value={formData.university_name} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الكلية</label>
-            <input name="college_name" value={formData.college_name} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الكلية</label>
+            <input name="college_name" value={formData.college_name} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">سنة التخرج</label>
-            <input type="number" name="graduation_year" value={formData.graduation_year} onChange={handleChange} className="w-full p-2 border rounded-lg" placeholder="YYYY" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">سنة التخرج</label>
+            <input type="number" name="graduation_year" value={formData.graduation_year} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" placeholder="YYYY" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">صورة وثيقة التخرج / الأمر الجامعي</label>
-            <div className="relative border border-slate-300 rounded-lg p-2 bg-slate-50">
-              <input type="file" onChange={handleCertUpload} className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" accept="image/*,.pdf" disabled={uploadingCert} />
-              {uploadingCert && <span className="absolute right-2 top-3 text-xs text-indigo-600 font-bold">جاري الرفع...</span>}
-              {formData.graduation_certificate_url && <span className="absolute left-2 top-3 text-xs text-green-600 font-bold">تم الرفع ✓</span>}
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">صورة وثيقة التخرج / الأمر الجامعي</label>
+            <div className="relative border border-slate-300 dark:border-slate-600 rounded-lg p-2 bg-slate-50 dark:bg-slate-700">
+              <input type="file" onChange={handleCertUpload} className="w-full text-sm text-slate-500 dark:text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-500/20 file:text-indigo-700 dark:file:text-indigo-300 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-500/30" accept="image/*,.pdf" disabled={uploadingCert} />
+              {uploadingCert && <span className="absolute right-2 top-3 text-xs text-indigo-600 dark:text-indigo-400 font-bold">جاري الرفع...</span>}
+              {formData.graduation_certificate_url && <span className="absolute left-2 top-3 text-xs text-green-600 dark:text-green-400 font-bold">تم الرفع ✓</span>}
             </div>
           </div>
 
           {/* Section: Job Info */}
-          <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
-            <span className="text-xs font-bold text-slate-500 uppercase">المعلومات الوظيفية</span>
+          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mt-4 border border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">المعلومات الوظيفية</span>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">تاريخ التعيين</label>
-            <input type="date" name="hire_date" value={formData.hire_date} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">تاريخ التعيين</label>
+            <input type="date" name="hire_date" value={formData.hire_date} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">العنوان الوظيفي</label>
-            <input name="job_title" value={formData.job_title} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">العنوان الوظيفي</label>
+            <input name="job_title" value={formData.job_title} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">المنصب</label>
-            <input name="position" value={formData.position} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">المنصب</label>
+            <input name="position" value={formData.position} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">مكان العمل</label>
-            <input name="work_location" value={formData.work_location} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">مكان العمل</label>
+            <input name="work_location" value={formData.work_location} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">نظام الدوام</label>
-            <select name="work_schedule" value={formData.work_schedule} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">نظام الدوام</label>
+            <select name="work_schedule" value={formData.work_schedule} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
               <option value="morning">صباحي</option>
               <option value="shift">مناوب</option>
             </select>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">رصيد الإجازات</label>
-            <input type="number" name="leave_balance" value={formData.leave_balance} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">رصيد الإجازات</label>
+            <input type="number" name="leave_balance" value={formData.leave_balance} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
 
           {/* Section: Salary Info */}
-          <div className="md:col-span-2 bg-slate-50 p-3 rounded mt-4 border border-slate-200">
-            <span className="text-xs font-bold text-slate-500 uppercase">المخصصات والراتب</span>
+          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mt-4 border border-slate-200 dark:border-slate-700">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">المخصصات والراتب</span>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الراتب الاسمي</label>
-            <input type="number" name="nominal_salary" value={formData.nominal_salary} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الراتب الاسمي</label>
+            <input type="number" name="nominal_salary" value={formData.nominal_salary} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الراتب الكلي</label>
-            <input type="number" name="total_salary" value={formData.total_salary} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الراتب الكلي</label>
+            <input type="number" name="total_salary" value={formData.total_salary} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">الحافز الشهري</label>
-            <input type="number" name="incentive" value={formData.incentive} onChange={handleChange} className="w-full p-2 border rounded-lg" />
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الحافز الشهري</label>
+            <input type="number" name="incentive" value={formData.incentive} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">صلاحية الحساب</label>
-            <select name="role" value={formData.role} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white">
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">صلاحية الحساب</label>
+            <select name="role" value={formData.role} onChange={handleChange} className="w-full p-2 border rounded-lg bg-white dark:bg-slate-700 dark:border-slate-600 dark:text-white">
               <option value="user">مستخدم عادي</option>
               <option value="admin">مسؤول نظام</option>
             </select>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700">كلمة المرور</label>
-            <input name="visible_password" value={formData.visible_password} onChange={handleChange} className="w-full p-2 border rounded-lg bg-slate-50" />
-            <p className="text-xs text-slate-400 mt-1">كلمة مرور افتراضية، يمكن للموظف تغييرها لاحقاً</p>
+            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">كلمة المرور</label>
+            <input name="visible_password" value={formData.visible_password} onChange={handleChange} className="w-full p-2 border rounded-lg bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">كلمة مرور افتراضية، يمكن للموظف تغييرها لاحقاً</p>
           </div>
 
-          <div className="md:col-span-2 pt-6 border-t mt-4 flex gap-3">
-            <button type="button" onClick={() => navigate('/admin/employees')} className="flex-1 p-3 border border-slate-300 rounded-lg text-slate-600 hover:bg-slate-50 font-bold">
+          <div className="md:col-span-2 pt-6 border-t dark:border-slate-700 mt-4 flex gap-3">
+            <button type="button" onClick={() => navigate('/admin/employees')} className="flex-1 p-3 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 font-bold">
               إلغاء
             </button>
             <button type="submit" disabled={loading} className="flex-1 bg-indigo-600 text-white p-3 rounded-lg hover:bg-indigo-700 font-bold flex items-center justify-center gap-2">

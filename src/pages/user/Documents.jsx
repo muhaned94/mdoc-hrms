@@ -129,12 +129,12 @@ export default function Documents() {
   }
 
   if (loading || authLoading) {
-    return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>
+    return <div className="p-8 text-center text-slate-500 dark:text-slate-400">جاري التحميل...</div>
   }
 
   if (!employee) {
     return (
-      <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg max-w-2xl mx-auto mt-10">
+      <div className="p-8 text-center bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-lg max-w-2xl mx-auto mt-10 border border-red-100 dark:border-red-900/20">
         عذراً، لم يتم العثور على بيانات الموظف المرتبطة بهذا الحساب.
       </div>
     )
@@ -172,29 +172,29 @@ export default function Documents() {
           const isImage = employee[doc.key]?.match(/\.(jpg|jpeg|png|webp)$/i)
 
           return (
-            <div key={doc.id} className="group bg-white rounded-2xl border border-slate-200 hover:border-primary/30 transition-all duration-300 overflow-hidden flex flex-col">
+            <div key={doc.id} className="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300 overflow-hidden flex flex-col">
               <div className="p-6 flex-1">
                 <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isUploaded ? 'bg-green-50 text-green-600' : 'bg-slate-50 text-slate-400 group-hover:bg-primary/5 group-hover:text-primary'}`}>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isUploaded ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-900/30 text-slate-400 dark:text-slate-500 group-hover:bg-primary/5 dark:group-hover:bg-primary/10 group-hover:text-primary dark:group-hover:text-primary'}`}>
                     <FileText size={24} />
                   </div>
                   {isUploaded && (
-                    <div className="flex items-center gap-1 text-green-600 bg-green-50 px-2 py-1 rounded-full text-xs font-bold">
+                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full text-xs font-bold">
                       <CheckCircle size={14} />
                       تم الرفع
                     </div>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-800 mb-1">{doc.name}</h3>
-                <p className="text-sm text-slate-400 mb-6">{doc.description}</p>
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">{doc.name}</h3>
+                <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">{doc.description}</p>
 
                 {isUploaded ? (
-                  <div className="relative rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-video mb-4 flex items-center justify-center group/docs">
+                  <div className="relative rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 aspect-video mb-4 flex items-center justify-center group/docs">
                     {isImage ? (
                       <img src={employee[doc.key]} alt={doc.name} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="flex flex-col items-center gap-2 text-slate-400">
+                      <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500">
                         <FileText size={40} />
                         <span className="text-xs font-medium">ملف PDF</span>
                       </div>
@@ -214,15 +214,15 @@ export default function Documents() {
                       disabled={uploading[doc.id]}
                       accept=".jpg,.jpeg,.png,.pdf"
                     />
-                    <div className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group/upload">
+                    <div className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 dark:hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/5 transition-all group/upload">
                       {uploading[doc.id] ? (
                         <Loader2 className="animate-spin text-primary" size={32} />
                       ) : (
                         <>
-                          <div className="p-3 bg-slate-50 rounded-full text-slate-400 group-hover/upload:bg-white group-hover/upload:text-primary transition-colors">
+                          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-full text-slate-400 dark:text-slate-600 group-hover/upload:bg-white dark:group-hover/upload:bg-slate-800 group-hover/upload:text-primary transition-colors">
                             <Upload size={24} />
                           </div>
-                          <span className="text-sm font-bold text-slate-500 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
+                          <span className="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
                         </>
                       )}
                     </div>
@@ -230,9 +230,9 @@ export default function Documents() {
                 )}
               </div>
 
-              <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs font-medium text-slate-500">
+              <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                 <span>الحالة: {isUploaded ? 'مكتمل' : 'مطلوب'}</span>
-                {!isUploaded && <span className="text-amber-500 animate-pulse">بانتظار الإجراء</span>}
+                {!isUploaded && <span className="text-amber-500 dark:text-amber-400 animate-pulse">بانتظار الإجراء</span>}
               </div>
             </div>
           )

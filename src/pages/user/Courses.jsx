@@ -65,7 +65,7 @@ export default function Courses() {
 
   const courseStatus = getCourseStatus()
 
-  if (loading) return <div className="p-8 text-center">جاري التحميل...</div>
+  if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">جاري التحميل...</div>
 
   return (
     <div className="space-y-6">
@@ -100,29 +100,29 @@ export default function Courses() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {courses.length === 0 ? (
-          <div className="col-span-2 bg-white p-12 rounded-2xl text-center shadow-sm">
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+          <div className="col-span-2 bg-white dark:bg-slate-800 p-12 rounded-2xl text-center shadow-sm border border-slate-100 dark:border-slate-700">
+            <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 dark:text-slate-600">
               <GraduationCap size={32} />
             </div>
-            <h3 className="text-lg font-bold text-slate-700">لا توجد دورات مسجلة</h3>
-            <p className="text-slate-400">سجل المشاركات في الدورات التدريبية فارغ حالياً.</p>
+            <h3 className="text-lg font-bold text-slate-700 dark:text-white">لا توجد دورات مسجلة</h3>
+            <p className="text-slate-400 dark:text-slate-500">سجل المشاركات في الدورات التدريبية فارغ حالياً.</p>
           </div>
         ) : (
           courses.map(course => (
-            <div key={course.id} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 relative overflow-hidden">
+            <div key={course.id} className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-1 h-full bg-purple-500"></div>
               <div className="flex items-start gap-4">
-                <div className="bg-purple-50 text-purple-600 p-3 rounded-lg">
+                <div className="bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 p-3 rounded-lg">
                   <GraduationCap size={24} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg text-slate-800 mb-2">{course.course_name}</h3>
+                  <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2">{course.course_name}</h3>
                   <div className="space-y-1">
-                    <p className="text-sm text-slate-500 flex items-center gap-2">
+                    <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
                       <Calendar size={14} />
                       <span>التاريخ: {formatDate(course.course_date)}</span>
                     </p>
-                    <p className="text-sm text-green-600 flex items-center gap-2">
+                    <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
                       <CheckCircle size={14} />
                       <span>مكتملة</span>
                     </p>

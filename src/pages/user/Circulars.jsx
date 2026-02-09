@@ -29,7 +29,7 @@ export default function Circulars() {
         }
     }
 
-    if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>
+    if (loading) return <div className="p-8 text-center text-slate-500 dark:text-slate-400">جاري التحميل...</div>
 
     return (
         <div className="space-y-8">
@@ -57,27 +57,27 @@ export default function Circulars() {
 
             <div className="space-y-4">
                 {circulars.length === 0 ? (
-                    <div className="p-12 bg-white rounded-2xl shadow-sm border border-slate-100 text-center">
-                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
+                    <div className="p-12 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 text-center">
+                        <div className="w-20 h-20 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300 dark:text-slate-600">
                             <FileText size={40} />
                         </div>
-                        <h3 className="font-bold text-slate-700 text-lg">لا توجد تعاميم</h3>
-                        <p className="text-slate-400">لم يتم نشر أي كتب رسمية حتى الآن</p>
+                        <h3 className="font-bold text-slate-700 dark:text-white text-lg">لا توجد تعاميم</h3>
+                        <p className="text-slate-400 dark:text-slate-500">لم يتم نشر أي كتب رسمية حتى الآن</p>
                     </div>
                 ) : (
                     <div className="grid gap-4">
                         {circulars.map(item => (
-                            <div key={item.id} className="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all group">
+                            <div key={item.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 hover:shadow-md transition-all group">
                                 <div className="flex justify-between items-start">
                                     <div className="flex gap-4">
-                                        <div className="p-3 bg-sky-50 text-sky-600 rounded-xl h-fit">
+                                        <div className="p-3 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-xl h-fit">
                                             <FileText size={24} />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-lg text-slate-800 mb-1 group-hover:text-primary transition-colors">
+                                            <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-1 group-hover:text-primary transition-colors">
                                                 {item.title}
                                             </h3>
-                                            <div className="flex items-center gap-3 text-sm text-slate-500">
+                                            <div className="flex items-center gap-3 text-sm text-slate-500 dark:text-slate-400">
                                                 <span className="flex items-center gap-1">
                                                     <Calendar size={14} />
                                                     {formatDate(item.created_at)}
@@ -90,7 +90,7 @@ export default function Circulars() {
                                         href={item.file_url}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="bg-slate-50 text-slate-600 hover:bg-primary hover:text-white p-2.5 rounded-xl transition-all flex items-center gap-2"
+                                        className="bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-primary hover:text-white dark:hover:bg-primary p-2.5 rounded-xl transition-all flex items-center gap-2"
                                         title="تحميل / مشاهدة"
                                     >
                                         <span className="text-xs font-bold hidden sm:block">فتح الملف</span>

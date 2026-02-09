@@ -128,8 +128,8 @@ export default function UserQRCode({ employee }) {
     };
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 7h.01" /><path d="M17 7h.01" /><path d="M7 17h.01" /><path d="M17 17h.01" /></svg>
                 بطاقة الدخول الذكية (QR)
             </h3>
@@ -146,8 +146,8 @@ export default function UserQRCode({ employee }) {
 
                 <div className="flex-1 space-y-4 text-center md:text-right">
                     <div>
-                        <p className="text-sm text-slate-500 mb-1">تعليمات:</p>
-                        <p className="text-sm text-slate-700">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تعليمات:</p>
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
                             يمكن للموظف استخدام هذا الرمز لتسجيل الدخول السريع عبر الكاميرا دون الحاجة لكتابة كلمة المرور.
                             يرجى طباعة البطاقة وتسليمها للموظف.
                         </p>
@@ -157,14 +157,14 @@ export default function UserQRCode({ employee }) {
                         <button
                             onClick={handlePrint}
                             type="button"
-                            className="flex items-center gap-2 bg-slate-800 text-white px-4 py-2 rounded-lg hover:bg-slate-900 transition-colors"
+                            className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors"
                         >
                             <Printer size={18} />
                             طباعة البطاقة
                         </button>
                     </div>
 
-                    <div className="bg-amber-50 text-amber-800 text-xs p-3 rounded border border-amber-100 mt-2">
+                    <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-xs p-3 rounded border border-amber-100 dark:border-amber-900/30 mt-2">
                         <span className="font-bold">تنبيه أمني:</span> يحتوي هذا الرمز على كلمة المرور. يرجى الحفاظ عليه في مكان آمن.
                     </div>
                 </div>

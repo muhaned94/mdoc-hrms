@@ -127,19 +127,19 @@ export default function ReportIssue() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Form Section */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit">
-                    <h3 className="font-bold text-lg mb-6 text-slate-700 border-b pb-2">تقديم بلاغ جديد</h3>
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 h-fit">
+                    <h3 className="font-bold text-lg mb-6 text-slate-700 dark:text-white border-b dark:border-slate-700 pb-2">تقديم بلاغ جديد</h3>
 
-                    {error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm mb-4 flex items-center gap-2"><AlertCircle size={16} />{error}</div>}
-                    {success && <div className="p-3 bg-green-50 text-green-600 rounded-lg text-sm mb-4 flex items-center gap-2"><CheckCircle size={16} />{success}</div>}
+                    {error && <div className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm mb-4 flex items-center gap-2 border border-red-100 dark:border-red-900/30"><AlertCircle size={16} />{error}</div>}
+                    {success && <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-sm mb-4 flex items-center gap-2 border border-green-100 dark:border-green-900/30"><CheckCircle size={16} />{success}</div>}
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">نوع البلاغ</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">نوع البلاغ</label>
                             <select
                                 value={formData.type}
                                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                className="w-full p-2 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                className="w-full p-2 border dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             >
                                 <option value="complaint">شكوى إدارية</option>
                                 <option value="bug_report">مشكلة فنية / خطأ في النظام</option>
@@ -148,11 +148,11 @@ export default function ReportIssue() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">الأهمية</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">الأهمية</label>
                             <select
                                 value={formData.priority}
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                className="w-full p-2 border rounded-lg bg-slate-50 focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                className="w-full p-2 border dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             >
                                 <option value="normal">عادية</option>
                                 <option value="high">هام</option>
@@ -161,24 +161,24 @@ export default function ReportIssue() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">العنوان / الموضوع</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">العنوان / الموضوع</label>
                             <input
                                 type="text"
                                 value={formData.title}
                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 placeholder="اختصر المشكلة في كلمات..."
-                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                className="w-full p-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">التفاصيل</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-400 mb-1">التفاصيل</label>
                             <textarea
                                 rows={5}
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="اشرح المشكلة بالتفصيل..."
-                                className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                                className="w-full p-2 border dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
                             />
                         </div>
 
@@ -194,38 +194,38 @@ export default function ReportIssue() {
 
                 {/* History Section */}
                 <div className="space-y-4">
-                    <h3 className="font-bold text-lg text-slate-700 mb-4 px-2">سجل البلاغات السابق</h3>
+                    <h3 className="font-bold text-lg text-slate-700 dark:text-white mb-4 px-2">سجل البلاغات السابق</h3>
 
                     {loading ? (
-                        <div className="text-center py-10 text-slate-400">جاري التحميل...</div>
+                        <div className="text-center py-10 text-slate-400 dark:text-slate-500">جاري التحميل...</div>
                     ) : reports.length === 0 ? (
-                        <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
-                            <p className="text-slate-400 text-sm">لا توجد بلاغات سابقة</p>
+                        <div className="text-center py-10 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
+                            <p className="text-slate-400 dark:text-slate-500 text-sm">لا توجد بلاغات سابقة</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
                             {reports.map(report => (
-                                <div key={report.id} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+                                <div key={report.id} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm hover:shadow-md transition-all">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex items-center gap-2">
                                             <span className={`w-2 h-2 rounded-full ${report.type === 'bug_report' ? 'bg-red-500' : 'bg-blue-500'}`}></span>
-                                            <h4 className="font-bold text-slate-800 text-sm">{report.title}</h4>
+                                            <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h4>
                                         </div>
-                                        <span className="text-[10px] text-slate-400">{formatDate(report.created_at)}</span>
+                                        <span className="text-[10px] text-slate-400 dark:text-slate-500">{formatDate(report.created_at)}</span>
                                     </div>
-                                    <p className="text-xs text-slate-600 line-clamp-2 mb-3 bg-slate-50 p-2 rounded">{report.description}</p>
+                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2 mb-3 bg-slate-50 dark:bg-slate-900 p-2 rounded border dark:border-slate-700">{report.description}</p>
 
-                                    <div className="flex items-center justify-between border-t pt-2 mt-2">
+                                    <div className="flex items-center justify-between border-t dark:border-slate-700 pt-2 mt-2">
                                         {getStatusBadge(report.status)}
                                         {report.admin_response && (
-                                            <span className="text-xs text-primary font-bold">تم الرد من الإدارة</span>
+                                            <span className="text-xs text-primary dark:text-sky-400 font-bold">تم الرد من الإدارة</span>
                                         )}
                                     </div>
 
                                     {report.admin_response && (
-                                        <div className="mt-3 bg-indigo-50 p-3 rounded-lg text-xs border border-indigo-100">
-                                            <span className="block font-bold text-indigo-700 mb-1">رد الإدارة:</span>
-                                            <p className="text-indigo-900">{report.admin_response}</p>
+                                        <div className="mt-3 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg text-xs border border-indigo-100 dark:border-indigo-900/30">
+                                            <span className="block font-bold text-indigo-700 dark:text-indigo-400 mb-1">رد الإدارة:</span>
+                                            <p className="text-indigo-900 dark:text-indigo-200">{report.admin_response}</p>
                                         </div>
                                     )}
                                 </div>

@@ -5,6 +5,7 @@ import AdminLayout from './layouts/AdminLayout'
 import UserLayout from './layouts/UserLayout'
 import GoogleAnalytics from './components/analytics/GoogleAnalytics'
 import ActivityTracker from './components/analytics/ActivityTracker'
+import { SettingsProvider } from './context/SettingsContext'
 
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
 const EmployeeList = lazy(() => import('./pages/admin/EmployeeList'))
@@ -17,6 +18,7 @@ const AdminReports = lazy(() => import('./pages/admin/AdminReports'))
 const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
+const AdminSettings = lazy(() => import('./pages/admin/Settings'))
 
 const UserProfile = lazy(() => import('./pages/user/Profile'))
 const Settings = lazy(() => import('./pages/user/Settings'))
@@ -36,50 +38,53 @@ const Loading = () => <div className="p-10 text-center text-slate-500">جاري 
 
 function App() {
   return (
-    <Suspense fallback={<Loading />}>
-      <GoogleAnalytics />
-      <ActivityTracker />
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <SettingsProvider>
+      <Suspense fallback={<Loading />}>
+        <GoogleAnalytics />
+        <ActivityTracker />
+        <Routes>
+          <Route path="/login" element={<Login />} />
 
-        {/* Protected Admin Routes */}
-        <Route element={<ProtectedRoute adminOnly={true} />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="employees" element={<EmployeeList />} />
-            <Route path="employees/:id" element={<EmployeeDetails />} />
-            <Route path="add-employee" element={<AddEmployee />} />
-            <Route path="announcements" element={<Announcements />} />
-            <Route path="circulars" element={<AdminCirculars />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="analytics" element={<SystemAnalytics />} />
-            <Route path="complaints" element={<AdminReports />} />
-            <Route path="messages" element={<SentMessages />} />
-            <Route path="employees-grid" element={<EmployeeGrid />} />
+          {/* Protected Admin Routes */}
+          <Route element={<ProtectedRoute adminOnly={true} />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="employees" element={<EmployeeList />} />
+              <Route path="employees/:id" element={<EmployeeDetails />} />
+              <Route path="add-employee" element={<AddEmployee />} />
+              <Route path="announcements" element={<Announcements />} />
+              <Route path="circulars" element={<AdminCirculars />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="analytics" element={<SystemAnalytics />} />
+              <Route path="complaints" element={<AdminReports />} />
+              <Route path="messages" element={<SentMessages />} />
+              <Route path="employees-grid" element={<EmployeeGrid />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Protected User Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/user" element={<UserLayout />}>
-            <Route index element={<Navigate to="/user/profile" replace />} />
-            <Route path="profile" element={<UserProfile />} />
-            <Route path="personal-info" element={<PersonalInfo />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="salary" element={<Salary />} />
-            <Route path="orders" element={<Orders />} />
-            <Route path="circulars" element={<UserCirculars />} />
-            <Route path="courses" element={<Courses />} />
-            <Route path="documents" element={<Documents />} />
-            <Route path="support" element={<ReportIssue />} />
-            <Route path="appreciation" element={<Appreciation />} />
-            <Route path="messages" element={<Messages />} />
+          {/* Protected User Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/user" element={<UserLayout />}>
+              <Route index element={<Navigate to="/user/profile" replace />} />
+              <Route path="profile" element={<UserProfile />} />
+              <Route path="personal-info" element={<PersonalInfo />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="salary" element={<Salary />} />
+              <Route path="orders" element={<Orders />} />
+              <Route path="circulars" element={<UserCirculars />} />
+              <Route path="courses" element={<Courses />} />
+              <Route path="documents" element={<Documents />} />
+              <Route path="support" element={<ReportIssue />} />
+              <Route path="appreciation" element={<Appreciation />} />
+              <Route path="messages" element={<Messages />} />
+            </Route>
           </Route>
-        </Route>
 
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </Suspense>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </Suspense>
+    </SettingsProvider>
   )
 }
 

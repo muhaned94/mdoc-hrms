@@ -132,38 +132,38 @@ export default function Circulars() {
     return (
         <div className="max-w-5xl mx-auto space-y-8">
             <div>
-                <h1 className="text-2xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
                     <FileText className="text-primary" />
                     منصة التعاميم والكتب الرسمية
                 </h1>
-                <p className="text-slate-500">رفع وإدارة الكتب الرسمية وتعميمها على الموظفين</p>
+                <p className="text-slate-500 dark:text-slate-400">رفع وإدارة الكتب الرسمية وتعميمها على الموظفين</p>
             </div>
 
             {error && (
-                <div className="bg-red-50 text-red-600 p-4 rounded-lg flex items-center gap-2">
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-lg flex items-center gap-2">
                     <AlertCircle size={20} />
                     <span>{error}</span>
                 </div>
             )}
 
             {/* Upload Form */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                <h3 className="font-bold text-lg mb-4 text-slate-700">رفع تعميم جديد</h3>
+            <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+                <h3 className="font-bold text-lg mb-4 text-slate-700 dark:text-white">رفع تعميم جديد</h3>
                 <form onSubmit={handleValidUpload} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">عنوان التعميم / الكتاب</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">عنوان التعميم / الكتاب</label>
                             <input
                                 required
                                 type="text"
                                 placeholder="مثال: أمر إداري بخصوص العطل الرسمية"
                                 value={newCircular.title}
                                 onChange={e => setNewCircular({ ...newCircular, title: e.target.value })}
-                                className="w-full p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                className="w-full p-3 border border-slate-200 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-primary/20 outline-none transition-all dark:bg-slate-700 dark:text-white"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">ملف التعميم (PDF أو صورة)</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">ملف التعميم (PDF أو صورة)</label>
                             <div className="relative">
                                 <input
                                     required
@@ -171,13 +171,14 @@ export default function Circulars() {
                                     type="file"
                                     accept=".pdf,.jpg,.jpeg,.png"
                                     onChange={handleFileChange}
-                                    className="block w-full text-sm text-slate-500
+                                    className="block w-full text-sm text-slate-500 dark:text-slate-400
                                 file:mr-4 file:py-3 file:px-4
                                 file:rounded-xl file:border-0
                                 file:text-sm file:font-semibold
-                                file:bg-primary/5 file:text-primary
-                                hover:file:bg-primary/10
-                                cursor-pointer border border-slate-200 rounded-xl
+                                file:bg-primary/5 dark:file:bg-primary/20 file:text-primary
+                                hover:file:bg-primary/10 dark:hover:file:bg-primary/30
+                                cursor-pointer border border-slate-200 dark:border-slate-600 rounded-xl
+                                dark:bg-slate-700
                             "
                                 />
                             </div>
@@ -209,24 +210,24 @@ export default function Circulars() {
 
             {/* List */}
             <div className="space-y-4">
-                <h3 className="font-bold text-lg text-slate-700">الأرشيف</h3>
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+                <h3 className="font-bold text-lg text-slate-700 dark:text-slate-300">الأرشيف</h3>
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
                     {circulars.length === 0 ? (
-                        <div className="p-12 text-center text-slate-400">
+                        <div className="p-12 text-center text-slate-400 dark:text-slate-500">
                             <FileText size={48} className="mx-auto mb-4 opacity-20" />
                             <p>لا توجد تعاميم منشورة حالياً</p>
                         </div>
                     ) : (
-                        <div className="divide-y divide-slate-50">
+                        <div className="divide-y divide-slate-50 dark:divide-slate-700">
                             {circulars.map(item => (
-                                <div key={item.id} className="p-5 hover:bg-slate-50 transition-colors flex items-center justify-between group">
+                                <div key={item.id} className="p-5 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors flex items-center justify-between group">
                                     <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                                        <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
                                             <FileText size={24} />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-800 text-lg">{item.title}</h4>
-                                            <div className="flex items-center gap-4 text-sm text-slate-500 mt-1">
+                                            <h4 className="font-bold text-slate-800 dark:text-white text-lg">{item.title}</h4>
+                                            <div className="flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400 mt-1">
                                                 <span className="flex items-center gap-1">
                                                     <Calendar size={14} />
                                                     {formatDate(item.created_at)}
@@ -240,7 +241,7 @@ export default function Circulars() {
                                             href={item.file_url}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="p-2 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors flex items-center gap-2"
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 rounded-lg transition-colors flex items-center gap-2"
                                             title="مشاهدة"
                                         >
                                             <span className="text-sm font-medium hidden md:block">مشاهدة</span>
@@ -248,7 +249,7 @@ export default function Circulars() {
                                         </a>
                                         <button
                                             onClick={() => handleDelete(item.id, item.file_path)}
-                                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                             title="حذف"
                                         >
                                             <Trash2 size={20} />

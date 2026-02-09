@@ -83,69 +83,69 @@ export default function Salary() {
           <p className="text-xs text-indigo-200 mt-4">* يشمل المخصصات والحوافز</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-slate-500 mb-2">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
               <DollarSign size={18} />
               <span>الراتب الاسمي</span>
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
               {employee?.nominal_salary?.toLocaleString()} <span className="text-sm text-slate-400">د.ع</span>
             </h2>
           </div>
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
             <span className="text-xs text-slate-400">يخضع للاستقطاعات التقاعدية</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-slate-500 mb-2">
+            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
               <TrendingUp size={18} />
               <span>حافز شهري (تقديري)</span>
             </div>
-            <h2 className="text-2xl font-bold text-green-600">
+            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">
               {employee?.incentive?.toLocaleString()} <span className="text-sm text-slate-400">د.ع</span>
             </h2>
           </div>
-          <div className="mt-4 pt-4 border-t">
+          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
             <span className="text-xs text-slate-400">يتغير حسب الأرباح الشهرية</span>
           </div>
         </div>
       </div >
 
       {/* Recent Slips List */}
-      < div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden" >
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="font-bold text-lg">أشرطة الراتب</h3>
+      < div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden" >
+        <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+          <h3 className="font-bold text-lg dark:text-white">أشرطة الراتب</h3>
         </div>
 
         {
           slips.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 flex flex-col items-center">
-              <FileText className="text-slate-300 mb-2" size={48} />
+            <div className="p-8 text-center text-slate-500 dark:text-slate-400 flex flex-col items-center">
+              <FileText className="text-slate-300 dark:text-slate-600 mb-2" size={48} />
               <p>لا توجد بيانات رواتب لعرضها حالياً.</p>
             </div>
           ) : (
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-slate-100 dark:divide-slate-700">
               {slips.map((slip) => (
-                <div key={slip.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div key={slip.id} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="bg-green-100 text-green-600 p-3 rounded-lg">
+                    <div className="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 p-3 rounded-lg">
                       <FileText size={20} />
                     </div>
                     <div>
-                      <p className="font-bold text-slate-800">
+                      <p className="font-bold text-slate-800 dark:text-slate-200">
                         {slip.month_year ? formatDate(slip.month_year) : 'شريط راتب'}
                       </p>
-                      <p className="text-xs text-slate-500">تم الرفع: {formatDate(slip.created_at)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">تم الرفع: {formatDate(slip.created_at)}</p>
                     </div>
                   </div>
                   <a
                     href={slip.file_url}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 text-primary hover:text-sky-700 bg-sky-50 hover:bg-sky-100 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
+                    className="flex items-center gap-2 text-primary hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/50 px-4 py-2 rounded-lg transition-colors text-sm font-medium"
                   >
                     <Download size={16} />
                     <span>تحميل PDF</span>

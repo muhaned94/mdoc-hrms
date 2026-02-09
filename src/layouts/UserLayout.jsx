@@ -88,11 +88,11 @@ export default function UserLayout() {
   ]
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans" dir="rtl">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 font-sans transition-colors duration-200" dir="rtl">
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center shadow-sm">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-600">
+      <div className="md:hidden fixed top-0 w-full bg-white dark:bg-slate-800 z-20 border-b dark:border-slate-700 p-4 flex justify-between items-center shadow-sm transition-colors">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-600 dark:text-slate-300">
           {sidebarOpen ? <X /> : <Menu />}
         </button>
         <h1 className="text-xl font-bold text-primary">MDOC Portal</h1>
@@ -100,23 +100,23 @@ export default function UserLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 right-0 z-20 w-64 bg-white shadow-xl transform transition-transform duration-300 md:translate-x-0 md:static md:shadow-md flex flex-col pt-16 md:pt-0
+        fixed inset-y-0 right-0 z-20 w-64 bg-white dark:bg-slate-800 shadow-xl transform transition-transform duration-300 md:translate-x-0 md:static md:shadow-md flex flex-col pt-16 md:pt-0 border-l dark:border-slate-700
         ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
         {/* Sidebar Header */}
-        <div className="p-6 border-b hidden md:block">
+        <div className="p-6 border-b dark:border-slate-700 hidden md:block">
           <h1 className="text-2xl font-bold text-primary">MDOC HRMS</h1>
-          <p className="text-sm text-slate-500 mt-1">بوابة الموظف</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">بوابة الموظف</p>
         </div>
 
         {/* User Info Teaser */}
-        <div className="p-4 bg-slate-50 border-b flex items-center gap-3 mx-4 mt-4 rounded-xl">
-          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
+        <div className="p-4 bg-slate-50 dark:bg-slate-700/50 border-b dark:border-slate-700 flex items-center gap-3 mx-4 mt-4 rounded-xl transition-colors">
+          <div className="w-10 h-10 bg-primary/10 dark:bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold">
             {user.email?.charAt(0).toUpperCase()}
           </div>
           <div className="overflow-hidden">
-            <p className="text-sm font-bold text-slate-700 truncate">{user.email}</p>
-            <p className="text-xs text-slate-400">نشط الآن</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{user.email}</p>
+            <p className="text-xs text-slate-400 dark:text-slate-500">نشط الآن</p>
           </div>
         </div>
 
@@ -129,11 +129,11 @@ export default function UserLayout() {
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${location.pathname === item.path
                 ? 'bg-primary text-white shadow-md shadow-primary/20'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:text-primary dark:hover:text-primary'
                 }`}
             >
               <div className="flex items-center space-x-3 space-x-reverse">
-                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 group-hover:text-primary'} />
+                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-primary'} />
                 <span className="font-medium">{item.label}</span>
               </div>
               {item.badge > 0 && (
@@ -149,10 +149,10 @@ export default function UserLayout() {
         </nav>
 
         {/* Logout */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t dark:border-slate-700">
           <button
             onClick={handleSignOut}
-            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-xl transition-colors"
           >
             <LogOut size={20} />
             <span className="font-medium">تسجيل الخروج</span>
@@ -169,7 +169,7 @@ export default function UserLayout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full">
+      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full bg-slate-50 dark:bg-slate-900 transition-colors">
         <div className="max-w-5xl mx-auto">
           <Outlet />
         </div>

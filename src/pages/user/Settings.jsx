@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck } from 'lucide-react'
+import { useSettings } from '../../context/SettingsContext'
 
 export default function Settings() {
   const { session, signOut, loading: authLoading } = useAuth()
+  const { settings } = useSettings()
   const navigate = useNavigate()
   const [employee, setEmployee] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -143,66 +145,70 @@ export default function Settings() {
       </div>
 
       {/* Avatar Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 border-b pb-2">
-          <Camera className="text-primary" size={20} />
-          تغيير الصورة الشخصية
-        </h3>
+      {settings.allow_profile_picture_change && (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
+            <Camera className="text-primary" size={20} />
+            تغيير الصورة الشخصية
+          </h3>
 
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-32 h-32 rounded-full border-4 border-slate-100 bg-slate-200 overflow-hidden shadow-inner">
-              {employee?.avatar_url ? (
-                <img src={employee.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-4xl">
-                  {employee?.full_name?.charAt(0)}
-                </div>
-              )}
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <div className="w-32 h-32 rounded-full border-4 border-slate-100 dark:border-slate-700 bg-slate-200 dark:bg-slate-700 overflow-hidden shadow-inner">
+                {employee?.avatar_url ? (
+                  <img src={employee.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-4xl">
+                    {employee?.full_name?.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <label className="absolute bottom-0 right-0 bg-primary hover:bg-sky-600 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-110">
+                <Camera size={20} />
+                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
+              </label>
             </div>
-            <label className="absolute bottom-0 right-0 bg-primary hover:bg-sky-600 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-110">
-              <Camera size={20} />
-              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
-            </label>
+            <p className="text-sm text-slate-500 dark:text-slate-400">اضغط على الكاميرا لتغيير الصورة</p>
           </div>
-          <p className="text-sm text-slate-500">اضغط على الكاميرا لتغيير الصورة</p>
         </div>
-      </div>
+      )}
 
       {/* Password Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-        <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 border-b pb-2">
-          <Lock className="text-amber-500" size={20} />
-          تغيير كلمة المرور
-        </h3>
-        <form onSubmit={handlePasswordChange} className="space-y-4">
-          <div>
-            <label className="text-sm text-slate-600 mb-1 block font-medium">كلمة المرور الجديدة</label>
-            <div className="relative">
-              <input
-                type="text"
-                required
-                minLength={6}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full p-3 border rounded-lg bg-slate-50 font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                placeholder="أدخل كلمة المرور الجديدة"
-              />
-              <Lock className="absolute left-3 top-3 text-slate-400" size={18} />
+      {settings.allow_password_change && (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
+            <Lock className="text-amber-500" size={20} />
+            تغيير كلمة المرور
+          </h3>
+          <form onSubmit={handlePasswordChange} className="space-y-4">
+            <div>
+              <label className="text-sm text-slate-600 dark:text-slate-400 mb-1 block font-medium">كلمة المرور الجديدة</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  minLength={6}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full p-3 border dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+                  placeholder="أدخل كلمة المرور الجديدة"
+                />
+                <Lock className="absolute left-3 top-3 text-slate-400 dark:text-slate-500" size={18} />
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
             </div>
-            <p className="text-xs text-slate-400 mt-1">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
-          </div>
 
-          <button
-            type="submit"
-            disabled={changingPassword}
-            className="w-full bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-900 transition-colors flex items-center justify-center gap-2 font-medium"
-          >
-            {changingPassword ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
-            <span>حفظ كلمة المرور الجديدة</span>
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={changingPassword}
+              className="w-full bg-slate-800 dark:bg-slate-700 text-white py-3 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors flex items-center justify-center gap-2 font-medium"
+            >
+              {changingPassword ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
+              <span>حفظ كلمة المرور الجديدة</span>
+            </button>
+          </form>
+        </div>
+      )}
     </div>
   )
 }

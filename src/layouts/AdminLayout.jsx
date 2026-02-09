@@ -1,7 +1,7 @@
 
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText, Settings } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -44,13 +44,14 @@ export default function AdminLayout() {
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
     { label: 'سجل الموظفين الشامل', path: '/admin/employees-grid', icon: Database },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
+    { label: 'إعدادات النظام', path: '/admin/settings', icon: Settings },
   ]
 
   return (
-    <div className="flex h-screen bg-slate-50 font-sans" dir="rtl">
+    <div className="flex h-screen bg-slate-50 dark:bg-slate-900 font-sans transition-colors duration-200" dir="rtl">
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-white z-20 border-b p-4 flex justify-between items-center">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)}>
+      <div className="md:hidden fixed top-0 w-full bg-white dark:bg-slate-800 dark:border-slate-700 z-20 border-b p-4 flex justify-between items-center transition-colors">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-600 dark:text-slate-200">
           {sidebarOpen ? <X /> : <Menu />}
         </button>
         <h1 className="text-xl font-bold text-primary">MDOC Admin</h1>
@@ -58,14 +59,14 @@ export default function AdminLayout() {
 
       {/* Sidebar */}
       <aside className={`
-        fixed inset-y-0 right-0 z-10 w-64 bg-white shadow-xl transform transition-transform duration-300 md:translate-x-0 md:static md:shadow-md flex flex-col pt-16 md:pt-0
+        fixed inset-y-0 right-0 z-10 w-64 bg-white dark:bg-slate-800 dark:border-slate-700 shadow-xl transform transition-transform duration-300 md:translate-x-0 md:static md:shadow-md flex flex-col pt-16 md:pt-0
         ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
-        <div className="p-6 border-b hidden md:block">
+        <div className="p-6 border-b dark:border-slate-700 hidden md:block">
           <h1 className="text-2xl font-bold text-primary">MDOC HRMS</h1>
-          <p className="text-sm text-slate-500">لوحة المسؤول</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">لوحة المسؤول</p>
         </div>
-        <nav className="flex-1 p-4 space-y-2">
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <Link
               key={item.path}
@@ -73,11 +74,11 @@ export default function AdminLayout() {
               onClick={() => setSidebarOpen(false)}
               className={`flex items-center justify-between p-3 rounded-xl transition-all duration-200 group ${location.pathname === item.path
                 ? 'bg-primary text-white shadow-md shadow-primary/20'
-                : 'text-slate-600 hover:bg-slate-50 hover:text-primary'
+                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-primary dark:hover:text-white'
                 }`}
             >
               <div className="flex items-center space-x-3 space-x-reverse">
-                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 group-hover:text-primary'} />
+                <item.icon size={20} className={location.pathname === item.path ? 'text-white' : 'text-slate-400 dark:text-slate-500 group-hover:text-primary dark:group-hover:text-white'} />
                 <span className="font-medium">{item.label}</span>
               </div>
               {item.badge > 0 && (
@@ -88,10 +89,10 @@ export default function AdminLayout() {
             </Link>
           ))}
         </nav>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t dark:border-slate-700">
           <button
             onClick={handleSignOut}
-            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+            className="flex items-center space-x-3 space-x-reverse w-full p-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors"
           >
             <LogOut size={20} />
             <span className="font-medium">تسجيل الخروج</span>
@@ -108,7 +109,7 @@ export default function AdminLayout() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full">
+      <main className="flex-1 overflow-auto p-4 md:p-8 pt-20 md:pt-8 w-full bg-slate-50 dark:bg-slate-900 transition-colors">
         <Outlet />
       </main>
     </div>

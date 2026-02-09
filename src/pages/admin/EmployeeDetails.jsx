@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye } from 'lucide-react'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye, Briefcase, User, Wallet } from 'lucide-react'
 import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 import UserQRCode from '../../components/UserQRCode'
@@ -465,15 +465,15 @@ export default function EmployeeDetails() {
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
-                <button onClick={() => navigate('/admin/employees')} className="p-2 hover:bg-slate-200 rounded-full">
+                <button onClick={() => navigate('/admin/employees')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full dark:text-slate-200">
                     <ArrowRight size={24} />
                 </button>
-                <h1 className="text-2xl font-bold">{employee.full_name}</h1>
-                <span className="bg-slate-100 px-3 py-1 rounded text-sm text-slate-500">{employee.company_id}</span>
+                <h1 className="text-2xl font-bold dark:text-white">{employee.full_name}</h1>
+                <span className="bg-slate-100 dark:bg-slate-700 px-3 py-1 rounded text-sm text-slate-500 dark:text-slate-300">{employee.company_id}</span>
                 <div className="flex-1"></div>
                 <button
                     onClick={() => setMessageOpen(true)}
-                    className="flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-100 transition-colors font-bold"
+                    className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 px-4 py-2 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors font-bold"
                 >
                     <FileText size={18} />
                     إرسال رسالة/تبليغ
@@ -485,207 +485,311 @@ export default function EmployeeDetails() {
                 <div className="lg:col-span-2 space-y-6">
                     <UserQRCode employee={employee} />
 
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                             <UserCog className="text-primary" size={20} />
                             بيانات الموظف
                         </h3>
-                        <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Simplified fields for brevity - would encompass all fields */}
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">الاسم الكامل</label>
-                                <input name="full_name" value={employee.full_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                            </div>
+                        <form onSubmit={handleSave} className="space-y-8">
 
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">العنوان الوظيفي</label>
-                                <input name="job_title" value={employee.job_title || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">المنصب</label>
-                                <input name="position" value={employee.position || ''} onChange={handleChange} className="w-full p-2 border rounded" placeholder="مثال: مدير قسم" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">الشهادة</label>
-                                <input name="certificate" value={employee.certificate || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">الاسم الكامل</label>
-                                    <input
-                                        type="text"
-                                        value={employee.full_name}
-                                        onChange={(e) => setEmployee({ ...employee, full_name: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">رقم الهاتف</label>
-                                    <input
-                                        type="text"
-                                        value={employee.phone_number || ''}
-                                        onChange={(e) => setEmployee({ ...employee, phone_number: e.target.value })}
-                                        className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
-                                        placeholder="07xxxxxxxxx"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">البريد الإلكتروني</label>
-                                    <input
-                                        type="email"
-                                        value={employee.email || ''}
-                                        onChange={(e) => setEmployee({ ...employee, email: e.target.value })}
-                                        className="w-full border rounded-lg p-2 font-mono text-left direction-ltr"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">عنوان السكن</label>
-                                    <input
-                                        type="text"
-                                        value={employee.address || ''}
-                                        onChange={(e) => setEmployee({ ...employee, address: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">رقم الشركة</label>
-                                    <input
-                                        type="text"
-                                        value={employee.company_id}
-                                        onChange={(e) => setEmployee({ ...employee, company_id: e.target.value })}
-                                        className="w-full border rounded-lg p-2 bg-slate-50 font-mono"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">المنصب</label>
-                                    <input
-                                        type="text"
-                                        value={employee.position || ''}
-                                        onChange={(e) => setEmployee({ ...employee, position: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">العنوان الوظيفي</label>
-                                    <input
-                                        type="text"
-                                        value={employee.job_title}
-                                        onChange={(e) => setEmployee({ ...employee, job_title: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">موقع العمل</label>
-                                    <input
-                                        type="text"
-                                        value={employee.work_location}
-                                        onChange={(e) => setEmployee({ ...employee, work_location: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">نظام العمل</label>
-                                    <select
-                                        value={employee.work_schedule}
-                                        onChange={(e) => setEmployee({ ...employee, work_schedule: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    >
-                                        <option value="morning">صباحي</option>
-                                        <option value="shift">مناوبات</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">تاريخ التعيين</label>
-                                    <input
-                                        type="date"
-                                        value={employee.hire_date}
-                                        onChange={(e) => setEmployee({ ...employee, hire_date: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">الشهادة</label>
-                                    <input
-                                        type="text"
-                                        value={employee.certificate || ''}
-                                        onChange={(e) => setEmployee({ ...employee, certificate: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">الاختصاص</label>
-                                    <input
-                                        type="text"
-                                        value={employee.specialization || ''}
-                                        onChange={(e) => setEmployee({ ...employee, specialization: e.target.value })}
-                                        className="w-full border rounded-lg p-2"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">مدة الخدمة (محسوبة)</label>
-                                    <div className="w-full border rounded-lg p-2 bg-slate-50 text-slate-700">
-                                        {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
+                            {/* Section 1: Basic Information */}
+                            <div>
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <UserCog size={18} className="text-blue-500" />
+                                    المعلومات الأساسية
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الاسم الكامل</label>
+                                        <input
+                                            type="text"
+                                            name="full_name"
+                                            value={employee.full_name || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white transition-all"
+                                            placeholder="الاسم الرباعي واللقب"
+                                        />
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-slate-500 mb-1">الدرجة الوظيفية (محسوبة)</label>
-                                    <div className="w-full border rounded-lg p-2 bg-sky-50 text-sky-700 font-bold">
-                                        {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الرقم الوظيفي</label>
+                                        <input
+                                            type="text"
+                                            name="company_id"
+                                            value={employee.company_id || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-200 font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الجنس</label>
+                                        <select
+                                            name="gender"
+                                            value={employee.gender || 'male'}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        >
+                                            <option value="male">ذكر</option>
+                                            <option value="female">أنثى</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">تاريخ التعيين</label>
+                                        <input
+                                            type="date"
+                                            name="hire_date"
+                                            value={employee.hire_date || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">موقع العمل</label>
+                                        <input
+                                            type="text"
+                                            name="work_location"
+                                            value={employee.work_location || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">نظام العمل</label>
+                                        <select
+                                            name="work_schedule"
+                                            value={employee.work_schedule || 'morning'}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        >
+                                            <option value="morning">صباحي</option>
+                                            <option value="shift">مناوب</option>
+                                        </select>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-4">
-                                <label className="block text-sm text-slate-500 mb-1">رصيد الإجازات</label>
-                                <input
-                                    type="number"
-                                    value={employee.leave_balance || 0}
-                                    onChange={(e) => setEmployee({ ...employee, leave_balance: e.target.value })}
-                                    className="w-full border rounded-lg p-2"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">الراتب الاسمي</label>
-                                <input type="number" name="nominal_salary" value={employee.nominal_salary || 0} onChange={handleChange} className="w-full p-2 border rounded" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">الراتب الكلي</label>
-                                <input type="number" name="total_salary" value={employee.total_salary || 0} onChange={handleChange} className="w-full p-2 border rounded" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-sm text-slate-500">الحافز الشهري (تقديري)</label>
-                                <input type="number" name="incentive" value={employee.incentive || 0} onChange={handleChange} className="w-full p-2 border rounded bg-green-50 border-green-200" />
-                            </div>
-
-                            <div className="md:col-span-2 border-t pt-2 mt-2">
-                                <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">معلومات الاتصال والشخصية</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">رقم الهاتف</label>
-                                        <input name="phone_number" value={employee.phone_number || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                            {/* Section 2: Job Details */}
+                            <div>
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <Briefcase size={18} className="text-indigo-500" />
+                                    المعلومات الوظيفية
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">العنوان الوظيفي</label>
+                                        <input
+                                            type="text"
+                                            name="job_title"
+                                            value={employee.job_title || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                            placeholder="مثال: مهندس اقدم"
+                                        />
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">البريد الإلكتروني</label>
-                                        <input name="email" value={employee.email || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">المنصب</label>
+                                        <input
+                                            type="text"
+                                            name="position"
+                                            value={employee.position || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                            placeholder="مثال: مدير قسم"
+                                        />
                                     </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">رصيد الإجازات</label>
+                                        <input
+                                            type="number"
+                                            name="leave_balance"
+                                            value={employee.leave_balance || 0}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">مدة الخدمة (محسوبة)</label>
+                                        <div className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 pointer-events-none">
+                                            {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الدرجة الوظيفية (محسوبة)</label>
+                                        <div className="w-full p-2.5 border border-emerald-200 dark:border-emerald-800 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 font-bold pointer-events-none">
+                                            {calculateJobGrade(employee.certificate, calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal).display}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            {/* Section 3: Financial Details */}
+                            <div>
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <Wallet size={18} className="text-emerald-500" />
+                                    الرواتب والمخصصات
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الراتب الاسمي</label>
+                                        <input
+                                            type="number"
+                                            name="nominal_salary"
+                                            value={employee.nominal_salary || 0}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الراتب الكلي</label>
+                                        <input
+                                            type="number"
+                                            name="total_salary"
+                                            value={employee.total_salary || 0}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-mono"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الحافز الشهري (تقديري)</label>
+                                        <input
+                                            type="number"
+                                            name="incentive"
+                                            value={employee.incentive || 0}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-green-200 dark:border-green-800 rounded-lg outline-none focus:ring-2 focus:ring-green-500/50 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 font-bold font-mono"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
 
+                            {/* Section 4: Education */}
+                            <div>
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <GraduationCap size={18} className="text-purple-500" />
+                                    التحصيل الدراسي
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الشهادة</label>
+                                        <input
+                                            type="text"
+                                            name="certificate"
+                                            value={employee.certificate || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الاختصاص</label>
+                                        <input
+                                            type="text"
+                                            name="specialization"
+                                            value={employee.specialization || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">اسم الجامعة</label>
+                                        <input
+                                            type="text"
+                                            name="university_name"
+                                            value={employee.university_name || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">اسم الكلية</label>
+                                        <input
+                                            type="text"
+                                            name="college_name"
+                                            value={employee.college_name || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">سنة التخرج</label>
+                                        <input
+                                            type="text"
+                                            name="graduation_year"
+                                            value={employee.graduation_year || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div className="lg:col-span-1">
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">صورة وثيقة التخرج</label>
+                                        <div className="flex items-center gap-2">
+                                            <label className="flex-1 cursor-pointer">
+                                                <div className="flex items-center justify-center p-2.5 border border-dashed border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors">
+                                                    <Upload size={16} className="mr-2" />
+                                                    <span className="text-xs">تحديث الوثيقة</span>
+                                                </div>
+                                                <input type="file" className="hidden" accept="image/*,.pdf" onChange={handleCertUpload} />
+                                            </label>
 
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">الحالة الاجتماعية</label>
-                                        <select name="marital_status" value={employee.marital_status || 'single'} onChange={handleChange} className="w-full p-2 border rounded">
+                                            {employee.graduation_certificate_url && (
+                                                <div className="flex items-center gap-1">
+                                                    <a href={employee.graduation_certificate_url} target="_blank" className="p-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30 transition-colors" title="عرض الحالية">
+                                                        <Eye size={18} />
+                                                    </a>
+                                                    <button type="button" onClick={handleDeleteCert} className="p-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors" title="حذف الوثيقة">
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Section 5: Contact & Personal */}
+                            <div>
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                    <User size={18} className="text-orange-500" />
+                                    المعلومات الشخصية والاتصال
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">رقم الهاتف</label>
+                                        <input
+                                            type="text"
+                                            name="phone_number"
+                                            value={employee.phone_number || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-mono text-left direction-ltr"
+                                            placeholder="07xxxxxxxxx"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">البريد الإلكتروني</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={employee.email || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white font-mono text-left direction-ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">عنوان السكن</label>
+                                        <input
+                                            type="text"
+                                            name="address"
+                                            value={employee.address || ''}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الحالة الاجتماعية</label>
+                                        <select
+                                            name="marital_status"
+                                            value={employee.marital_status || 'single'}
+                                            onChange={handleChange}
+                                            className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                        >
                                             <option value="single">أعزب/باكر</option>
                                             <option value="married">متزوج</option>
                                             <option value="divorced">مطلق</option>
@@ -693,75 +797,49 @@ export default function EmployeeDetails() {
                                         </select>
                                     </div>
                                     {employee.marital_status === 'married' && (
-                                        <div className="space-y-1">
-                                            <label className="text-sm text-slate-500">اسم الزوج/الزوجة</label>
-                                            <input name="spouse_name" value={employee.spouse_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">اسم الزوج/الزوجة</label>
+                                            <input
+                                                type="text"
+                                                name="spouse_name"
+                                                value={employee.spouse_name || ''}
+                                                onChange={handleChange}
+                                                className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white"
+                                            />
                                         </div>
                                     )}
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">الجنس</label>
-                                        <select name="gender" value={employee.gender || 'male'} onChange={handleChange} className="w-full p-2 border rounded">
-                                            <option value="male">ذكر</option>
-                                            <option value="female">أنثى</option>
-                                        </select>
-                                    </div>
                                 </div>
                             </div>
 
-                            {/* New Section: Education */}
-                            <div className="md:col-span-2 border-t pt-2 mt-2">
-                                <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">التعليم والشهادة</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">اسم الجامعة</label>
-                                        <input name="university_name" value={employee.university_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">اسم الكلية</label>
-                                        <input name="college_name" value={employee.college_name || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">سنة التخرج</label>
-                                        <input name="graduation_year" value={employee.graduation_year || ''} onChange={handleChange} className="w-full p-2 border rounded" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-sm text-slate-500">صورة وثيقة التخرج</label>
-                                        <div className="flex flex-col gap-2">
-                                            {employee.graduation_certificate_url && (
-                                                <div className="flex items-center gap-4">
-                                                    <a href={employee.graduation_certificate_url} target="_blank" className="text-primary hover:underline font-bold text-sm flex items-center gap-1">
-                                                        <FileText size={16} /> عرض الحالية
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleDeleteCert}
-                                                        className="text-red-500 hover:bg-red-50 p-1 rounded transition-colors"
-                                                        title="حذف الوثيقة"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            )}
-                                            <input type="file" onChange={handleCertUpload} className="text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20" accept="image/*,.pdf" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <div className="md:col-span-2 border-t pt-4 mt-2">
-                                <h4 className="font-bold text-sm mb-3 text-slate-700 flex items-center gap-2">
-                                    <Shield size={16} /> Data Security
+                            {/* Section 6: Security */}
+                            <div className="bg-red-50/50 dark:bg-red-900/10 p-5 rounded-xl border border-red-100 dark:border-red-900/30">
+                                <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2 pb-2">
+                                    <Shield size={18} className="text-red-500" />
+                                    الامان (مشاهدة فقط)
                                 </h4>
-                                <div className="space-y-1">
-                                    <label className="text-sm text-slate-500">كلمة المرور (غير مشفرة)</label>
-                                    <input name="visible_password" value={employee.visible_password || ''} onChange={handleChange} className="w-full p-2 border rounded bg-slate-50 font-mono" />
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">كلمة المرور الحالية</label>
+                                    <input
+                                        type="text"
+                                        name="visible_password"
+                                        value={employee.visible_password || ''}
+                                        readOnly
+                                        className="w-full md:w-1/2 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono"
+                                    />
+                                    <p className="text-xs text-slate-400 mt-2">لتغيير كلمة المرور، يرجى طلب ذلك من الموظف عبر لوحة التحكم الخاصة به.</p>
                                 </div>
                             </div>
 
-                            <div className="md:col-span-2 pt-4">
-                                <button type="submit" disabled={saving} className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-sky-600 w-full md:w-auto">
-                                    {saving ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+                            <div className="pt-4 flex justify-end">
+                                <button type="submit" disabled={saving} className="bg-primary text-white px-8 py-3 rounded-xl hover:bg-sky-600 font-bold shadow-lg shadow-primary/20 w-full md:w-auto flex items-center justify-center gap-2 transition-transform hover:scale-[1.02]">
+                                    {saving ? (
+                                        <>جاري الحفظ...</>
+                                    ) : (
+                                        <>
+                                            <Save size={18} />
+                                            حفظ كافة التغييرات
+                                        </>
+                                    )}
                                 </button>
                             </div>
                         </form>
@@ -771,8 +849,8 @@ export default function EmployeeDetails() {
                 {/* Side Panel: Documents */}
                 <div className="space-y-6">
                     {/* Official Documents (New Section) */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                             <Shield className="text-primary" size={20} />
                             المستمسكات الرسمية
                         </h3>
@@ -783,10 +861,11 @@ export default function EmployeeDetails() {
                                 { id: 'marriage_contract', name: 'عقد الزواج', key: 'marriage_contract_url' },
                                 { id: 'ration_card', name: 'البطاقة التموينية', key: 'ration_card_url' }
                             ].map((doc) => (
-                                <div key={doc.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-lg border border-slate-100">
+
+                                <div key={doc.id} className="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-medium text-slate-700">{doc.name}</span>
-                                        <span className={`text-xs ${employee[doc.key] ? 'text-green-500' : 'text-slate-400'}`}>
+                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">{doc.name}</span>
+                                        <span className={`text-xs ${employee[doc.key] ? 'text-green-500' : 'text-slate-400 dark:text-slate-500'}`}>
                                             {employee[doc.key] ? 'متوفر' : 'غير متوفر'}
                                         </span>
                                     </div>
@@ -828,9 +907,9 @@ export default function EmployeeDetails() {
                     </div>
 
                     {/* Appreciation Letters */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 ring-2 ring-slate-50">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                            <FileText className="text-slate-500" size={20} />
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 ring-2 ring-slate-50 dark:ring-slate-700/50">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
+                            <FileText className="text-slate-500 dark:text-slate-400" size={20} />
                             الكتب الرسمية (شكر / عقوبات)
                         </h3>
                         <div className="grid grid-cols-1 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar mb-6 p-1">
@@ -842,19 +921,19 @@ export default function EmployeeDetails() {
                                 letters.map(doc => {
                                     const isSanction = doc.bonus_months < 0
                                     return (
-                                        <div key={doc.id} className={`flex items-start justify-between p-4 rounded-xl border transition-all hover:shadow-md ${isSanction ? 'bg-red-50/50 border-red-100' : 'bg-amber-50/50 border-amber-100'}`}>
+                                        <div key={doc.id} className={`flex items-start justify-between p-4 rounded-xl border transition-all hover:shadow-md ${isSanction ? 'bg-red-50/50 dark:bg-red-900/10 border-red-100 dark:border-red-900/30' : 'bg-amber-50/50 dark:bg-amber-900/10 border-amber-100 dark:border-amber-900/30'}`}>
                                             <div className="flex gap-4">
-                                                <div className={`p-3 rounded-lg ${isSanction ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-600'}`}>
+                                                <div className={`p-3 rounded-lg ${isSanction ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400'}`}>
                                                     {isSanction ? <AlertTriangle size={24} /> : <Star size={24} />}
                                                 </div>
                                                 <div className="flex flex-col">
                                                     <div className="flex items-center gap-2 mb-1">
-                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isSanction ? 'bg-red-200 text-red-800' : 'bg-amber-200 text-amber-800'}`}>
+                                                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isSanction ? 'bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-200' : 'bg-amber-200 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200'}`}>
                                                             {isSanction ? 'عقوبة إدارية' : 'كتاب شكر'}
                                                         </span>
                                                         <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
                                                     </div>
-                                                    <span className="text-sm font-bold text-slate-800 leading-tight mb-1">{doc.title}</span>
+                                                    <span className="text-sm font-bold text-slate-800 dark:text-white leading-tight mb-1">{doc.title}</span>
                                                     <span className={`text-xs font-bold ${isSanction ? 'text-red-600' : 'text-amber-600'}`}>
                                                         {isSanction ? `تأخير ترفيع / خصم قدم (${Math.abs(doc.bonus_months)} شهر)` : `قدم ممتاز (${doc.bonus_months} شهر)`}
                                                     </span>
@@ -890,13 +969,13 @@ export default function EmployeeDetails() {
                             )}
                         </div>
 
-                        <div className="flex gap-2 mb-3 bg-slate-50 p-1 rounded-lg">
+                        <div className="flex gap-2 mb-3 bg-slate-50 dark:bg-slate-700/50 p-1 rounded-lg">
                             <button
                                 onClick={() => {
                                     setLetterType('thanks')
                                     setBonusMonths(1)
                                 }}
-                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'thanks' ? 'bg-white text-green-600 shadow-sm' : 'text-slate-400 hover:bg-white/50'}`}
+                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'thanks' ? 'bg-white dark:bg-slate-600 text-green-600 dark:text-green-400 shadow-sm' : 'text-slate-400 hover:bg-white/50 dark:hover:bg-slate-600/50'}`}
                             >
                                 شكر وتقدير
                             </button>
@@ -905,7 +984,7 @@ export default function EmployeeDetails() {
                                     setLetterType('sanction')
                                     setBonusMonths(-1)
                                 }}
-                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'sanction' ? 'bg-white text-red-600 shadow-sm' : 'text-slate-400 hover:bg-white/50'}`}
+                                className={`flex-1 py-1.5 text-xs font-bold rounded-md transition-all ${letterType === 'sanction' ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-400 shadow-sm' : 'text-slate-400 hover:bg-white/50 dark:hover:bg-slate-600/50'}`}
                             >
                                 عقوبة / خصم
                             </button>
@@ -915,13 +994,13 @@ export default function EmployeeDetails() {
                             <div className="flex gap-2 mb-3">
                                 <button
                                     onClick={() => setBonusMonths(1)}
-                                    className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 1 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                                    className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 1 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600'}`}
                                 >
                                     +1 شهر قدم
                                 </button>
                                 <button
                                     onClick={() => setBonusMonths(6)}
-                                    className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 6 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white text-slate-500 border-slate-200'}`}
+                                    className={`flex-1 py-1 px-2 text-[10px] border rounded transition-colors ${bonusMonths === 6 ? 'bg-amber-500 text-white border-amber-600' : 'bg-white dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600'}`}
                                 >
                                     +6 أشهر قدم
                                 </button>
@@ -939,7 +1018,7 @@ export default function EmployeeDetails() {
                             </div>
                         )}
 
-                        <label className={`block w-full text-center border-2 border-dashed rounded-lg p-3 cursor-pointer transition-colors ${letterType === 'thanks' ? 'border-amber-200 hover:bg-amber-50' : 'border-red-200 hover:bg-red-50'}`}>
+                        <label className={`block w-full text-center border-2 border-dashed rounded-lg p-3 cursor-pointer transition-colors ${letterType === 'thanks' ? 'border-amber-200 dark:border-amber-800 hover:bg-amber-50 dark:hover:bg-amber-900/20' : 'border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/20'}`}>
                             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'letter')} />
                             {letterType === 'thanks' ? (
                                 <>
@@ -956,42 +1035,42 @@ export default function EmployeeDetails() {
                     </div>
 
                     {/* Admin Orders */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                             <FileText className="text-indigo-500" size={20} />
                             الأوامر الإدارية
                         </h3>
                         <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
                             {orders.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد كتب</p>}
                             {orders.map(doc => (
-                                <div key={doc.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-indigo-200 shadow-sm transition-all">
+                                <div key={doc.id} className="group/item flex items-center justify-between bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-500/30 shadow-sm transition-all">
                                     <div className="flex flex-col overflow-hidden flex-1">
-                                        <span className="text-sm font-bold text-slate-700 truncate" title={doc.title}>{doc.title}</span>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate" title={doc.title}>{doc.title}</span>
                                         <span className="text-[10px] text-slate-400">{formatDate(doc.created_at)}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleEditOrderTitle(doc.id)}
-                                                className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                                className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 dark:hover:bg-slate-600 rounded transition-colors"
                                                 title="تعديل العنوان"
                                             >
                                                 <Edit3 size={14} />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteOrder(doc.id)}
-                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                                 title="حذف"
                                             >
                                                 <Trash2 size={14} />
                                             </button>
                                         </div>
-                                        <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 rounded hover:bg-indigo-500 hover:text-white transition-all shadow-sm">عرض</a>
+                                        <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 dark:bg-slate-600 rounded hover:bg-indigo-500 hover:text-white transition-all shadow-sm">عرض</a>
                                     </div>
                                 </div>
                             ))}
                         </div>
-                        <label className="block w-full text-center border-2 border-dashed border-indigo-200 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 transition-colors">
+                        <label className="block w-full text-center border-2 border-dashed border-indigo-200 dark:border-indigo-800 rounded-lg p-4 cursor-pointer hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors">
                             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
                             <Upload className="mx-auto text-indigo-400 mb-2" size={20} />
                             <span className="text-sm text-indigo-600">{uploadingOrder ? 'جاري الرفع...' : 'رفع كتاب جديد'}</span>
@@ -999,37 +1078,37 @@ export default function EmployeeDetails() {
                     </div>
 
                     {/* Salary Slips */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                             <FileText className="text-green-500" size={20} />
                             أشرطة الراتب
                         </h3>
                         <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
                             {slips.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد ملفات</p>}
                             {slips.map(doc => (
-                                <div key={doc.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-green-200 shadow-sm transition-all">
+                                <div key={doc.id} className="group/item flex items-center justify-between bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-green-200 dark:hover:border-green-500/30 shadow-sm transition-all">
                                     <div className="flex flex-col">
-                                        <span className="text-sm font-bold text-slate-700">راتب شهر</span>
+                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200">راتب شهر</span>
                                         <span className="text-[10px] text-slate-400">{formatDate(doc.month_year)}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleEditSlipDate(doc.id)}
-                                                className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 rounded transition-colors"
+                                                className="p-1 text-slate-400 hover:text-primary hover:bg-sky-50 dark:hover:bg-slate-600 rounded transition-colors"
                                                 title="تعديل التاريخ"
                                             >
                                                 <Edit3 size={14} />
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteSlip(doc.id)}
-                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded transition-colors"
+                                                className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                                                 title="حذف"
                                             >
                                                 <Trash2 size={14} />
                                             </button>
                                         </div>
-                                        <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 rounded hover:bg-green-500 hover:text-white transition-all shadow-sm">عرض</a>
+                                        <a href={doc.file_url} target="_blank" className="text-xs font-bold text-primary px-2 py-1 bg-slate-50 dark:bg-slate-600 rounded hover:bg-green-500 hover:text-white transition-all shadow-sm">عرض</a>
                                     </div>
                                 </div>
                             ))}
@@ -1041,11 +1120,11 @@ export default function EmployeeDetails() {
                                 type="month"
                                 value={slipDate}
                                 onChange={(e) => setSlipDate(e.target.value)}
-                                className="w-full text-sm p-2 rounded border border-green-200 focus:ring-1 focus:ring-green-500 outline-none"
+                                className="w-full text-sm p-2 rounded border border-green-200 dark:border-green-800 focus:ring-1 focus:ring-green-500 outline-none dark:bg-slate-700 dark:text-white"
                             />
                         </div>
 
-                        <label className="block w-full text-center border-2 border-dashed border-green-200 rounded-lg p-4 cursor-pointer hover:bg-green-50 transition-colors">
+                        <label className="block w-full text-center border-2 border-dashed border-green-200 dark:border-green-800 rounded-lg p-4 cursor-pointer hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors">
                             <input type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => handleFileUpload(e.target.files[0], 'slip')} />
                             <Upload className="mx-auto text-green-400 mb-2" size={20} />
                             <span className="text-sm text-green-600 font-bold">{uploadingSlip ? 'جاري الرفع...' : 'رفع شريط راتب'}</span>
@@ -1053,17 +1132,17 @@ export default function EmployeeDetails() {
                     </div>
 
                     {/* Training Courses */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
+                    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
                             <GraduationCap className="text-purple-500" size={20} />
                             الدورات التدريبية
                         </h3>
 
                         {/* Course Requirements Status */}
-                        <div className={`mb-4 p-3 rounded-lg border ${courseStatus.deficit > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                        <div className={`mb-4 p-3 rounded-lg border ${courseStatus.deficit > 0 ? 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800' : 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800'}`}>
                             <div className="flex justify-between items-center mb-1">
-                                <span className="font-bold text-sm text-slate-700">تحليل الموقف التدريبي</span>
-                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${courseStatus.deficit > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                                <span className="font-bold text-sm text-slate-700 dark:text-slate-200">تحليل الموقف التدريبي</span>
+                                <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${courseStatus.deficit > 0 ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'}`}>
                                     {courseStatus.deficit > 0 ? `نقص ${courseStatus.deficit}` : 'مستوفي'}
                                 </span>
                             </div>
@@ -1073,13 +1152,13 @@ export default function EmployeeDetails() {
                         </div>
 
                         {/* Add Course Form */}
-                        <form onSubmit={handleAddCourse} className="mb-4 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                        <form onSubmit={handleAddCourse} className="mb-4 bg-purple-50 dark:bg-purple-900/10 p-3 rounded-lg border border-purple-100 dark:border-purple-800/50">
                             <input
                                 required
                                 placeholder="اسم الدورة"
                                 value={newCourse.course_name}
                                 onChange={e => setNewCourse({ ...newCourse, course_name: e.target.value })}
-                                className="w-full text-sm p-2 rounded mb-2 border border-purple-200"
+                                className="w-full text-sm p-2 rounded mb-2 border border-purple-200 dark:border-purple-700 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400"
                             />
                             <div className="flex gap-2">
                                 <input
@@ -1087,7 +1166,7 @@ export default function EmployeeDetails() {
                                     type="date"
                                     value={newCourse.course_date}
                                     onChange={e => setNewCourse({ ...newCourse, course_date: e.target.value })}
-                                    className="text-sm p-2 rounded border border-purple-200 flex-1"
+                                    className="text-sm p-2 rounded border border-purple-200 dark:border-purple-700 flex-1 dark:bg-slate-700 dark:text-white"
                                 />
                                 <button type="submit" disabled={addingCourse} className="bg-purple-500 text-white p-2 rounded hover:bg-purple-600 transition-colors">
                                     {addingCourse ? '...' : <Plus size={16} />}
@@ -1098,9 +1177,9 @@ export default function EmployeeDetails() {
                         <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
                             {courses.length === 0 && <p className="text-sm text-slate-400 text-center">لا توجد دورات</p>}
                             {courses.map(course => (
-                                <div key={course.id} className="group/item flex items-center justify-between bg-white p-3 rounded-lg border border-slate-100 hover:border-purple-200 shadow-sm transition-all">
+                                <div key={course.id} className="group/item flex items-center justify-between bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-purple-200 dark:hover:border-purple-500/30 shadow-sm transition-all">
                                     <div className="overflow-hidden flex-1">
-                                        <p className="text-sm font-bold text-slate-700 truncate">{course.course_name}</p>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{course.course_name}</p>
                                         <p className="text-[10px] text-slate-400">{formatDate(course.course_date)}</p>
                                     </div>
                                     <div className="flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">
@@ -1128,8 +1207,8 @@ export default function EmployeeDetails() {
 
             {/* Message Modal */}
             {messageOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
                         <div className="bg-indigo-600 p-4 flex justify-between items-center text-white">
                             <h3 className="font-bold flex items-center gap-2">
                                 <FileText size={20} />
@@ -1141,27 +1220,27 @@ export default function EmployeeDetails() {
                         </div>
                         <form onSubmit={handleSendMessage} className="p-6 space-y-4">
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-slate-700">عنوان الرسالة</label>
+                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">عنوان الرسالة</label>
                                 <input
                                     required
                                     value={messageData.title}
                                     onChange={e => setMessageData({ ...messageData, title: e.target.value })}
-                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-700 dark:text-white"
                                     placeholder="مثال: تبليغ إداري"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-slate-700">نص الرسالة</label>
+                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">نص الرسالة</label>
                                 <textarea
                                     required
                                     value={messageData.body}
                                     onChange={e => setMessageData({ ...messageData, body: e.target.value })}
-                                    className="w-full p-2 border rounded h-32 resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full p-2 border border-slate-200 dark:border-slate-600 rounded h-32 resize-none focus:ring-2 focus:ring-indigo-500 outline-none dark:bg-slate-700 dark:text-white"
                                     placeholder="اكتب التبليغ أو الرسالة هنا..."
                                 ></textarea>
                             </div>
                             <div className="pt-2 flex justify-end gap-2">
-                                <button type="button" onClick={() => setMessageOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-50 rounded-lg">إلغاء</button>
+                                <button type="button" onClick={() => setMessageOpen(false)} className="px-4 py-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 rounded-lg dark:text-slate-400">إلغاء</button>
                                 <button type="submit" disabled={sendingMessage} className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">
                                     {sendingMessage ? 'جاري الإرسال...' : 'إرسال'}
                                 </button>
