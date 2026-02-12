@@ -9,7 +9,18 @@ export function SettingsProvider({ children }) {
         allow_password_change: true,
         allow_profile_picture_change: true,
         allow_backup_download: false,
-        login_method: 'both' // 'password', 'qr', 'both'
+        login_method: 'both', // 'password', 'qr', 'both'
+        course_settings: {
+            grade_1: 2,
+            grade_2: 2,
+            grade_3: 2,
+            grade_4: 2,
+            grade_5: 2,
+            grade_6: 2,
+            grade_7: 2,
+            grade_8: 1,
+            two_week_weight: 2
+        }
     })
     const [loading, setLoading] = useState(true)
 
@@ -40,7 +51,14 @@ export function SettingsProvider({ children }) {
             }
 
             if (data) {
-                setSettings(data)
+                setSettings(prev => ({
+                    ...prev,
+                    ...data,
+                    course_settings: {
+                        ...prev.course_settings,
+                        ...(data.course_settings || {})
+                    }
+                }))
             }
         } catch (error) {
             console.error('Error in fetchSettings:', error)

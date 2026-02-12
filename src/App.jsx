@@ -20,6 +20,7 @@ const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
 const AdminSettings = lazy(() => import('./pages/admin/Settings'))
 const BulkSalaryUpload = lazy(() => import('./pages/admin/BulkSalaryUpload'))
+const BulkCourseAssign = lazy(() => import('./pages/admin/BulkCourseAssign'))
 
 
 const UserProfile = lazy(() => import('./pages/user/Profile'))
@@ -63,6 +64,7 @@ function App() {
               <Route path="employees-grid" element={<EmployeeGrid />} />
               <Route path="settings" element={<AdminSettings />} />
               <Route path="bulk-salary-upload" element={<BulkSalaryUpload />} />
+              <Route path="bulk-course-assign" element={<BulkCourseAssign />} />
             </Route>
 
           </Route>

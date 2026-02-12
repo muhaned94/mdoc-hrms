@@ -128,51 +128,40 @@ export default function UserQRCode({ employee }) {
     };
 
     return (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
-            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M7 7h.01" /><path d="M17 7h.01" /><path d="M7 17h.01" /><path d="M17 17h.01" /></svg>
-                بطاقة الدخول الذكية (QR)
-            </h3>
-
-            <div className="flex flex-col md:flex-row items-center gap-8">
-                <div id="qr-svg-container" className="bg-white p-2 border rounded-lg">
-                    <QRCode
-                        size={150}
-                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                        value={qrData}
-                        viewBox={`0 0 256 256`}
-                    />
-                </div>
-
-                <div className="flex-1 space-y-4 text-center md:text-right">
-                    <div>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">تعليمات:</p>
-                        <p className="text-sm text-slate-700 dark:text-slate-300">
-                            يمكن للموظف استخدام هذا الرمز لتسجيل الدخول السريع عبر الكاميرا دون الحاجة لكتابة كلمة المرور.
-                            يرجى طباعة البطاقة وتسليمها للموظف.
-                        </p>
-                    </div>
-
-                    <div className="flex gap-2 justify-center md:justify-start">
-                        <button
-                            onClick={handlePrint}
-                            type="button"
-                            className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors"
-                        >
-                            <Printer size={18} />
-                            طباعة البطاقة
-                        </button>
-                    </div>
-
-                    <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-xs p-3 rounded border border-amber-100 dark:border-amber-900/30 mt-2">
-                        <span className="font-bold">تنبيه أمني:</span> يحتوي هذا الرمز على كلمة المرور. يرجى الحفاظ عليه في مكان آمن.
-                    </div>
-                </div>
+        <div className="flex flex-col md:flex-row items-center gap-6">
+            <div id="qr-svg-container" className="bg-white p-2 border rounded-xl shadow-sm">
+                <QRCode
+                    size={140}
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                    value={qrData}
+                    viewBox={`0 0 256 256`}
+                />
             </div>
 
-            {/* Hidden container for print clone if needed, though we engage directly with string injection above */}
-            <div id="printable-qr-card" className="hidden">
-                {/* Helper for extraction if needed */}
+            <div className="flex-1 space-y-4 text-center md:text-right">
+                <div>
+                    <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 tracking-wider">تعليمات الدخول الذكي</h4>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        استخدم الرمز لتسجيل الدخول السريع عبر الكاميرا دون كلمة مرور.
+                    </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
+                    <button
+                        onClick={handlePrint}
+                        type="button"
+                        className="flex items-center gap-2 bg-slate-800 dark:bg-slate-700 text-white px-4 py-2 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-all text-xs font-bold"
+                    >
+                        <Printer size={16} />
+                        طباعة البطاقة
+                    </button>
+                    {/* Hidden container for print clone */}
+                    <div id="printable-qr-card" className="hidden"></div>
+                </div>
+
+                <div className="bg-amber-50 dark:bg-amber-900/10 text-amber-600 dark:text-amber-400 text-[10px] p-2 rounded-lg border border-amber-100/50 dark:border-amber-900/20">
+                    <span className="font-bold">تنبيه:</span> يحمل الرمز كلمة المرور الخاصة بك.
+                </div>
             </div>
         </div>
     );

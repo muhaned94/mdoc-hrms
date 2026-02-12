@@ -15,23 +15,32 @@
  * @param {number} totalYears - Total years of service.
  * @returns {object} { grade: number, year: number, display: string }
  */
-export function calculateJobGrade(certificate, totalYears) {
+export function calculateJobGrade(certificate, totalYears, courseSettings) {
   if (!certificate || totalYears < 0) {
     return { grade: null, year: null, display: 'غير محدد' };
   }
 
-  let currentGrade;
-  let remainingYears = totalYears;
+  const getRequirement = (grade) => {
+    return courseSettings?.[`grade_${grade}`] ?? (grade === 8 ? 1 : 2);
+  };
 
-  // 1. Initialization
-  if (certificate.includes('بكالوريوس')) {
-    currentGrade = 7;
-  } else if (certificate.includes('دبلوم')) {
-    currentGrade = 8;
+  // 1. Determine Starting Grade
+  let startingGrade;
+  const cert = (certificate || '').toLowerCase();
+  if (cert.includes('دكتوراه')) {
+    startingGrade = 5;
+  } else if (cert.includes('ماجستير')) {
+    startingGrade = 6;
+  } else if (cert.includes('بكالوريوس')) {
+    startingGrade = 7;
+  } else if (cert.includes('دبلوم')) {
+    startingGrade = 8;
   } else {
-    // Default fallback (can be adjusted if more certs are added)
-    currentGrade = 8;
+    startingGrade = 8; // Default
   }
+
+  let currentGrade = startingGrade;
+  let remainingYears = totalYears;
 
   // 2. Promotion Loop
   while (remainingYears > 0) {
@@ -59,6 +68,13 @@ export function calculateJobGrade(certificate, totalYears) {
       break;
     }
   }
+
+  // 3. Courses Required for CURRENT Grade Only
+  const coursesRequired = getRequirement(currentGrade);
+
+  // The total years used to reach the current grade
+  // Total Years - Remaining Years = Years consumed by previous promotions
+  const yearsOfServiceUsedForPromotion = totalYears - remainingYears;
 
   // The 'year' is the year within the current grade (1-indexed)
   // Example: 0 years remain -> Year 1 (start of grade)
@@ -91,6 +107,8 @@ export function calculateJobGrade(certificate, totalYears) {
   return {
     grade: currentGrade,
     year: yearInGrade,
+    coursesRequired, // Only for this specific grade
+    yearsOfServiceUsedForPromotion, // To calculate start date of current grade
     display
   };
 }

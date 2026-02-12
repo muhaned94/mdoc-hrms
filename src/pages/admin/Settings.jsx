@@ -13,7 +13,10 @@ import {
     KeyRound,
     QrCode,
     Download,
-    Upload
+    Upload,
+    GraduationCap,
+    Clock,
+    GitGraph
 } from 'lucide-react'
 import { useRef } from 'react'
 import { supabase } from '../../lib/supabase'
@@ -178,6 +181,69 @@ export default function Settings() {
                                 value={settings.allow_profile_picture_change}
                                 onChange={(val) => updateSetting('allow_profile_picture_change', val)}
                             />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Course Requirements */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg text-amber-600 dark:text-amber-400">
+                            <GraduationCap size={24} />
+                        </div>
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">إعدادات متطلبات الدورات</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-5 gap-6">
+                        {/* Course Logic Card */}
+                        <div className="lg:col-span-2 p-5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl space-y-6 transition-colors border border-slate-100 dark:border-slate-600/50">
+                            <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                <Clock size={16} className="text-amber-500" />
+                                احتساب مدة الدورة
+                            </h3>
+
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-600">
+                                    <label className="text-xs font-bold text-slate-500">دورة "الأسبوعين" تعادل</label>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="number"
+                                            className="w-16 p-2 rounded-lg bg-slate-50 dark:bg-slate-700 dark:text-white text-center text-sm font-black outline-none focus:ring-2 focus:ring-primary/20"
+                                            value={settings.course_settings?.two_week_weight || 2}
+                                            onChange={(e) => updateSetting('course_settings', { ...settings.course_settings, two_week_weight: parseInt(e.target.value) })}
+                                        />
+                                        <span className="text-xs font-bold text-slate-400">دورات</span>
+                                    </div>
+                                </div>
+                                <p className="text-[10px] text-slate-400 leading-relaxed italic bg-amber-500/5 p-3 rounded-lg border border-amber-500/10">
+                                    * تلميح: أي دورة يتم إدخال مدتها بكلمة "أسبوعين" أو "اسبوعين" سيتم احتسابها بالوزن المذكور أعلاه في السجل الموحد للموظف.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Grade Requirements Grid */}
+                        <div className="lg:col-span-3 p-5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl space-y-4 transition-colors border border-slate-100 dark:border-slate-600/50">
+                            <h3 className="font-bold text-sm text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                                <GitGraph size={16} className="text-primary" />
+                                الدورات المطلوبة للترقية
+                            </h3>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                {[8, 7, 6, 5, 4, 3, 2, 1].map(grade => (
+                                    <div key={grade} className="flex flex-col gap-2 p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-600 hover:shadow-md transition-shadow">
+                                        <label className="text-[10px] font-black text-slate-400 text-center uppercase tracking-wider">الدرجة {grade}</label>
+                                        <input
+                                            type="number"
+                                            className="w-full p-1 rounded-md bg-slate-50 dark:bg-slate-700 dark:text-white text-center text-sm font-black outline-none focus:ring-2 focus:ring-primary/20"
+                                            value={settings.course_settings?.[`grade_${grade}`] || (grade === 8 ? 1 : 2)}
+                                            onChange={(e) => updateSetting('course_settings', { ...settings.course_settings, [`grade_${grade}`]: parseInt(e.target.value) })}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-[10px] text-slate-400 leading-relaxed italic px-1 pt-2 border-t border-slate-200/50 dark:border-slate-600/30">
+                                * الأدمن يحدد هنا عدد الدورات المطلوبة للانتقال من الدرجة المحددة إلى الدرجة التي تليها.
+                            </p>
                         </div>
                     </div>
                 </div>

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { GraduationCap, Calendar, Clock, CheckCircle } from 'lucide-react'
+import { useSettings } from '../../context/SettingsContext'
+import { GraduationCap, Calendar, Clock, CheckCircle, MapPin } from 'lucide-react'
 import { formatDate, calculateServiceDuration } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
+import { countWeightedCourses } from '../../utils/courseUtils'
 
 export default function Courses() {
   const { session } = useAuth()
+  const { settings } = useSettings()
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -51,16 +54,29 @@ export default function Courses() {
   }
 
   const getCourseStatus = () => {
-    if (!employee) return { deficit: 0 }
+    if (!employee) return { deficit: 0, required: 0 }
     const serviceYears = calculateServiceDuration(employee.hire_date, employee.bonus_service_months).yearsDecimal
-    const gradeInfo = calculateJobGrade(employee.certificate, serviceYears)
-    const numericGrade = gradeInfo.grade || 10
+    const gradeInfo = calculateJobGrade(employee.certificate, serviceYears, settings.course_settings)
 
-    const required = numericGrade >= 6 ? 4 : 5
-    const current = courses.length
+    // Calculate Grade Start Date
+    const gradeStartDate = new Date(employee.hire_date);
+    if (gradeInfo.yearsOfServiceUsedForPromotion) {
+      gradeStartDate.setFullYear(gradeStartDate.getFullYear() + Math.floor(gradeInfo.yearsOfServiceUsedForPromotion));
+      const decimalPart = gradeInfo.yearsOfServiceUsedForPromotion % 1;
+      gradeStartDate.setMonth(gradeStartDate.getMonth() + Math.round(decimalPart * 12));
+    }
+
+    // Filter courses: Only count courses taken AFTER the grade start date
+    const coursesInCurrentGrade = courses.filter(c => {
+      if (!c.course_date) return false;
+      return new Date(c.course_date) >= gradeStartDate;
+    });
+
+    const required = gradeInfo.coursesRequired
+    const current = countWeightedCourses(coursesInCurrentGrade, settings.course_settings?.two_week_weight || 2)
     const deficit = Math.max(required - current, 0)
 
-    return { deficit }
+    return { deficit, required, current, grade: gradeInfo.grade, startDate: gradeStartDate }
   }
 
   const courseStatus = getCourseStatus()
@@ -86,7 +102,14 @@ export default function Courses() {
               <div className="flex items-center justify-center gap-2 mt-1">
                 <div className={`w-2 h-2 rounded-full ${courseStatus.deficit > 0 ? 'bg-red-400 animate-pulse' : 'bg-emerald-400'}`}></div>
                 <span className="text-sm font-black italic">
-                  {courseStatus.deficit > 0 ? `نقص ${courseStatus.deficit} دورات` : 'مستوفي بالكامل'}
+                  {courseStatus.deficit > 0 ? (
+                    `نقص ${courseStatus.deficit} من أصل ${courseStatus.required}`
+                  ) : (
+                    `مستوفي (${courseStatus.required} دورات)`
+                  )}
+                </span>
+                <span className="text-[10px] block mt-1 opacity-70">
+                  (محسوب منذ: {courseStatus.startDate?.toLocaleDateString('en-GB')})
                 </span>
               </div>
             </div>
@@ -118,10 +141,24 @@ export default function Courses() {
                 <div>
                   <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2">{course.course_name}</h3>
                   <div className="space-y-1">
-                    <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
-                      <Calendar size={14} />
-                      <span>التاريخ: {formatDate(course.course_date)}</span>
-                    </p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2">
+                      <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                        <Calendar size={14} className="text-sky-500" />
+                        <span>التاريخ: {formatDate(course.course_date)}</span>
+                      </p>
+                      {course.duration && (
+                        <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded-full">
+                          <Clock size={14} />
+                          <span>المدة: {course.duration}</span>
+                        </p>
+                      )}
+                      {course.location && (
+                        <p className="text-sm font-bold text-amber-600 dark:text-amber-400 flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 px-3 py-1 rounded-full">
+                          <MapPin size={14} />
+                          <span>المكان: {course.location}</span>
+                        </p>
+                      )}
+                    </div>
                     <p className="text-sm text-green-600 dark:text-green-400 flex items-center gap-2">
                       <CheckCircle size={14} />
                       <span>مكتملة</span>

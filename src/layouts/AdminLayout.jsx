@@ -1,7 +1,7 @@
 
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText, Settings, Upload } from 'lucide-react'
+import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText, Settings, Upload, GraduationCap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -43,6 +43,7 @@ export default function AdminLayout() {
     { label: 'تحليل النظام', path: '/admin/analytics', icon: Activity },
     { label: 'الرسائل المرسلة', path: '/admin/messages', icon: Send },
     { label: 'رفع الرواتب دفعة واحدة', path: '/admin/bulk-salary-upload', icon: Upload },
+    { label: 'رفع الدورات الجماعي', path: '/admin/bulk-course-assign', icon: GraduationCap },
     { label: 'سجل الموظفين الشامل', path: '/admin/employees-grid', icon: Database },
     { label: 'الشكاوي والدعم', path: '/admin/complaints', icon: MessageSquareWarning, badge: pendingReports },
     { label: 'إعدادات النظام', path: '/admin/settings', icon: Settings },
