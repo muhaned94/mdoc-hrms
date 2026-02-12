@@ -19,6 +19,8 @@ const SentMessages = lazy(() => import('./pages/admin/SentMessages'))
 const EmployeeGrid = lazy(() => import('./pages/admin/EmployeeGrid'))
 const SystemAnalytics = lazy(() => import('./pages/admin/SystemAnalytics'))
 const AdminSettings = lazy(() => import('./pages/admin/Settings'))
+const BulkSalaryUpload = lazy(() => import('./pages/admin/BulkSalaryUpload'))
+
 
 const UserProfile = lazy(() => import('./pages/user/Profile'))
 const Settings = lazy(() => import('./pages/user/Settings'))
@@ -60,7 +62,9 @@ function App() {
               <Route path="messages" element={<SentMessages />} />
               <Route path="employees-grid" element={<EmployeeGrid />} />
               <Route path="settings" element={<AdminSettings />} />
+              <Route path="bulk-salary-upload" element={<BulkSalaryUpload />} />
             </Route>
+
           </Route>
 
           {/* Protected User Routes */}

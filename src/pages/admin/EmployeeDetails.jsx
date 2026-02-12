@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye, Briefcase, User, Wallet } from 'lucide-react'
-import { calculateServiceDuration, formatDate } from '../../utils/dateUtils'
+import { calculateServiceDuration, formatDate, formatMonthYear } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 import UserQRCode from '../../components/UserQRCode'
 
@@ -1089,7 +1089,7 @@ export default function EmployeeDetails() {
                                 <div key={doc.id} className="group/item flex items-center justify-between bg-white dark:bg-slate-700/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700 hover:border-green-200 dark:hover:border-green-500/30 shadow-sm transition-all">
                                     <div className="flex flex-col">
                                         <span className="text-sm font-bold text-slate-700 dark:text-slate-200">راتب شهر</span>
-                                        <span className="text-[10px] text-slate-400">{formatDate(doc.month_year)}</span>
+                                        <span className="text-[10px] text-slate-400">{formatMonthYear(doc.month_year)}</span>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity">

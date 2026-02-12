@@ -13,6 +13,7 @@ export default function UserLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [unreadCount, setUnreadCount] = useState(0)
+  const [newSlipsCount, setNewSlipsCount] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Auth Check
@@ -24,9 +25,11 @@ export default function UserLayout() {
     if (user) {
       fetchUnreadCount()
       fetchNewCircularsCount()
+      fetchNewSlipsCount()
       const interval = setInterval(() => {
         fetchUnreadCount()
         fetchNewCircularsCount()
+        fetchNewSlipsCount()
       }, 30000)
       return () => clearInterval(interval)
     }
@@ -66,6 +69,22 @@ export default function UserLayout() {
     }
   }
 
+  const fetchNewSlipsCount = async () => {
+    try {
+      const lastCheck = localStorage.getItem(`last_salary_check_${user.id}`)
+      let query = supabase.from('salary_slips').select('*', { count: 'exact', head: true }).eq('employee_id', user.id)
+
+      if (lastCheck) {
+        query = query.gt('created_at', lastCheck)
+      }
+
+      const { count, error } = await query
+      if (!error) setNewSlipsCount(count || 0)
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
   const handleSignOut = async () => {
     await signOut()
     navigate('/login')
@@ -76,7 +95,7 @@ export default function UserLayout() {
   const navItems = [
     { label: 'الرئيسية', path: '/user/profile', icon: Home }, // Profile is main
     { label: 'المعلومات الشخصية', path: '/user/personal-info', icon: FileUser },
-    { label: 'الراتب', path: '/user/salary', icon: Wallet },
+    { label: 'الراتب', path: '/user/salary', icon: Wallet, badge: newSlipsCount },
     { label: 'الرسائل', path: '/user/messages', icon: Mail, badge: unreadCount },
     { label: 'الأوامر الإدارية', path: '/user/orders', icon: FileText },
     { label: 'التعاميم الادارية', path: '/user/circulars', icon: Files, badge: newCircularsCount },

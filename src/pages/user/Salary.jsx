@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Download, DollarSign, TrendingUp, CreditCard, FileText, Wallet } from 'lucide-react'
-import { formatDate } from '../../utils/dateUtils'
+import { formatDate, formatMonthYear } from '../../utils/dateUtils'
 
 export default function Salary() {
   const { session } = useAuth()
@@ -11,7 +11,11 @@ export default function Salary() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (session?.user?.id) fetchData()
+    if (session?.user?.id) {
+      fetchData()
+      // Mark as read
+      localStorage.setItem(`last_salary_check_${session.user.id}`, new Date().toISOString())
+    }
   }, [session])
 
   const fetchData = async () => {
@@ -136,7 +140,7 @@ export default function Salary() {
                     </div>
                     <div>
                       <p className="font-bold text-slate-800 dark:text-slate-200">
-                        {slip.month_year ? formatDate(slip.month_year) : 'شريط راتب'}
+                        {slip.month_year ? formatMonthYear(slip.month_year) : 'شريط راتب'}
                       </p>
                       <p className="text-xs text-slate-500 dark:text-slate-400">تم الرفع: {formatDate(slip.created_at)}</p>
                     </div>
