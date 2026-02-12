@@ -65,7 +65,6 @@ export default function EmployeeGrid() {
             'عنوان السكن': emp.address,
             'رقم الهاتف': emp.phone_number,
             'البريد الإلكتروني': emp.email,
-            'الراتب الكلي': emp.total_salary,
             'تاريخ التعيين': formatDate(emp.hire_date),
             'سنوات الخدمة': calculateYearsOfService(emp.hire_date),
             'التحصيل الدراسي': emp.certificate,
@@ -134,10 +133,6 @@ export default function EmployeeGrid() {
                     case 'work_schedule':
                         aValue = a.work_schedule || ''
                         bValue = b.work_schedule || ''
-                        break
-                    case 'total_salary':
-                        aValue = a.total_salary || 0
-                        bValue = b.total_salary || 0
                         break
                     case 'hire_date':
                         aValue = new Date(a.hire_date || 0).getTime()
@@ -291,7 +286,6 @@ export default function EmployeeGrid() {
                                 <HeaderCell label="رقم الهاتف" column="phone_number" disableSort={true} />
                                 <HeaderCell label="البريد الإلكتروني" column="email" disableSort={true} />
                                 <HeaderCell label="نظام العمل" column="work_schedule" />
-                                <HeaderCell label="الراتب الكلي" column="total_salary" />
                                 <HeaderCell label="سنوات الخدمة" column="years_of_service" />
                                 <HeaderCell label="تاريخ التعيين" column="hire_date" />
                                 <HeaderCell label="التحصيل الدراسي" column="certificate" />
@@ -321,7 +315,6 @@ export default function EmployeeGrid() {
                                             {emp.work_schedule === 'morning' ? 'صباحي' : 'مناوبات'}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-green-700 dark:text-green-400 font-bold font-mono border-l border-slate-100 dark:border-slate-700">{Number(emp.total_salary).toLocaleString()} IQD</td>
                                     <td className="p-4 text-center border-l border-slate-100 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300">{calculateYearsOfService(emp.hire_date)} سنة</td>
                                     <td className="p-4 border-l border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400">{formatDate(emp.hire_date)}</td>
                                     <td className="p-4 border-l border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400">{emp.certificate}</td>
