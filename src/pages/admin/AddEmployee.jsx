@@ -27,9 +27,6 @@ export default function AddEmployee() {
     position: '',
     work_schedule: 'morning',
     work_location: '',
-    nominal_salary: 0,
-    total_salary: 0,
-    incentive: 0,
     visible_password: '123456',
     role: 'user',
     // New Fields
@@ -122,9 +119,6 @@ export default function AddEmployee() {
         'المنصب': 'مسؤول شعبة',
         'نظام الدوام': 'morning',
         'مكان العمل': 'المقر العام',
-        'الراتب الاسمي': 1000000,
-        'الراتب الكلي': 1500000,
-        'الحافز الشهري': 250000,
         'رصيد الإجازات': 30,
         'رقم الهاتف': '07xxxxxxxxx',
         'البريد الإلكتروني': 'user@example.com',
@@ -203,9 +197,6 @@ export default function AddEmployee() {
             position: row['المنصب'] || '',
             work_schedule: (row['نظام الدوام'] === 'shift' || row['نظام الدوام'] === 'مناوب') ? 'shift' : 'morning',
             work_location: row['مكان العمل'] || '',
-            nominal_salary: row['الراتب الاسمي'] || 0,
-            total_salary: row['الراتب الكلي'] || 0,
-            incentive: row['الحافز الشهري'] || 0,
             years_of_service: 0,
             leave_balance: row['رصيد الإجازات'] || 0,
 
@@ -455,24 +446,6 @@ export default function AddEmployee() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">رصيد الإجازات</label>
             <input type="number" name="leave_balance" value={formData.leave_balance} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-          </div>
-
-          {/* Section: Salary Info */}
-          <div className="md:col-span-2 bg-slate-50 dark:bg-slate-700/30 p-3 rounded mt-4 border border-slate-200 dark:border-slate-700">
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">المخصصات والراتب</span>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الراتب الاسمي</label>
-            <input type="number" name="nominal_salary" value={formData.nominal_salary} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الراتب الكلي</label>
-            <input type="number" name="total_salary" value={formData.total_salary} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">الحافز الشهري</label>
-            <input type="number" name="incentive" value={formData.incentive} onChange={handleChange} className="w-full p-2 border rounded-lg dark:bg-slate-700 dark:border-slate-600 dark:text-white" />
           </div>
 
           <div className="space-y-2">

@@ -22,16 +22,6 @@ export default function Salary() {
     try {
       const userId = session.user.id
 
-      // Fetch Basic Salary Info
-      const { data: empData, error: empError } = await supabase
-        .from('employees')
-        .select('nominal_salary, total_salary, incentive')
-        .eq('id', userId)
-        .single()
-
-      if (empError) throw empError
-      setEmployee(empData)
-
       // Fetch Slips
       const { data: slipsData, error: slipsError } = await supabase
         .from('salary_slips')
@@ -49,7 +39,7 @@ export default function Salary() {
     }
   }
 
-  if (loading) return <div className="p-8 text-center">جاري التحميل...</div>
+  if (loading) return <div className="p-8 text-center text-slate-500">جاري التحميل...</div>
 
   return (
     <div className="space-y-6">
@@ -61,13 +51,7 @@ export default function Salary() {
               <Wallet className="fill-current/20" size={32} />
               تفاصيل الراتب
             </h1>
-            <p className="text-sky-100 font-medium opacity-90">عرض شريط الراتب والحوافز والمخصصات الشهرية</p>
-          </div>
-
-          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-center min-w-[160px]">
-            <span className="text-xs font-bold block mb-1 opacity-80">الراتب الكلي (تقديري)</span>
-            <span className="text-2xl font-black tracking-tight">{employee?.total_salary?.toLocaleString()}</span>
-            <span className="text-xs mr-1 opacity-80">د.ع</span>
+            <p className="text-sky-100 font-medium opacity-90">عرض شريط الراتب والحوافز والمخصصات الشهرية المرفوعة من الإدارة</p>
           </div>
         </div>
 
@@ -75,48 +59,6 @@ export default function Salary() {
         <CreditCard className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
         <TrendingUp className="absolute -top-6 -right-6 text-white/10 w-32 h-32 -rotate-12" />
       </div>
-
-      {/* Salary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-4 opacity-10"><CreditCard size={100} /></div>
-          <p className="text-indigo-100 mb-2">الراتب الكلي</p>
-          <h2 className="text-3xl font-bold tracking-tight">
-            {employee?.total_salary?.toLocaleString()} <span className="text-lg opacity-70">د.ع</span>
-          </h2>
-          <p className="text-xs text-indigo-200 mt-4">* يشمل المخصصات والحوافز</p>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-              <DollarSign size={18} />
-              <span>الراتب الاسمي</span>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-white">
-              {employee?.nominal_salary?.toLocaleString()} <span className="text-sm text-slate-400">د.ع</span>
-            </h2>
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-            <span className="text-xs text-slate-400">يخضع للاستقطاعات التقاعدية</span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col justify-between">
-          <div>
-            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
-              <TrendingUp size={18} />
-              <span>حافز شهري (تقديري)</span>
-            </div>
-            <h2 className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {employee?.incentive?.toLocaleString()} <span className="text-sm text-slate-400">د.ع</span>
-            </h2>
-          </div>
-          <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
-            <span className="text-xs text-slate-400">يتغير حسب الأرباح الشهرية</span>
-          </div>
-        </div>
-      </div >
 
       {/* Recent Slips List */}
       < div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden" >

@@ -306,16 +306,12 @@ export default function Profile() {
                                 <CreditCard size={24} className="text-white" />
                             </div>
                             <span className="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full backdrop-blur-sm border border-white/10">
-                                الراتب الكلي
+                                الرواتب
                             </span>
                         </div>
                         <div>
-                            <h3 className="text-2xl font-black mb-1 tracking-tight">تفاصيل الراتب</h3>
-                            <p className="text-fuchsia-100 text-xs mb-3 opacity-80 font-medium">عرض شريط الراتب والحوافز الشهرية</p>
-                            <div className="flex items-baseline gap-1 text-white">
-                                <span className="text-4xl font-black tracking-tighter drop-shadow-sm">{employee.total_salary?.toLocaleString()}</span>
-                                <span className="text-sm font-medium opacity-80">د.ع</span>
-                            </div>
+                            <h3 className="text-2xl font-black mb-1 tracking-tight">أشرطة الراتب</h3>
+                            <p className="text-fuchsia-100 text-sm opacity-80 font-medium">مشاهدة وتحميل أشرطة الراتب الشهرية المرفوعة من قبل الإدارة.</p>
                         </div>
                     </div>
                 </Link>
