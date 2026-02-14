@@ -11,9 +11,7 @@ export default function FileViewer({ file, onClose }) {
     const [error, setError] = useState(null)
     const [zoom, setZoom] = useState(1)
     const [rotation, setRotation] = useState(0)
-    const [position, setPosition] = useState({ x: 0, y: 0 })
     const containerRef = useRef(null)
-    const touchRef = useRef({ lastDist: 0, lastX: 0, lastY: 0, isDragging: false })
 
     const fileType = file?.type || detectFileType(file?.url)
 
@@ -25,7 +23,6 @@ export default function FileViewer({ file, onClose }) {
         setError(null)
         setZoom(1)
         setRotation(0)
-        setPosition({ x: 0, y: 0 })
 
         getSignedUrl(file.url)
             .then(url => {
@@ -49,7 +46,7 @@ export default function FileViewer({ file, onClose }) {
             if (e.key === 'Escape') onClose?.()
             if (e.key === '+' || e.key === '=') setZoom(z => Math.min(5, z + 0.25))
             if (e.key === '-') setZoom(z => Math.max(0.1, z - 0.25))
-            if (e.key === '0') { setZoom(1); setRotation(0); setPosition({ x: 0, y: 0 }) }
+            if (e.key === '0') { setZoom(1); setRotation(0) }
         }
         window.addEventListener('keydown', handleKeyDown)
         return () => window.removeEventListener('keydown', handleKeyDown)
@@ -72,82 +69,6 @@ export default function FileViewer({ file, onClose }) {
         return () => container.removeEventListener('wheel', handleWheel)
     }, [signedUrl])
 
-    // Touch handlers for mobile
-    const handleTouchStart = (e) => {
-        if (fileType !== 'image') return
-
-        if (e.touches.length === 2) {
-            // Pinch start
-            const dist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            )
-            touchRef.current.lastDist = dist
-            touchRef.current.isDragging = false
-        } else if (e.touches.length === 1) {
-            // Drag start
-            touchRef.current.lastX = e.touches[0].clientX
-            touchRef.current.lastY = e.touches[0].clientY
-            touchRef.current.isDragging = zoom > 1
-        }
-    }
-
-    const handleTouchMove = (e) => {
-        if (fileType !== 'image') return
-
-        if (e.touches.length === 2) {
-            // Pinch move
-            e.preventDefault()
-            const dist = Math.hypot(
-                e.touches[0].clientX - e.touches[1].clientX,
-                e.touches[0].clientY - e.touches[1].clientY
-            )
-            const delta = (dist - touchRef.current.lastDist) * 0.01
-            setZoom(z => Math.max(0.5, Math.min(5, z + delta)))
-            touchRef.current.lastDist = dist
-        } else if (e.touches.length === 1 && touchRef.current.isDragging) {
-            // Drag move
-            e.preventDefault()
-            const deltaX = e.touches[0].clientX - touchRef.current.lastX
-            const deltaY = e.touches[0].clientY - touchRef.current.lastY
-
-            setPosition(pos => ({
-                x: pos.x + deltaX,
-                y: pos.y + deltaY
-            }))
-
-            touchRef.current.lastX = e.touches[0].clientX
-            touchRef.current.lastY = e.touches[0].clientY
-        }
-    }
-
-    const handleTouchEnd = () => {
-        touchRef.current.isDragging = false
-    }
-
-    // Mouse Dragging (Support for desktop too)
-    const [isMouseDown, setIsMouseDown] = useState(false)
-    const handleMouseDown = (e) => {
-        if (zoom <= 1) return
-        setIsMouseDown(true)
-        touchRef.current.lastX = e.clientX
-        touchRef.current.lastY = e.clientY
-    }
-
-    const handleMouseMove = (e) => {
-        if (!isMouseDown) return
-        const deltaX = e.clientX - touchRef.current.lastX
-        const deltaY = e.clientY - touchRef.current.lastY
-        setPosition(pos => ({
-            x: pos.x + deltaX,
-            y: pos.y + deltaY
-        }))
-        touchRef.current.lastX = e.clientX
-        touchRef.current.lastY = e.clientY
-    }
-
-    const handleMouseUp = () => setIsMouseDown(false)
-
     // Prevent body scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden'
@@ -162,7 +83,6 @@ export default function FileViewer({ file, onClose }) {
     const resetView = () => {
         setZoom(1)
         setRotation(0)
-        setPosition({ x: 0, y: 0 })
     }
 
     if (!file) return null
@@ -250,15 +170,8 @@ export default function FileViewer({ file, onClose }) {
                 {/* Viewer Area - takes remaining height */}
                 <div
                     ref={containerRef}
-                    className={`flex-1 bg-slate-950 flex items-center justify-center relative ${fileType === 'pdf' ? 'overflow-auto' : 'overflow-hidden'}`}
+                    className="flex-1 bg-slate-950 overflow-auto flex items-center justify-center"
                     onContextMenu={handleContextMenu}
-                    onTouchStart={fileType === 'image' ? handleTouchStart : undefined}
-                    onTouchMove={fileType === 'image' ? handleTouchMove : undefined}
-                    onTouchEnd={fileType === 'image' ? handleTouchEnd : undefined}
-                    onMouseDown={fileType === 'image' ? handleMouseDown : undefined}
-                    onMouseMove={fileType === 'image' ? handleMouseMove : undefined}
-                    onMouseUp={fileType === 'image' ? handleMouseUp : undefined}
-                    onMouseLeave={fileType === 'image' ? handleMouseUp : undefined}
                 >
                     {loading && (
                         <div className="flex flex-col items-center gap-4 p-20">
@@ -276,19 +189,18 @@ export default function FileViewer({ file, onClose }) {
 
                     {!loading && !error && signedUrl && (fileType === 'image' || fileType === 'unknown') && (
                         <div
-                            className="relative select-none w-full h-full flex items-center justify-center transition-none"
+                            className="relative select-none w-full h-full flex items-center justify-center"
                             onDragStart={(e) => e.preventDefault()}
                         >
                             <img
                                 src={signedUrl}
                                 alt={file.title || 'Image'}
-                                className={`object-contain transition-none ${zoom > 1 ? 'cursor-grabbing' : 'cursor-grab'}`}
+                                className="object-contain transition-transform duration-200 cursor-grab active:cursor-grabbing"
                                 style={{
-                                    transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+                                    transform: `scale(${zoom}) rotate(${rotation}deg)`,
                                     transformOrigin: 'center center',
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    touchAction: 'none'
+                                    maxWidth: zoom <= 1 ? '100%' : 'none',
+                                    maxHeight: zoom <= 1 ? '100%' : 'none',
                                 }}
                                 draggable="false"
                                 onContextMenu={handleContextMenu}
@@ -298,16 +210,24 @@ export default function FileViewer({ file, onClose }) {
                                     }
                                 }}
                             />
+                            {/* Transparent overlay to prevent easy save */}
+                            <div
+                                className="absolute inset-0"
+                                onContextMenu={handleContextMenu}
+                                style={{ userSelect: 'none', WebkitUserSelect: 'none' }}
+                            />
                         </div>
                     )}
 
                     {!loading && !error && signedUrl && fileType === 'pdf' && (
-                        <iframe
-                            src={`${signedUrl}#toolbar=0&navpanes=0&scrollbar=1`}
-                            className="w-full h-full border-0"
-                            title={file.title || 'PDF Viewer'}
-                            onContextMenu={handleContextMenu}
-                        />
+                        <div className="w-full h-full overflow-y-auto touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            <iframe
+                                src={`${signedUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
+                                className="w-full h-full border-0"
+                                title={file.title || 'PDF Viewer'}
+                                onContextMenu={handleContextMenu}
+                            />
+                        </div>
                     )}
                 </div>
             </div>

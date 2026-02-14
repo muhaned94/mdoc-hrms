@@ -782,34 +782,55 @@ export default function EmployeeDetails() {
                             </label>
                         </div>
 
-                        {/* Administrative Orders Section */}
+                        {/* Administrative Orders */}
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
                             <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
-                                <FileText className="text-primary" size={20} />
+                                <FileText className="text-blue-500" size={20} />
                                 الأوامر الإدارية
                             </h3>
-                            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
-                                {orders.map(doc => (
-                                    <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700 group">
-                                        <div className="flex flex-col min-w-0">
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{doc.title}</span>
-                                            <span className="text-[10px] text-slate-400 font-mono">{formatDate(doc.created_at)}</span>
+                            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto">
+                                {orders.length > 0 ? (
+                                    orders.map((order) => (
+                                        <div key={order.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700">
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate max-w-[150px]">{order.title}</span>
+                                                <span className="text-[10px] text-slate-400">{formatDate(order.created_at)}</span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setViewFile({ url: order.file_url, title: order.title, type: 'pdf' })}
+                                                    className="p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                                                    title="عرض"
+                                                >
+                                                    <Eye size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleEditOrderTitle(order.id)}
+                                                    className="p-1.5 text-slate-400 hover:text-primary"
+                                                    title="تعديل الاسم"
+                                                >
+                                                    <Edit3 size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteOrder(order.id)}
+                                                    className="p-1.5 text-red-400 hover:text-red-600 dark:hover:text-red-400"
+                                                    title="حذف"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div className="flex gap-1">
-                                            <button type="button" onClick={() => setViewFile({ url: doc.file_url, title: doc.title })} className="p-1.5 text-slate-400 hover:text-primary transition-colors">
-                                                <Eye size={16} />
-                                            </button>
-                                            <button onClick={() => handleDeleteOrder(doc.id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))
+                                ) : (
+                                    <p className="text-sm text-slate-400 text-center py-4">لا توجد أوامر إدارية مرفوعة</p>
+                                )}
                             </div>
-                            <label className="block w-full text-center border-2 border-dashed border-primary/20 hover:border-primary/50 rounded-lg p-3 cursor-pointer transition-all hover:bg-primary/5">
-                                <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
-                                <span className="text-xs font-bold text-primary flex items-center justify-center gap-2">
-                                    {uploadingOrder ? 'جاري الرفع...' : <><Upload size={14} /> رفع أمر إداري</>}
+
+                            <label className={`cursor-pointer block w-full p-3 border-2 border-dashed border-blue-200 dark:border-blue-800 rounded-xl text-center transition-colors hover:bg-blue-50 dark:hover:bg-blue-900/10`}>
+                                <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} accept=".pdf,.png,.jpg,.jpeg" />
+                                <span className="text-xs font-bold text-blue-600 dark:text-blue-400">
+                                    {uploadingOrder ? 'جاري الرفع...' : 'رفع أمر إداري'}
                                 </span>
                             </label>
                         </div>
