@@ -250,15 +250,15 @@ export default function FileViewer({ file, onClose }) {
                 {/* Viewer Area - takes remaining height */}
                 <div
                     ref={containerRef}
-                    className="flex-1 bg-slate-950 overflow-hidden flex items-center justify-center relative"
+                    className={`flex-1 bg-slate-950 flex items-center justify-center relative ${fileType === 'pdf' ? 'overflow-auto' : 'overflow-hidden'}`}
                     onContextMenu={handleContextMenu}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                    onMouseDown={handleMouseDown}
-                    onMouseMove={handleMouseMove}
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
+                    onTouchStart={fileType === 'image' ? handleTouchStart : undefined}
+                    onTouchMove={fileType === 'image' ? handleTouchMove : undefined}
+                    onTouchEnd={fileType === 'image' ? handleTouchEnd : undefined}
+                    onMouseDown={fileType === 'image' ? handleMouseDown : undefined}
+                    onMouseMove={fileType === 'image' ? handleMouseMove : undefined}
+                    onMouseUp={fileType === 'image' ? handleMouseUp : undefined}
+                    onMouseLeave={fileType === 'image' ? handleMouseUp : undefined}
                 >
                     {loading && (
                         <div className="flex flex-col items-center gap-4 p-20">
