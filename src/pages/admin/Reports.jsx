@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    PieChart, Pie, Cell, ComposedChart, Line
+    PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
-import { Wallet, TrendingUp, Users, MapPin, UserCheck, Clock, BarChart3 } from 'lucide-react'
+import { Users, MapPin, UserCheck, Clock, BarChart3 } from 'lucide-react'
 
 const COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4']
 
@@ -12,9 +11,6 @@ export default function Reports() {
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
     const [stats, setStats] = useState({
-        totalSalary: 0,
-        avgSalary: 0,
-        maxSalary: 0,
         totalEmployees: 0
     })
 
@@ -31,15 +27,7 @@ export default function Reports() {
             if (error) throw error
             setData(employees)
 
-            // Calculate Stats
-            const totalSal = employees.reduce((sum, e) => sum + (Number(e.total_salary) || 0), 0)
-            const avgSal = employees.length > 0 ? totalSal / employees.length : 0
-            const maxSal = Math.max(...employees.map(e => Number(e.total_salary) || 0), 0)
-
             setStats({
-                totalSalary: totalSal,
-                avgSalary: avgSal,
-                maxSalary: maxSal,
                 totalEmployees: employees.length
             })
         } catch (err) {
@@ -57,8 +45,6 @@ export default function Reports() {
             if (!locations[loc]) {
                 locations[loc] = {
                     name: loc,
-                    total: 0,
-                    // Stats
                     employeesCount: 0,
                     engineersCount: 0,
                     adminsCount: 0,
@@ -66,18 +52,15 @@ export default function Reports() {
                     shiftCount: 0
                 }
             }
-            locations[loc].total += (Number(e.total_salary) || 0)
             locations[loc].employeesCount++
 
-            // Check Role/Title
             const title = e.job_title || ''
             if (title.includes('مهندس')) {
                 locations[loc].engineersCount++
             } else {
-                locations[loc].adminsCount++ // Assuming non-engineers are admin/others
+                locations[loc].adminsCount++
             }
 
-            // Check Schedule
             if (e.work_schedule === 'shift') {
                 locations[loc].shiftCount++
             } else {
@@ -100,26 +83,6 @@ export default function Reports() {
         return Object.values(schedules)
     }
 
-    const getSalaryComparison = () => {
-        // Top 8 job titles by average salary
-        const titles = {}
-        data.forEach(e => {
-            if (!titles[e.job_title]) titles[e.job_title] = { sum: 0, count: 0, nominalSum: 0 }
-            titles[e.job_title].sum += (Number(e.total_salary) || 0)
-            titles[e.job_title].nominalSum += (Number(e.nominal_salary) || 0)
-            titles[e.job_title].count++
-        })
-
-        return Object.entries(titles)
-            .map(([name, s]) => ({
-                name: name || 'غير مسمى',
-                'الكلي': Math.round(s.sum / s.count),
-                'الاسمي': Math.round(s.nominalSum / s.count)
-            }))
-            .sort((a, b) => b['الكلي'] - a['الكلي'])
-            .slice(0, 8)
-    }
-
     if (loading) return <div className="p-8 text-center text-slate-500">جاري تحليل البيانات...</div>
 
     return (
@@ -130,32 +93,12 @@ export default function Reports() {
                         <BarChart3 className="text-primary" />
                         التقارير والإحصائيات
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400">تحليل بيانات الموظفين والرواتب بصورة تفاعلية</p>
+                    <p className="text-slate-500 dark:text-slate-400">تحليل بيانات الموظفين بصورة تفاعلية</p>
                 </div>
             </div>
 
             {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl">
-                            <Wallet size={24} />
-                        </div>
-                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">إجمالي الرواتب</span>
-                    </div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.totalSalary.toLocaleString()} <span className="text-xs font-normal">د.ع</span></p>
-                </div>
-
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl">
-                            <TrendingUp size={24} />
-                        </div>
-                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">متوسط الرواتب</span>
-                    </div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{Math.round(stats.avgSalary).toLocaleString()} <span className="text-xs font-normal">د.ع</span></p>
-                </div>
-
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
                     <div className="flex items-center gap-4 mb-4">
                         <div className="p-3 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 rounded-xl">
@@ -171,14 +114,26 @@ export default function Reports() {
                         <div className="p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl">
                             <MapPin size={24} />
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">أعلى راتب</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">عدد المواقع</span>
                     </div>
-                    <p className="text-2xl font-black text-slate-800 dark:text-white">{stats.maxSalary.toLocaleString()} <span className="text-xs font-normal">د.ع</span></p>
+                    <p className="text-2xl font-black text-slate-800 dark:text-white">{getSalaryByLocation().length}</p>
+                </div>
+
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl">
+                            <Clock size={24} />
+                        </div>
+                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">المناوبون</span>
+                    </div>
+                    <p className="text-2xl font-black text-slate-800 dark:text-white">
+                        {getScheduleDistribution().find(s => s.name === 'مناوب')?.value || 0}
+                    </p>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Salary by Location */}
+                {/* Location Table */}
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm col-span-1 lg:col-span-2">
                     <h3 className="font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">تحليل المواقع (الموظفين، الاختصاصات، الدوام)</h3>
                     <div className="overflow-x-auto">
@@ -273,31 +228,11 @@ export default function Reports() {
                                 <div key={item.name} className="flex flex-col">
                                     <span className="text-slate-400 text-xs">{item.name}</span>
                                     <span className="font-bold" style={{ color: COLORS[idx] }}>
-                                        {item.value} موظف ({Math.round(item.value / stats.totalEmployees * 100)}%)
+                                        {item.value} موظف ({stats.totalEmployees > 0 ? Math.round(item.value / stats.totalEmployees * 100) : 0}%)
                                     </span>
                                 </div>
                             ))}
                         </div>
-                    </div>
-                </div>
-
-                {/* Salary Comparison Chart */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm lg:col-span-2">
-                    <h3 className="font-bold text-slate-800 dark:text-white mb-6">مقارنة متوسط الرواتب (الاسمي vs الكلي) لأعلى الوظائف</h3>
-                    <div className="h-[400px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={getSalaryComparison()}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                                <YAxis tick={{ fontSize: 10 }} />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Legend />
-                                <Bar dataKey="الكلي" fill="#6366f1" radius={[4, 4, 0, 0]} />
-                                <Line type="monotone" dataKey="الاسمي" stroke="#f59e0b" strokeWidth={3} />
-                            </ComposedChart>
-                        </ResponsiveContainer>
                     </div>
                 </div>
             </div>

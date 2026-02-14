@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { LayoutDashboard, Users, UserPlus, Megaphone, LogOut, BarChart3, MessageSquareWarning, Send, Database, Menu, X, Activity, GitGraph, FileText, Settings, Upload, GraduationCap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { useSettings } from '../context/SettingsContext'
 
 export default function AdminLayout() {
   const { user, isAdmin, loading, signOut } = useAuth()
@@ -11,13 +12,14 @@ export default function AdminLayout() {
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
+  const { loadUserTheme } = useSettings()
 
   useEffect(() => {
+    if (user?.id) loadUserTheme(user.id)
     fetchPendingReports()
-    // Poll every minute for new reports
     const interval = setInterval(fetchPendingReports, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [user])
 
   const fetchPendingReports = async () => {
     const { count, error } = await supabase

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useSettings } from '../context/SettingsContext'
 import {
   User, Wallet, Mail, FileText, Award, GraduationCap, Files,
   LifeBuoy, Settings, LogOut, Menu, X, Home, FileUser
@@ -16,6 +17,8 @@ export default function UserLayout() {
   const [newSlipsCount, setNewSlipsCount] = useState(0)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+  const { loadUserTheme } = useSettings()
+
   // Auth Check
   useEffect(() => {
     if (!loading && !user) navigate('/login')
@@ -23,6 +26,7 @@ export default function UserLayout() {
 
   useEffect(() => {
     if (user) {
+      loadUserTheme(user.id)
       fetchUnreadCount()
       fetchNewCircularsCount()
       fetchNewSlipsCount()

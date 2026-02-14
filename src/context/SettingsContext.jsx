@@ -3,13 +3,16 @@ import { supabase } from '../lib/supabase'
 
 const SettingsContext = createContext()
 
+// Helper: get user-specific localStorage key
+const getUserThemeKey = (userId) => userId ? `mdoc_user_theme_${userId}` : null
+
 export function SettingsProvider({ children }) {
     const [settings, setSettings] = useState({
         theme: 'light',
         allow_password_change: true,
         allow_profile_picture_change: true,
         allow_backup_download: false,
-        login_method: 'both', // 'password', 'qr', 'both'
+        login_method: 'both',
         course_settings: {
             grade_1: 2,
             grade_2: 2,
@@ -24,14 +27,23 @@ export function SettingsProvider({ children }) {
     })
     const [loading, setLoading] = useState(true)
 
+    // Per-user theme (null = use system default)
+    const [userTheme, setUserThemeState] = useState(null)
+    const [currentUserId, setCurrentUserId] = useState(null)
+
+    // Effective theme: user preference > system default
+    const effectiveTheme = userTheme || settings.theme
+
     useEffect(() => {
         fetchSettings()
+    }, [])
 
-        // Application-wide theme application
+    // Apply effective theme to DOM
+    useEffect(() => {
         const root = window.document.documentElement
         root.classList.remove('light', 'dark')
-        root.classList.add(settings.theme)
-    }, [settings.theme])
+        root.classList.add(effectiveTheme)
+    }, [effectiveTheme])
 
     const fetchSettings = async () => {
         try {
@@ -42,7 +54,6 @@ export function SettingsProvider({ children }) {
 
             if (error) {
                 if (error.code === 'PGRST116') {
-                    // Table might be empty or missing, use defaults or try to insert?
                     console.warn('Settings not found, using defaults')
                 } else {
                     console.error('Error fetching settings:', error)
@@ -68,13 +79,10 @@ export function SettingsProvider({ children }) {
     }
 
     const updateSetting = async (key, value) => {
-        // Optimistic update
         const newSettings = { ...settings, [key]: value }
         setSettings(newSettings)
 
         try {
-            // Use upsert to handle both update and insert (if missing)
-            // ensuring we don't lose other fields by spreading existing settings
             const { error } = await supabase
                 .from('system_settings')
                 .upsert({
@@ -88,7 +96,6 @@ export function SettingsProvider({ children }) {
         } catch (error) {
             console.error('Error updating setting:', error)
             alert(`فشل حفظ الإعدادات: ${error.message || 'حدث خطأ غير معروف'}`)
-            // Revert on error
             fetchSettings()
         }
     }
@@ -98,8 +105,78 @@ export function SettingsProvider({ children }) {
         updateSetting('theme', newTheme)
     }
 
+    // Set per-user theme (saves to user-specific localStorage + DB)
+    const setUserTheme = async (theme, userId) => {
+        const uid = userId || currentUserId
+        const key = getUserThemeKey(uid)
+        if (key) {
+            localStorage.setItem(key, theme)
+        }
+        setUserThemeState(theme)
+
+        // Persist to DB
+        if (uid) {
+            try {
+                const { error } = await supabase
+                    .from('employees')
+                    .update({ theme_preference: theme })
+                    .eq('id', uid)
+                if (error) throw error
+            } catch (err) {
+                console.error('Failed to save theme preference:', err)
+            }
+        }
+    }
+
+    // Load theme preference for a specific user
+    const loadUserTheme = async (userId) => {
+        setCurrentUserId(userId)
+
+        // Check user-specific localStorage first (instant)
+        const key = getUserThemeKey(userId)
+        if (key) {
+            const cached = localStorage.getItem(key)
+            if (cached) {
+                setUserThemeState(cached)
+            }
+        }
+
+        // Then sync from DB
+        if (userId) {
+            try {
+                const { data, error } = await supabase
+                    .from('employees')
+                    .select('theme_preference')
+                    .eq('id', userId)
+                    .single()
+
+                if (!error && data?.theme_preference) {
+                    if (key) localStorage.setItem(key, data.theme_preference)
+                    setUserThemeState(data.theme_preference)
+                }
+            } catch (err) {
+                console.error('Failed to load theme preference:', err)
+            }
+        }
+    }
+
+    // Clear user theme on logout (fall back to system default)
+    const clearUserTheme = () => {
+        setUserThemeState(null)
+        setCurrentUserId(null)
+    }
+
     return (
-        <SettingsContext.Provider value={{ settings, updateSetting, toggleTheme, loading }}>
+        <SettingsContext.Provider value={{
+            settings,
+            updateSetting,
+            toggleTheme,
+            loading,
+            effectiveTheme,
+            setUserTheme,
+            loadUserTheme,
+            clearUserTheme
+        }}>
             {children}
         </SettingsContext.Provider>
     )

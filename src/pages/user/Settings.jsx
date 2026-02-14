@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck } from 'lucide-react'
+import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun } from 'lucide-react'
 import { useSettings } from '../../context/SettingsContext'
 
 export default function Settings() {
   const { session, signOut, loading: authLoading } = useAuth()
-  const { settings } = useSettings()
+  const { settings, effectiveTheme, setUserTheme } = useSettings()
   const navigate = useNavigate()
   const [employee, setEmployee] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -115,6 +115,11 @@ export default function Settings() {
     }
   }
 
+  const handleThemeToggle = () => {
+    const newTheme = effectiveTheme === 'light' ? 'dark' : 'light'
+    setUserTheme(newTheme, userId)
+  }
+
   if (loading || authLoading) return <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
 
   if (!employee) {
@@ -135,13 +140,57 @@ export default function Settings() {
               <SettingsIcon className="fill-current/20" size={32} />
               إعدادات الحساب
             </h1>
-            <p className="text-sky-100 font-medium opacity-90">إدارة الصورة الشخصية وكلمة المرور</p>
+            <p className="text-sky-100 font-medium opacity-90">إدارة الصورة الشخصية وكلمة المرور والمظهر</p>
           </div>
         </div>
 
         {/* Decorations */}
         <SettingsIcon className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
         <ShieldCheck className="absolute -top-6 -right-6 text-white/10 w-32 h-32 -rotate-12" />
+      </div>
+
+      {/* Theme / Dark Mode Section */}
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+        <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
+          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
+            {effectiveTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
+          </div>
+          المظهر
+        </h3>
+
+        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl transition-colors">
+          <div>
+            <h4 className="font-medium text-slate-800 dark:text-slate-200">الوضع الليلي</h4>
+            <p className="text-sm text-slate-500 dark:text-slate-400">تغيير مظهر التطبيق بين الفاتح والداكن</p>
+          </div>
+          <button
+            onClick={handleThemeToggle}
+            dir="ltr"
+            className={`
+              relative w-16 h-8 rounded-full transition-all duration-300 ease-in-out shadow-inner
+              ${effectiveTheme === 'dark'
+                ? 'bg-gradient-to-r from-indigo-500 to-purple-600'
+                : 'bg-slate-200'
+              }
+            `}
+          >
+            <div
+              className={`
+                absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ease-in-out flex items-center justify-center
+                ${effectiveTheme === 'dark' ? 'translate-x-8' : 'translate-x-0'}
+              `}
+            >
+              {effectiveTheme === 'dark'
+                ? <Moon size={14} className="text-indigo-600" />
+                : <Sun size={14} className="text-amber-500" />
+              }
+            </div>
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-center">
+          {effectiveTheme === 'dark' ? '🌙 الوضع الداكن مفعّل' : '☀️ الوضع الفاتح مفعّل'}
+        </p>
       </div>
 
       {/* Avatar Section */}

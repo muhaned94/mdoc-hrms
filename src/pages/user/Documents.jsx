@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Upload, CheckCircle, FileText, XCircle, Loader2, Trash2, Eye, Info } from 'lucide-react'
+import FileViewer from '../../components/FileViewer'
 
 const DOCUMENT_TYPES = [
   { id: 'national_id', name: 'البطاقة الوطنية', key: 'national_id_url', description: 'وجه وظهر البطاقة الموحدة' },
@@ -20,6 +21,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState({})
   const [deleting, setDeleting] = useState({})
+  const [viewFile, setViewFile] = useState(null)
 
   const userId = session?.user?.id
 
@@ -141,104 +143,112 @@ export default function Documents() {
   }
 
   return (
-    <div className="space-y-8 pb-20" dir="rtl">
-      {/* Unified Gradient Header */}
-      <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden mb-8">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-right">
-            <h1 className="text-3xl font-black mb-2 flex items-center gap-3 justify-center md:justify-start">
-              <FileText className="fill-current/20" size={32} />
-              المستمسكات الرسمية
-            </h1>
-            <p className="text-sky-100 font-medium opacity-90 max-w-md">يرجى رفع النسخ الأصلية والواضحة لضمان سرعة إنجاز المعاملات.</p>
-          </div>
+    <>
+      <div className="space-y-8 pb-20" dir="rtl">
+        {/* Unified Gradient Header */}
+        <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden mb-8">
+          <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="text-center md:text-right">
+              <h1 className="text-3xl font-black mb-2 flex items-center gap-3 justify-center md:justify-start">
+                <FileText className="fill-current/20" size={32} />
+                المستمسكات الرسمية
+              </h1>
+              <p className="text-sky-100 font-medium opacity-90 max-w-md">يرجى رفع النسخ الأصلية والواضحة لضمان سرعة إنجاز المعاملات.</p>
+            </div>
 
-          <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-center flex items-center gap-3">
-            <Info size={24} className="opacity-80" />
-            <div className="text-left">
-              <span className="text-[10px] font-bold block opacity-70 uppercase">الحد الأقصى</span>
-              <span className="text-sm font-black italic">5MB للملف</span>
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30 text-center flex items-center gap-3">
+              <Info size={24} className="opacity-80" />
+              <div className="text-left">
+                <span className="text-[10px] font-bold block opacity-70 uppercase">الحد الأقصى</span>
+                <span className="text-sm font-black italic">5MB للملف</span>
+              </div>
             </div>
           </div>
+
+          {/* Decorations */}
+          <FileText className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
         </div>
 
-        {/* Decorations */}
-        <FileText className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {DOCUMENT_TYPES.map((doc) => {
+            const isUploaded = !!employee[doc.key]
+            const isImage = employee[doc.key]?.match(/\.(jpg|jpeg|png|webp)$/i)
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {DOCUMENT_TYPES.map((doc) => {
-          const isUploaded = !!employee[doc.key]
-          const isImage = employee[doc.key]?.match(/\.(jpg|jpeg|png|webp)$/i)
-
-          return (
-            <div key={doc.id} className="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300 overflow-hidden flex flex-col">
-              <div className="p-6 flex-1">
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isUploaded ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-900/30 text-slate-400 dark:text-slate-500 group-hover:bg-primary/5 dark:group-hover:bg-primary/10 group-hover:text-primary dark:group-hover:text-primary'}`}>
-                    <FileText size={24} />
-                  </div>
-                  {isUploaded && (
-                    <div className="flex items-center gap-1 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full text-xs font-bold">
-                      <CheckCircle size={14} />
-                      تم الرفع
+            return (
+              <div key={doc.id} className="group bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 hover:border-primary/30 dark:hover:border-primary/50 transition-all duration-300 overflow-hidden flex flex-col">
+                <div className="p-6 flex-1">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${isUploaded ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-900/30 text-slate-400 dark:text-slate-500 group-hover:bg-primary/5 dark:group-hover:bg-primary/10 group-hover:text-primary dark:group-hover:text-primary'}`}>
+                      <FileText size={24} />
                     </div>
+                    {isUploaded && (
+                      <div className="flex items-center gap-1 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full text-xs font-bold">
+                        <CheckCircle size={14} />
+                        تم الرفع
+                      </div>
+                    )}
+                  </div>
+
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">{doc.name}</h3>
+                  <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">{doc.description}</p>
+
+                  {isUploaded ? (
+                    <div className="relative rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 aspect-video mb-4 flex items-center justify-center group/docs">
+                      {isImage ? (
+                        <img src={employee[doc.key]} alt={doc.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500">
+                          <FileText size={40} />
+                          <span className="text-xs font-medium">ملف PDF</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                        <button
+                          onClick={() => setViewFile({ url: employee[doc.key], title: doc.name })}
+                          className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg"
+                          title="عرض"
+                        >
+                          <Eye size={18} />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="block">
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={(e) => handleFileUpload(e, doc)}
+                        disabled={uploading[doc.id]}
+                        accept=".jpg,.jpeg,.png,.pdf"
+                      />
+                      <div className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 dark:hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/5 transition-all group/upload">
+                        {uploading[doc.id] ? (
+                          <Loader2 className="animate-spin text-primary" size={32} />
+                        ) : (
+                          <>
+                            <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-full text-slate-400 dark:text-slate-600 group-hover/upload:bg-white dark:group-hover/upload:bg-slate-800 group-hover/upload:text-primary transition-colors">
+                              <Upload size={24} />
+                            </div>
+                            <span className="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
+                          </>
+                        )}
+                      </div>
+                    </label>
                   )}
                 </div>
 
-                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">{doc.name}</h3>
-                <p className="text-sm text-slate-400 dark:text-slate-500 mb-6">{doc.description}</p>
-
-                {isUploaded ? (
-                  <div className="relative rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 aspect-video mb-4 flex items-center justify-center group/docs">
-                    {isImage ? (
-                      <img src={employee[doc.key]} alt={doc.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-slate-400 dark:text-slate-500">
-                        <FileText size={40} />
-                        <span className="text-xs font-medium">ملف PDF</span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover/docs:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                      <a href={employee[doc.key]} target="_blank" rel="noopener noreferrer" className="p-2 bg-white rounded-full text-slate-700 hover:bg-slate-50 transition-colors shadow-lg" title="عرض">
-                        <Eye size={18} />
-                      </a>
-                    </div>
-                  </div>
-                ) : (
-                  <label className="block">
-                    <input
-                      type="file"
-                      className="hidden"
-                      onChange={(e) => handleFileUpload(e, doc)}
-                      disabled={uploading[doc.id]}
-                      accept=".jpg,.jpeg,.png,.pdf"
-                    />
-                    <div className="w-full h-32 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 dark:hover:border-primary/40 hover:bg-primary/5 dark:hover:bg-primary/5 transition-all group/upload">
-                      {uploading[doc.id] ? (
-                        <Loader2 className="animate-spin text-primary" size={32} />
-                      ) : (
-                        <>
-                          <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-full text-slate-400 dark:text-slate-600 group-hover/upload:bg-white dark:group-hover/upload:bg-slate-800 group-hover/upload:text-primary transition-colors">
-                            <Upload size={24} />
-                          </div>
-                          <span className="text-sm font-bold text-slate-500 dark:text-slate-400 group-hover/upload:text-primary transition-colors">اضغط للرفع</span>
-                        </>
-                      )}
-                    </div>
-                  </label>
-                )}
+                <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
+                  <span>الحالة: {isUploaded ? 'مكتمل' : 'مطلوب'}</span>
+                  {!isUploaded && <span className="text-amber-500 dark:text-amber-400 animate-pulse">بانتظار الإجراء</span>}
+                </div>
               </div>
+            )
+          })}
+        </div>
 
-              <div className="px-6 py-3 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
-                <span>الحالة: {isUploaded ? 'مكتمل' : 'مطلوب'}</span>
-                {!isUploaded && <span className="text-amber-500 dark:text-amber-400 animate-pulse">بانتظار الإجراء</span>}
-              </div>
-            </div>
-          )
-        })}
       </div>
 
-    </div>
+      {viewFile && <FileViewer file={viewFile} onClose={() => setViewFile(null)} />}
+    </>
   )
 }

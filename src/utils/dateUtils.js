@@ -34,6 +34,44 @@ export const calculateServiceDuration = (hireDateArg, bonusMonths = 0) => {
     }
 }
 
+/**
+ * حساب الخدمة الفعلية (من تاريخ التعيين إلى اليوم) بدون أي إضافات
+ * يعيد: سنوات، أشهر، أيام، ونص مقروء
+ */
+export const calculateActualService = (hireDateArg) => {
+    if (!hireDateArg) return { years: 0, months: 0, days: 0, display: '0' }
+
+    const hireDate = new Date(hireDateArg)
+    const today = new Date()
+
+    let years = today.getFullYear() - hireDate.getFullYear()
+    let months = today.getMonth() - hireDate.getMonth()
+    let days = today.getDate() - hireDate.getDate()
+
+    if (days < 0) {
+        months--
+        const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0)
+        days += prevMonth.getDate()
+    }
+
+    if (months < 0) {
+        years--
+        months += 12
+    }
+
+    const parts = []
+    if (years > 0) parts.push(`${years} سنة`)
+    if (months > 0) parts.push(`${months} شهر`)
+    if (days > 0) parts.push(`${days} يوم`)
+
+    return {
+        years,
+        months,
+        days,
+        display: parts.length > 0 ? parts.join(' و ') : 'أقل من يوم'
+    }
+}
+
 export const formatDate = (dateArg) => {
     if (!dateArg) return '-'
     const date = new Date(dateArg)

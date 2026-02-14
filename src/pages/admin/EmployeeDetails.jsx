@@ -3,11 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { useSettings } from '../../context/SettingsContext'
-import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye, Briefcase, User, Wallet, Clock, Calendar, MessageSquare, QrCode, X, MapPin } from 'lucide-react'
-import { calculateServiceDuration, formatDate, formatMonthYear } from '../../utils/dateUtils'
+import { Save, Upload, FileText, ArrowRight, UserCog, Shield, Trash, Trash2, GraduationCap, Plus, Star, Edit3, AlertTriangle, Eye, Briefcase, User, Wallet, Clock, Calendar, MessageSquare, QrCode, X, MapPin, Key, Wand2 } from 'lucide-react'
+import { calculateServiceDuration, calculateActualService, formatDate, formatMonthYear } from '../../utils/dateUtils'
 import { calculateJobGrade } from '../../utils/gradeUtils'
 import { countWeightedCourses } from '../../utils/courseUtils'
 import UserQRCode from '../../components/UserQRCode'
+import FileViewer from '../../components/FileViewer'
 
 export default function EmployeeDetails() {
     const { id } = useParams()
@@ -17,6 +18,7 @@ export default function EmployeeDetails() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [employee, setEmployee] = useState(null)
+    const [viewFile, setViewFile] = useState(null)
 
     // Document Upload States
     const [uploadingOrder, setUploadingOrder] = useState(false)
@@ -40,6 +42,42 @@ export default function EmployeeDetails() {
 
     // Letters State
     const [letterType, setLetterType] = useState('thanks') // 'thanks' | 'sanction'
+
+    // Password Reset State
+    const [newPassword, setNewPassword] = useState('')
+    const [savingPassword, setSavingPassword] = useState(false)
+
+    const generateStrongPassword = () => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-='
+        let password = ''
+        for (let i = 0; i < 15; i++) {
+            password += chars.charAt(Math.floor(Math.random() * chars.length))
+        }
+        setNewPassword(password)
+    }
+
+    const handlePasswordChange = async () => {
+        if (!newPassword || newPassword.length < 4) {
+            alert('كلمة المرور يجب أن تكون 4 أحرف على الأقل')
+            return
+        }
+        setSavingPassword(true)
+        try {
+            // Update directly in employees table (admin has full access)
+            const { error } = await supabase
+                .from('employees')
+                .update({ visible_password: newPassword })
+                .eq('id', id)
+            if (error) throw error
+            setEmployee(prev => ({ ...prev, visible_password: newPassword }))
+            alert('تم تغيير كلمة المرور بنجاح')
+            setNewPassword('')
+        } catch (err) {
+            alert('فشل تغيير كلمة المرور: ' + err.message)
+        } finally {
+            setSavingPassword(false)
+        }
+    }
 
     useEffect(() => {
         fetchEmployee()
@@ -456,7 +494,13 @@ export default function EmployeeDetails() {
                                             <input type="number" name="leave_balance" value={employee.leave_balance || 0} onChange={handleChange} className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-slate-700 text-slate-800 dark:text-white" />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">مدة الخدمة (محسوبة)</label>
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">الخدمة الفعلية</label>
+                                            <div className="w-full p-2.5 border border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-bold">
+                                                {calculateActualService(employee.hire_date).display}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">مدة الخدمة (مع الإضافات)</label>
                                             <div className="w-full p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300">
                                                 {calculateServiceDuration(employee.hire_date, employee.bonus_service_months).display}
                                             </div>
@@ -509,9 +553,9 @@ export default function EmployeeDetails() {
                                                 </label>
                                                 {employee.graduation_certificate_url && (
                                                     <div className="flex gap-1">
-                                                        <a href={employee.graduation_certificate_url} target="_blank" className="p-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30">
+                                                        <button type="button" onClick={() => setViewFile({ url: employee.graduation_certificate_url, title: 'وثيقة التخرج' })} className="p-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30">
                                                             <Eye size={18} />
-                                                        </a>
+                                                        </button>
                                                         <button type="button" onClick={handleDeleteCert} className="p-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30">
                                                             <Trash2 size={18} />
                                                         </button>
@@ -559,15 +603,54 @@ export default function EmployeeDetails() {
                                     </div>
                                 </div>
 
-                                {/* Section 6: Security */}
+                                {/* Section 6: Security & Password Reset */}
                                 <div className="bg-red-50/50 dark:bg-red-900/10 p-5 rounded-xl border border-red-100 dark:border-red-900/30">
-                                    <h4 className="font-bold text-base mb-2 text-slate-800 dark:text-white flex items-center gap-2">
+                                    <h4 className="font-bold text-base mb-4 text-slate-800 dark:text-white flex items-center gap-2">
                                         <Shield size={18} className="text-red-500" />
-                                        الأمان
+                                        الأمان وكلمة المرور
                                     </h4>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">كلمة المرور الحالية</label>
-                                        <input type="text" value={employee.visible_password || ''} readOnly className="w-full md:w-1/2 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono" />
+                                    <div className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">كلمة المرور الحالية</label>
+                                            <input type="text" value={employee.visible_password || ''} readOnly className="w-full md:w-1/2 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono" />
+                                        </div>
+                                        <div className="border-t border-red-100 dark:border-red-900/30 pt-4">
+                                            <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 flex items-center gap-1">
+                                                <Key size={14} />
+                                                تغيير كلمة المرور
+                                            </label>
+                                            <div className="flex flex-col sm:flex-row gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={newPassword}
+                                                    onChange={(e) => setNewPassword(e.target.value)}
+                                                    placeholder="أدخل كلمة مرور جديدة"
+                                                    className="flex-1 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-mono text-sm outline-none focus:ring-2 focus:ring-red-200 dark:focus:ring-red-900"
+                                                    dir="ltr"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={generateStrongPassword}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg hover:from-purple-600 hover:to-indigo-600 transition-all text-xs font-bold shadow-sm whitespace-nowrap"
+                                                    title="توليد كلمة مرور قوية (15 رمز)"
+                                                >
+                                                    <Wand2 size={16} />
+                                                    توليد كلمة قوية
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={handlePasswordChange}
+                                                    disabled={savingPassword || !newPassword}
+                                                    className="flex items-center justify-center gap-2 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all text-xs font-bold shadow-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                                                >
+                                                    <Save size={16} />
+                                                    {savingPassword ? 'جاري الحفظ...' : 'حفظ'}
+                                                </button>
+                                            </div>
+                                            {newPassword && (
+                                                <p className="text-xs text-slate-400 mt-2 font-mono" dir="ltr">المعاينة: {newPassword}</p>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -643,7 +726,7 @@ export default function EmployeeDetails() {
                                                     <span className="text-sm font-bold text-slate-800 dark:text-white truncate max-w-[120px]">{doc.title}</span>
                                                 </div>
                                                 <div className="flex gap-1">
-                                                    <a href={doc.file_url} target="_blank" className="p-1.5 text-slate-400 hover:text-primary"><Eye size={16} /></a>
+                                                    <button type="button" onClick={() => setViewFile({ url: doc.file_url, title: doc.title })} className="p-1.5 text-slate-400 hover:text-primary"><Eye size={16} /></button>
                                                     <button onClick={() => handleDeleteLetter(doc.id, doc.bonus_months)} className="p-1.5 text-slate-400 hover:text-red-500"><Trash2 size={16} /></button>
                                                 </div>
                                             </div>
@@ -710,7 +793,7 @@ export default function EmployeeDetails() {
                                             <span className="text-xs font-bold text-slate-700 dark:text-slate-200">شريط الراتب</span>
                                         </div>
                                         <div className="flex gap-1">
-                                            <a href={doc.file_url} target="_blank" className="p-1 px-2 bg-primary/10 text-primary rounded text-xs">عرض</a>
+                                            <button type="button" onClick={() => setViewFile({ url: doc.file_url, title: `شريط راتب ${formatMonthYear(doc.month_year)}` })} className="p-1 px-2 bg-primary/10 text-primary rounded text-xs">عرض</button>
                                             <button onClick={() => handleDeleteSlip(doc.id)} className="p-1 text-red-500"><Trash2 size={16} /></button>
                                         </div>
                                     </div>
@@ -904,6 +987,8 @@ export default function EmployeeDetails() {
                     </div>
                 </div>
             )}
+
+            {viewFile && <FileViewer file={viewFile} onClose={() => setViewFile(null)} />}
         </>
     )
 }

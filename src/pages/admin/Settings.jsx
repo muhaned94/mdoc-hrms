@@ -28,7 +28,7 @@ export default function Settings() {
     const handleBackup = async () => {
         try {
             const timestamp = new Date().toISOString()
-            // Fetch ALL Data
+            // Fetch ALL Data (14 tables)
             const { data: employees } = await supabase.from('employees').select('*')
             const { data: announcements } = await supabase.from('announcements').select('*')
             const { data: letters } = await supabase.from('appreciation_letters').select('*')
@@ -37,20 +37,45 @@ export default function Settings() {
             const { data: courses } = await supabase.from('courses').select('*')
             const { data: messages } = await supabase.from('messages').select('*')
             const { data: views } = await supabase.from('announcement_views').select('*')
+            const { data: circulars } = await supabase.from('circulars').select('*')
+            const { data: departments } = await supabase.from('departments').select('*')
+            const { data: reports } = await supabase.from('reports').select('*')
+            const { data: notifications } = await supabase.from('notifications').select('*')
+            const { data: activityLogs } = await supabase.from('user_activity_logs').select('*')
+            const { data: systemSettings } = await supabase.from('system_settings').select('*')
+
+            const tables = {
+                system_settings: systemSettings || [],
+                employees: (employees || []).map(({ governorate, city, mahalla, zgaq, dar, ...rest }) => rest),
+                departments: departments || [],
+                announcements: announcements || [],
+                appreciation_letters: letters || [],
+                admin_orders: orders || [],
+                salary_slips: slips || [],
+                courses: courses || [],
+                messages: messages || [],
+                announcement_views: views || [],
+                circulars: circulars || [],
+                reports: reports || [],
+                notifications: notifications || [],
+                user_activity_logs: activityLogs || []
+            }
+
+            // Calculate stats
+            const stats = {}
+            let totalRecords = 0
+            for (const [name, data] of Object.entries(tables)) {
+                stats[name] = data.length
+                totalRecords += data.length
+            }
 
             const backupData = {
-                version: '1.2',
+                version: '2.0',
                 timestamp,
-                tables: {
-                    employees: (employees || []).map(({ governorate, city, mahalla, zgaq, dar, ...rest }) => rest),
-                    announcements: announcements || [],
-                    appreciation_letters: letters || [],
-                    admin_orders: orders || [],
-                    salary_slips: slips || [],
-                    courses: courses || [],
-                    messages: messages || [],
-                    announcement_views: views || []
-                }
+                totalRecords,
+                tableCount: Object.keys(tables).length,
+                stats,
+                tables
             }
 
             const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' })
@@ -62,7 +87,7 @@ export default function Settings() {
             a.click()
             document.body.removeChild(a)
             URL.revokeObjectURL(url)
-            alert('تم تحميل النسخة الاحتياطية للنظام بالكامل (بيانات وملفات) ✅')
+            alert(`تم تحميل النسخة الاحتياطية بنجاح ✅\n\n📊 الإحصائيات:\n• عدد الجداول: ${backupData.tableCount}\n• إجمالي السجلات: ${totalRecords}\n• الموظفون: ${stats.employees}\n• الدورات: ${stats.courses}\n• الإعلانات: ${stats.announcements}\n• التعاميم: ${stats.circulars}\n• الرسائل: ${stats.messages}`)
         } catch (err) {
             console.error("Backup failed:", err)
             alert('حدث خطأ أثناء النسخ الاحتياطي: ' + err.message)
@@ -86,11 +111,14 @@ export default function Settings() {
                 const restoreTable = async (table, data) => {
                     if (data?.length > 0) {
                         const { error } = await supabase.from(table).upsert(data)
-                        if (error) throw error
+                        if (error) throw new Error(`فشل استعادة جدول ${table}: ${error.message}`)
                     }
                 }
 
+                // Restore in dependency order (parent tables first)
+                await restoreTable('system_settings', backup.tables.system_settings)
                 await restoreTable('employees', backup.tables.employees)
+                await restoreTable('departments', backup.tables.departments)
                 await restoreTable('announcements', backup.tables.announcements)
                 await restoreTable('appreciation_letters', backup.tables.appreciation_letters)
                 await restoreTable('admin_orders', backup.tables.admin_orders)
@@ -98,8 +126,13 @@ export default function Settings() {
                 await restoreTable('courses', backup.tables.courses)
                 await restoreTable('messages', backup.tables.messages)
                 await restoreTable('announcement_views', backup.tables.announcement_views)
+                await restoreTable('circulars', backup.tables.circulars)
+                await restoreTable('reports', backup.tables.reports)
+                await restoreTable('notifications', backup.tables.notifications)
+                await restoreTable('user_activity_logs', backup.tables.user_activity_logs)
 
-                alert('تم استعادة النظام بنجاح! 🎉\nسيتم تحديث الصفحة الآن.')
+                const tablesRestored = Object.keys(backup.tables).filter(t => backup.tables[t]?.length > 0).length
+                alert(`تم استعادة النظام بنجاح! 🎉\n\n📊 تم استعادة ${tablesRestored} جداول بنجاح.\nسيتم تحديث الصفحة الآن.`)
                 window.location.reload()
             } catch (err) {
                 console.error("Restore failed:", err)
@@ -133,10 +166,14 @@ export default function Settings() {
                             <p className="text-sm text-slate-500 dark:text-slate-400">تغيير مظهر التطبيق بين الفاتح والداكن</p>
                         </div>
                         <button
-                            onClick={() => updateSetting('theme', settings.theme === 'light' ? 'dark' : 'light')}
+                            onClick={() => {
+                                const newTheme = settings.theme === 'light' ? 'dark' : 'light'
+                                updateSetting('theme', newTheme)
+                            }}
+                            dir="ltr"
                             className={`
                 relative w-14 h-7 rounded-full transition-colors duration-200 ease-in-out
-                ${settings.theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-600'}
+                ${settings.theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200'}
               `}
                         >
                             <div
