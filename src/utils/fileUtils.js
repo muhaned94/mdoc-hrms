@@ -6,7 +6,9 @@ import { supabase } from '../lib/supabase'
 const BUCKETS = {
     documents: 'documents',
     avatars: 'avatars',
-    salarySlips: 'salary-slips'
+    salarySlips: 'salary-slips',
+    circulars: 'circulars',
+    adminOrders: 'admin_orders'
 }
 
 /**
@@ -23,20 +25,32 @@ export function extractStoragePath(urlOrPath, bucket) {
     // If it's already just a path (no http), return as-is
     if (!urlOrPath.startsWith('http')) return urlOrPath
 
-    // Try to extract path from Supabase public URL pattern:
-    // https://xxx.supabase.co/storage/v1/object/public/BUCKET/path/to/file
-    const patterns = [
-        `/storage/v1/object/public/${bucket}/`,
-        `/storage/v1/object/sign/${bucket}/`
-    ]
+    try {
+        const url = new URL(urlOrPath)
+        // Handle Supabase Storage URL pattern: /storage/v1/object/public/bucket/path...
+        const pathParts = url.pathname.split(`/`)
 
-    for (const pattern of patterns) {
-        const idx = urlOrPath.indexOf(pattern)
-        if (idx !== -1) {
-            // Get everything after the pattern, but before any query string
-            const afterPattern = urlOrPath.substring(idx + pattern.length)
-            return afterPattern.split('?')[0]
+        // Find the bucket in the path
+        // We look for the bucket name provided, OR we try to guess it if detection failed previously?
+        // Actually, let's just look for the bucket param.
+        const bucketIndex = pathParts.findIndex(p => p === bucket)
+
+        if (bucketIndex !== -1 && bucketIndex < pathParts.length - 1) {
+            return pathParts.slice(bucketIndex + 1).join('/')
         }
+
+        // Fallback: If bucket param didn't match (maybe detectBucket failed), try to find ANY known bucket
+        const knownBuckets = Object.values(BUCKETS)
+        for (const known of knownBuckets) {
+            const idx = pathParts.indexOf(known)
+            if (idx !== -1 && idx < pathParts.length - 1) {
+                return pathParts.slice(idx + 1).join('/')
+            }
+        }
+
+    } catch (e) {
+        // Not a valid URL, treat as path?
+        return null
     }
 
     return null
@@ -51,6 +65,8 @@ export function detectBucket(url) {
     const lowerUrl = url.toLowerCase()
     if (lowerUrl.includes('/avatars/')) return BUCKETS.avatars
     if (lowerUrl.includes('/salary-slips/')) return BUCKETS.salarySlips
+    if (lowerUrl.includes('/circulars/')) return BUCKETS.circulars
+    if (lowerUrl.includes('/admin_orders/')) return BUCKETS.adminOrders
     if (lowerUrl.includes('/documents/')) return BUCKETS.documents
 
     return BUCKETS.documents
