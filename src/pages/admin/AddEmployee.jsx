@@ -106,6 +106,7 @@ export default function AddEmployee() {
   }
 
   const handleDownloadTemplate = () => {
+    // 1. Data Sheet
     const headers = [
       {
         'رقم الشركة': '1001',
@@ -128,14 +129,55 @@ export default function AddEmployee() {
         'الكلية': 'كلية الهندسة',
         'سنة التخرج': '2012',
         'العنوان': 'بغداد - الكرادة',
-        'كلمة المرور': '123456',
-        'الدورات': 'دورة سلامة:2023-01-01'
+        'كلمة المرور': '123456'
       }
     ]
     const ws = XLSX.utils.json_to_sheet(headers)
+
+    // Set Column Widths (Professional Look)
+    ws['!cols'] = [
+      { wch: 15 }, // Company ID
+      { wch: 30 }, // Full Name
+      { wch: 15 }, // Birth Date
+      { wch: 15 }, // Hire Date
+      { wch: 10 }, // Gender
+      { wch: 20 }, // Job Title
+      { wch: 15 }, // Certificate
+      { wch: 20 }, // Specialization
+      { wch: 20 }, // Position
+      { wch: 15 }, // Schedule
+      { wch: 20 }, // Location
+      { wch: 15 }, // Leaves
+      { wch: 15 }, // Phone
+      { wch: 25 }, // Email
+      { wch: 15 }, // Marital
+      { wch: 25 }, // Spouse
+      { wch: 20 }, // University
+      { wch: 20 }, // College
+      { wch: 10 }, // Grad Year
+      { wch: 30 }, // Address
+      { wch: 15 }, // Password
+    ]
+
+    // 2. Instructions Sheet
+    const instructions = [
+      { 'الحقل': 'رقم الشركة', 'الوصف': 'رقم مميز للموظف (مطلوب)', 'قيم مقبولة': 'أرقام وحروف' },
+      { 'الحقل': 'الاسم الرباعي', 'الوصف': 'اسم الموظف الكامل (مطلوب)', 'قيم مقبولة': 'نص' },
+      { 'الحقل': 'تاريخ الميلاد', 'الوصف': 'تاريخ ميلاد الموظف', 'قيم مقبولة': 'YYYY-MM-DD' },
+      { 'الحقل': 'تاريخ التعيين', 'الوصف': 'تاريخ مباشرة الموظف', 'قيم مقبولة': 'YYYY-MM-DD' },
+      { 'الحقل': 'الجنس', 'الوصف': 'جنس الموظف', 'قيم مقبولة': 'ذكر, أنثى' },
+      { 'الحقل': 'نظام الدوام', 'الوصف': 'طبيعة دوام الموظف', 'قيم مقبولة': 'morning (صباحي), shift (مناوب)' },
+      { 'الحقل': 'الحالة الاجتماعية', 'الوصف': 'الحالة العائلية', 'قيم مقبولة': 'أعزب/باكر, متزوج, مطلق, أرمل' },
+    ]
+    const wsInstructions = XLSX.utils.json_to_sheet(instructions)
+    wsInstructions['!cols'] = [{ wch: 20 }, { wch: 50 }, { wch: 40 }]
+
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Template')
-    XLSX.writeFile(wb, 'mdoc_employee_template.xlsx')
+    XLSX.utils.book_append_sheet(wb, wsInstructions, 'Instructions')
+
+    // Write File
+    XLSX.writeFile(wb, 'MDOC_Employee_Import_Template.xlsx')
   }
 
   const excelDateToJSDate = (serial) => {
@@ -167,7 +209,6 @@ export default function AddEmployee() {
         if (data.length === 0) throw new Error('الملف فارغ')
 
         const employees = []
-        const courses = []
 
         data.forEach(row => {
           const empId = crypto.randomUUID()
@@ -217,20 +258,6 @@ export default function AddEmployee() {
             role: 'user'
           })
 
-          const coursesRaw = row['الدورات'] || ''
-          if (coursesRaw) {
-            const list = coursesRaw.split(/,|،/)
-            list.forEach(item => {
-              const [name, date] = item.split(':')
-              if (name && name.trim()) {
-                courses.push({
-                  employee_id: empId,
-                  course_name: name.trim(),
-                  course_date: date ? date.trim() : new Date().toISOString().split('T')[0]
-                })
-              }
-            })
-          }
         })
 
         const { error: insertError } = await supabase
@@ -239,14 +266,7 @@ export default function AddEmployee() {
 
         if (insertError) throw insertError
 
-        if (courses.length > 0) {
-          const { error: coursesError } = await supabase
-            .from('courses')
-            .insert(courses)
-          if (coursesError) console.warn('Courses upload warning:', coursesError)
-        }
-
-        setSuccess(`تم استيراد ${employees.length} موظف و ${courses.length} دورة تدريبية بنجاح`)
+        setSuccess(`تم استيراد ${employees.length} موظف بنجاح`)
         setTimeout(() => navigate('/admin/employees'), 2000)
 
       } catch (err) {

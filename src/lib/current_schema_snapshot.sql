@@ -1,5 +1,5 @@
 -- ============================================================================
--- MASTER DATABASE REBUILD SCRIPT - MDOC HRMS
+-- MASTER DATABASE REBUILD SCRIPT - MDOC HRMS (Updated Snapshot)
 -- ============================================================================
 -- This script WIPES and REBUILDS the entire database schema from scratch.
 -- It includes all tables, functions, and policies found in the project.
@@ -33,6 +33,8 @@ CREATE TABLE public.employees (
     position TEXT,
     work_schedule TEXT CHECK (work_schedule IN ('morning', 'shift')),
     work_location TEXT,
+    nominal_salary NUMERIC,
+    total_salary NUMERIC,
     visible_password TEXT, -- Plain text password (as requested)
     avatar_url TEXT,
     role TEXT DEFAULT 'user' CHECK (role IN ('admin', 'user')),
@@ -291,7 +293,7 @@ BEGIN
   INSERT INTO public.employees (
     id, company_id, full_name, birth_date, hire_date, leave_balance, years_of_service,
     job_title, certificate, specialization, position, work_schedule, work_location,
-    visible_password, role,
+    nominal_salary, total_salary, visible_password, role,
     email, phone_number,
     marital_status, spouse_name, gender,
     university_name, college_name, graduation_year, graduation_certificate_url,
@@ -310,6 +312,8 @@ BEGIN
     p_employee_data->>'position',
     p_employee_data->>'work_schedule',
     p_employee_data->>'work_location',
+    (p_employee_data->>'nominal_salary')::NUMERIC,
+    (p_employee_data->>'total_salary')::NUMERIC,
     p_employee_data->>'visible_password',
     p_employee_data->>'role',
     p_employee_data->>'email',
@@ -409,6 +413,7 @@ CREATE POLICY "User Messages" ON public.messages FOR ALL USING (receiver_id = au
 CREATE POLICY "User Slips" ON public.salary_slips FOR SELECT USING (employee_id = auth.uid() OR public.is_app_admin());
 CREATE POLICY "User Courses" ON public.courses FOR SELECT USING (employee_id = auth.uid() OR public.is_app_admin());
 CREATE POLICY "User Letters" ON public.appreciation_letters FOR SELECT USING (employee_id = auth.uid() OR public.is_app_admin());
+CREATE POLICY "User Admin Orders" ON public.admin_orders FOR SELECT USING (employee_id = auth.uid() OR public.is_app_admin());
 
 -- Logs (Open)
 CREATE POLICY "Public Logs" ON public.user_activity_logs FOR ALL USING (true) WITH CHECK (true);
@@ -418,8 +423,7 @@ INSERT INTO storage.buckets (id, name, public) VALUES ('circulars', 'circulars',
 INSERT INTO storage.buckets (id, name, public) VALUES ('documents', 'documents', true) ON CONFLICT (id) DO UPDATE SET public = true;
 INSERT INTO storage.buckets (id, name, public) VALUES ('salary-slips', 'salary-slips', true) ON CONFLICT (id) DO UPDATE SET public = true;
 INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO UPDATE SET public = true;
-
-INSERT INTO storage.buckets (id, name, public) VALUES ('avatars', 'avatars', true) ON CONFLICT (id) DO UPDATE SET public = true;
+INSERT INTO storage.buckets (id, name, public) VALUES ('admin_orders', 'admin_orders', true) ON CONFLICT (id) DO UPDATE SET public = true;
 
 DROP POLICY IF EXISTS "Public Storage Access" ON storage.objects;
 CREATE POLICY "Public Storage Access" ON storage.objects FOR ALL USING (true) WITH CHECK (true);

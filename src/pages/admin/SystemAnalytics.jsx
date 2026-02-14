@@ -189,12 +189,15 @@ grant select on public.analytics_logs_view to anon, authenticated, service_role;
                                 onlineUsers.map((u, i) => (
                                     <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                                         <td className="p-3 font-bold text-slate-700 dark:text-white">
-                                            {u.full_name}
+                                            <div className="flex flex-col">
+                                                <span>{u.full_name}</span>
+                                                {u.role && <span className="text-xs text-slate-400 font-normal">{u.role === 'admin' ? 'مسؤول' : 'مستخدم'}</span>}
+                                            </div>
                                         </td>
-                                        <td className="p-3 text-blue-600 dark:text-blue-400 font-mono" dir="ltr">
+                                        <td className="p-3 text-blue-600 dark:text-blue-400 font-mono text-xs" dir="ltr">
                                             {u.current_path}
                                         </td>
-                                        <td className="p-3 text-slate-500">
+                                        <td className="p-3 text-slate-500 text-xs">
                                             {formatDateTime(u.online_at)}
                                         </td>
                                     </tr>
@@ -232,8 +235,8 @@ grant select on public.analytics_logs_view to anon, authenticated, service_role;
                                     </td>
                                     <td className="p-3">
                                         <span className={`px-2 py-0.5 rounded text-xs ${log.action_type === 'login' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                                log.action_type === 'logout' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
-                                                    'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                            log.action_type === 'logout' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' :
+                                                'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                                             }`}>
                                             {log.action_type === 'login' ? 'تسجيل دخول' :
                                                 log.action_type === 'logout' ? 'تسجيل خروج' :
