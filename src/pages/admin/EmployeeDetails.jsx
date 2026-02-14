@@ -782,6 +782,38 @@ export default function EmployeeDetails() {
                             </label>
                         </div>
 
+                        {/* Administrative Orders Section */}
+                        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
+                            <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white">
+                                <FileText className="text-primary" size={20} />
+                                الأوامر الإدارية
+                            </h3>
+                            <div className="space-y-3 mb-4 max-h-48 overflow-y-auto pr-1">
+                                {orders.map(doc => (
+                                    <div key={doc.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg border dark:border-slate-700 group">
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-200 truncate">{doc.title}</span>
+                                            <span className="text-[10px] text-slate-400 font-mono">{formatDate(doc.created_at)}</span>
+                                        </div>
+                                        <div className="flex gap-1">
+                                            <button type="button" onClick={() => setViewFile({ url: doc.file_url, title: doc.title })} className="p-1.5 text-slate-400 hover:text-primary transition-colors">
+                                                <Eye size={16} />
+                                            </button>
+                                            <button onClick={() => handleDeleteOrder(doc.id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <label className="block w-full text-center border-2 border-dashed border-primary/20 hover:border-primary/50 rounded-lg p-3 cursor-pointer transition-all hover:bg-primary/5">
+                                <input type="file" className="hidden" onChange={(e) => handleFileUpload(e.target.files[0], 'order')} />
+                                <span className="text-xs font-bold text-primary flex items-center justify-center gap-2">
+                                    {uploadingOrder ? 'جاري الرفع...' : <><Upload size={14} /> رفع أمر إداري</>}
+                                </span>
+                            </label>
+                        </div>
+
                         {/* Salary Slips */}
                         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700">
                             <h3 className="font-bold text-lg mb-4 flex items-center gap-2 dark:text-white"><FileText className="text-green-500" size={20} /> أشرطة الراتب</h3>
