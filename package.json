@@ -20,7 +20,6 @@
     "@mui/material": "^6.4.6",
     "@supabase/supabase-js": "^2.89.0",
     "@yudiel/react-qr-scanner": "^2.5.1",
-    "@capgo/capacitor-native-biometric": "^8.4.2",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.4",

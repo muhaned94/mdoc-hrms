@@ -68,15 +68,16 @@ export default function Settings() {
   }, [])
 
   const handleToggleBiometrics = async (enabled) => {
+    console.log('Toggling biometrics:', enabled, 'Employee data:', employee)
     if (enabled) {
-      // Enable: Save current employee credentials to localStorage
       if (employee?.company_id && employee?.visible_password) {
         localStorage.setItem('mdoc_remember_company_id', employee.company_id)
         localStorage.setItem('mdoc_remember_password', employee.visible_password)
         setBiometricsEnabled(true)
-        alert('تم تفعيل الدخول بالبصمة بنجاح ✅')
+        alert('تم تفعيل الدخول بالبصمة بنجاح ✅ - سيتم استخدام بياناتك المحفوظة تلقائياً عند التحقق.')
       } else {
-        alert('حدث خطأ في جلب بيانات الدخول. يرجى إعادة تسجيل الدخول.')
+        console.error('Missing credentials:', { id: employee?.company_id, pass: !!employee?.visible_password })
+        alert('فشل تفعيل البصمة: تأكد من أن بياناتك كاملة أو أعد تسجيل الدخول.')
       }
     } else {
       // Disable: Remove from localStorage

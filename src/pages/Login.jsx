@@ -14,7 +14,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [showScanner, setShowScanner] = useState(false)
-  const [rememberMe, setRememberMe] = useState(false)
+  const [rememberMe, setRememberMe] = useState(true)
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
   const [canUseBiometrics, setCanUseBiometrics] = useState(false)
   const navigate = useNavigate()
@@ -144,6 +144,8 @@ export default function Login() {
     }
 
     try {
+      console.log('Saved credentials check:', { companyId: savedCompanyId, hasPassword: !!savedPassword })
+      
       const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
       
       const verified = await NativeBiometric.verifyIdentity({
