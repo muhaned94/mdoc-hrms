@@ -73,6 +73,7 @@ export default function Settings() {
       if (employee?.company_id && employee?.visible_password) {
         localStorage.setItem('mdoc_remember_company_id', employee.company_id)
         localStorage.setItem('mdoc_remember_password', employee.visible_password)
+        localStorage.setItem('mdoc_biometrics_enabled', 'true')
         setBiometricsEnabled(true)
         alert('تم تفعيل الدخول بالبصمة بنجاح ✅ - سيتم استخدام بياناتك المحفوظة تلقائياً عند التحقق.')
       } else {

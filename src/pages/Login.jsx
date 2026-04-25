@@ -43,14 +43,17 @@ export default function Login() {
     const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
     const savedPassword = localStorage.getItem('mdoc_remember_password')
     const skipAutoLogin = localStorage.getItem('mdoc_skip_auto_login')
+    const biometricsEnabled = localStorage.getItem('mdoc_biometrics_enabled') === 'true'
 
     if (savedCompanyId && savedPassword) {
       setCompanyId(savedCompanyId)
       setPassword(savedPassword)
       setRememberMe(true)
       
-      // Auto-Login only if not explicitly skipped (from Logout)
-      if (!loading && !error && skipAutoLogin !== 'true') {
+      // Auto-Login only if:
+      // 1. Not explicitly skipped (from Logout)
+      // 2. AND Biometrics are NOT enabled (because if enabled, we want them to use the fingerprint button)
+      if (!loading && !error && skipAutoLogin !== 'true' && !biometricsEnabled) {
         setIsAutoLoggingIn(true)
         handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
       }
@@ -151,32 +154,35 @@ export default function Login() {
     }
 
     try {
-      console.log('Saved credentials check:', { companyId: savedCompanyId, hasPassword: !!savedPassword })
-      
       const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
       
+      // Check availability first
+      const result = await NativeBiometric.isAvailable()
+      if (!result.isAvailable) {
+        setError('حساس البصمة غير متوفر أو غير مفعّل على هذا الجهاز.')
+        return
+      }
+
       const verified = await NativeBiometric.verifyIdentity({
-        reason: "تسجيل الدخول إلى MDOC HRMS",
-        title: "التحقق من الهوية",
-        subtitle: "استخدم البصمة أو الوجه للدخول",
-        description: "يرجى التحقق للمتابعة",
-      }).then(() => true).catch(() => false)
+        reason: "التحقق للدخول إلى نظام MDOC",
+        title: "تسجيل الدخول بالبصمة",
+        subtitle: "يرجى لمس الحساس",
+        description: "استخدم هويتك الرقمية للمتابعة",
+      }).then(() => true).catch((err) => {
+        console.error('Verify error:', err)
+        return false
+      })
 
       if (verified) {
         handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
       } else {
-        setError('فشل التحقق من البصمة. حاول مرة أخرى.')
+        setError('لم نتمكن من التحقق من البصمة. يرجى المحاولة مرة أخرى.')
       }
     } catch (e) {
       console.error('Biometric Error:', e)
-      // Fallback for development
-      if (window.location.hostname === 'localhost') {
-        alert('تحذير: أنت في بيئة تطوير، سيتم الدخول تلقائياً (تجاوز البصمة)')
-        handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
-      } else {
-        setError('عذراً، ميزة البصمة غير متوفرة أو لم يتم إعدادها.')
-      }
+      setError('عذراً، ميزة البصمة غير متوفرة على هذا المتصفح أو الجهاز.')
     }
+  }
   }
 
   const handleScan = (rawValue) => {
