@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun } from 'lucide-react'
+import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun, Fingerprint } from 'lucide-react'
 import { useSettings } from '../../context/SettingsContext'
 import { APP_VERSION } from '../../config'
 
@@ -17,6 +17,8 @@ export default function Settings() {
   // Password State
   const [newPassword, setNewPassword] = useState('')
   const [changingPassword, setChangingPassword] = useState(false)
+  const [biometricsEnabled, setBiometricsEnabled] = useState(false)
+  const [canUseBiometrics, setCanUseBiometrics] = useState(false)
 
   const userId = session?.user?.id
 
@@ -39,10 +41,49 @@ export default function Settings() {
 
       if (error) throw error
       setEmployee(data)
+
+      // Check if biometrics are already enabled for this user
+      const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
+      if (savedCompanyId === data.company_id) {
+        setBiometricsEnabled(true)
+      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    const checkBiometricAvailability = async () => {
+      try {
+        const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
+        const result = await NativeBiometric.isAvailable()
+        if (result.isAvailable) setCanUseBiometrics(true)
+      } catch (e) {
+        if (window.location.hostname === 'localhost') setCanUseBiometrics(true)
+      }
+    }
+    checkBiometricAvailability()
+  }, [])
+
+  const handleToggleBiometrics = async (enabled) => {
+    if (enabled) {
+      // Enable: Save current employee credentials to localStorage
+      if (employee?.company_id && employee?.visible_password) {
+        localStorage.setItem('mdoc_remember_company_id', employee.company_id)
+        localStorage.setItem('mdoc_remember_password', employee.visible_password)
+        setBiometricsEnabled(true)
+        alert('تم تفعيل الدخول بالبصمة بنجاح ✅')
+      } else {
+        alert('حدث خطأ في جلب بيانات الدخول. يرجى إعادة تسجيل الدخول.')
+      }
+    } else {
+      // Disable: Remove from localStorage
+      localStorage.removeItem('mdoc_remember_company_id')
+      localStorage.removeItem('mdoc_remember_password')
+      setBiometricsEnabled(false)
+      alert('تم تعطيل الدخول بالبصمة.')
     }
   }
 
@@ -193,6 +234,46 @@ export default function Settings() {
           {effectiveTheme === 'dark' ? '🌙 الوضع الداكن مفعّل' : '☀️ الوضع الفاتح مفعّل'}
         </p>
       </div>
+
+      {/* Biometric Section */}
+      {canUseBiometrics && (
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
+          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
+            <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
+              <Fingerprint size={20} />
+            </div>
+            الأمان والحماية
+          </h3>
+
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl transition-colors">
+            <div>
+              <h4 className="font-medium text-slate-800 dark:text-slate-200">الدخول بالبصمة / الوجه</h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400">تفعيل الدخول السريع باستخدام المقاييس الحيوية</p>
+            </div>
+            <button
+              onClick={() => handleToggleBiometrics(!biometricsEnabled)}
+              dir="ltr"
+              className={`
+                relative w-14 h-7 rounded-full transition-all duration-200 ease-in-out
+                ${biometricsEnabled ? 'bg-green-500' : 'bg-slate-200 dark:bg-slate-600'}
+              `}
+            >
+              <div
+                className={`
+                  absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out
+                  ${biometricsEnabled ? 'translate-x-7' : 'translate-x-0'}
+                `}
+              />
+            </button>
+          </div>
+          
+          {!biometricsEnabled && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-[11px] text-blue-600 dark:text-blue-400 leading-relaxed">
+              * تفعيل هذه الخاصية سيقوم بحفظ بيانات الدخول على جهازك بشكل آمن ليتم استخدامها عند التحقق من بصمتك.
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Avatar Section */}
       {settings.allow_profile_picture_change && (

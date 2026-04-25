@@ -20,10 +20,23 @@ export default function Login() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Check if biometrics are available (Mock for now, would use Capacitor plugin)
-    // if (navigator.credentials) setCanUseBiometrics(true)
-    setCanUseBiometrics(true) // Show for demo
+    checkBiometrics()
   }, [])
+
+  const checkBiometrics = async () => {
+    try {
+      // Import Biometric plugin dynamically to avoid crashes on web
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
+      const result = await NativeBiometric.isAvailable()
+      if (result.isAvailable) {
+        setCanUseBiometrics(true)
+      }
+    } catch (e) {
+      console.log('Biometrics not available or plugin not installed')
+      // Fallback for demo/web if needed
+      if (window.location.hostname === 'localhost') setCanUseBiometrics(true)
+    }
+  }
 
   useEffect(() => {
     // Load saved credentials
@@ -122,7 +135,6 @@ export default function Login() {
   }
 
   const handleBiometricLogin = async () => {
-    // 1. Check if we have saved credentials
     const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
     const savedPassword = localStorage.getItem('mdoc_remember_password')
 
@@ -131,14 +143,31 @@ export default function Login() {
       return
     }
 
-    // 2. Trigger Biometric Auth (Mocking the plugin call)
-    // In real app: const result = await BiometricAuth.authenticate(...)
-    alert('جاري التحقق من الهوية عبر البصمة/الوجه...')
-    
-    // Simulate success
-    setTimeout(() => {
-      handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
-    }, 1000)
+    try {
+      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
+      
+      const verified = await NativeBiometric.verifyIdentity({
+        reason: "تسجيل الدخول إلى MDOC HRMS",
+        title: "التحقق من الهوية",
+        subtitle: "استخدم البصمة أو الوجه للدخول",
+        description: "يرجى التحقق للمتابعة",
+      }).then(() => true).catch(() => false)
+
+      if (verified) {
+        handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
+      } else {
+        setError('فشل التحقق من البصمة. حاول مرة أخرى.')
+      }
+    } catch (e) {
+      console.error('Biometric Error:', e)
+      // Fallback for development
+      if (window.location.hostname === 'localhost') {
+        alert('تحذير: أنت في بيئة تطوير، سيتم الدخول تلقائياً (تجاوز البصمة)')
+        handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
+      } else {
+        setError('عذراً، ميزة البصمة غير متوفرة أو لم يتم إعدادها.')
+      }
+    }
   }
 
   const handleScan = (rawValue) => {
@@ -240,17 +269,19 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 px-1">
-                <input
-                  type="checkbox"
-                  id="rememberMe"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300"
-                />
-                <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer select-none">
-                  تذكر بياناتي (دخول تلقائي في المرة القادمة)
-                </label>
+              <div className="flex flex-col gap-3 px-1">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300"
+                  />
+                  <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer select-none">
+                    تذكر بياناتي (تفعيل البصمة والدخول التلقائي)
+                  </label>
+                </div>
               </div>
             </>
           )}
