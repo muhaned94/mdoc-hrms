@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">MDOC HRMS</string>
+    <string name="title_activity_main">MDOC HRMS</string>
+    <string name="package_name">com.mdoc.hrms</string>
+    <string name="custom_url_scheme">com.mdoc.hrms</string>
+</resources>

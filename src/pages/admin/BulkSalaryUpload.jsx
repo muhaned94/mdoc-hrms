@@ -173,6 +173,16 @@ export default function BulkSalaryUpload() {
         })
 
         if (insError) throw insError
+
+        // Create Notification for the employee
+        await supabase.from('notifications').insert({
+          user_id: item.employeeId,
+          title: 'صدر شريط راتب جديد 💰',
+          message: `تم رفع شريط الراتب الخاص بك لشهر ${monthYear}. يمكنك الاطلاع عليه الآن من قسم الرواتب.`,
+          type: 'salary',
+          is_read: false
+        })
+
         setSelectedFiles(prev => prev.map(f => f === item ? { ...f, status: 'success' } : f))
         successCount++
       } catch (err) {

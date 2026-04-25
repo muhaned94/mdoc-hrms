@@ -14,9 +14,19 @@ export default function Salary() {
 
   useEffect(() => {
     if (session?.user?.id) {
+      const userId = session.user.id
+      // 1. Try to Load Cached Data
+      const cached = localStorage.getItem(`mdoc_cache_salary_${userId}`)
+      if (cached) {
+        try {
+          setSlips(JSON.parse(cached))
+          setLoading(false)
+        } catch (e) { /* ignore */ }
+      }
+
       fetchData()
       // Mark as read
-      localStorage.setItem(`last_salary_check_${session.user.id}`, new Date().toISOString())
+      localStorage.setItem(`last_salary_check_${userId}`, new Date().toISOString())
     }
   }, [session])
 
@@ -33,6 +43,9 @@ export default function Salary() {
 
       if (slipsError) throw slipsError
       setSlips(slipsData)
+      
+      // Save to cache
+      localStorage.setItem(`mdoc_cache_salary_${userId}`, JSON.stringify(slipsData))
 
     } catch (error) {
       console.error(error)

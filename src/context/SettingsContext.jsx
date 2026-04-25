@@ -13,6 +13,8 @@ export function SettingsProvider({ children }) {
         allow_profile_picture_change: true,
         allow_backup_download: false,
         login_method: 'both',
+        min_version: '1.0',
+        download_url: 'https://mdoc-hrms-privacy.netlify.app/',
         course_settings: {
             grade_1: 2,
             grade_2: 2,

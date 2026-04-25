@@ -21,6 +21,7 @@ export default function FileViewer({ file, onClose }) {
     const [zoom, setZoom] = useState(1)
     const [rotation, setRotation] = useState(0)
     const [numPages, setNumPages] = useState(null)
+    const [containerWidth, setContainerWidth] = useState(null)
     const containerRef = useRef(null)
 
     const fileType = file?.type || detectFileType(file?.url)
@@ -122,7 +123,19 @@ export default function FileViewer({ file, onClose }) {
     // Prevent body scroll when modal is open
     useEffect(() => {
         document.body.style.overflow = 'hidden'
-        return () => { document.body.style.overflow = '' }
+        
+        const updateWidth = () => {
+            if (containerRef.current) {
+                setContainerWidth(containerRef.current.clientWidth)
+            }
+        }
+        
+        updateWidth()
+        window.addEventListener('resize', updateWidth)
+        return () => { 
+            document.body.style.overflow = '' 
+            window.removeEventListener('resize', updateWidth)
+        }
     }, [])
 
     const onDocumentLoadSuccess = ({ numPages }) => {
@@ -190,15 +203,13 @@ export default function FileViewer({ file, onClose }) {
                             </button>
                         </div>
 
-                        {(fileType === 'image' || fileType === 'unknown') && (
-                            <button
-                                onClick={() => setRotation(r => r + 90)}
-                                className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                                title="تدوير"
-                            >
-                                <RotateCw size={18} />
-                            </button>
-                        )}
+                        <button
+                            onClick={() => setRotation(r => r + 90)}
+                            className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                            title="تدوير"
+                        >
+                            <RotateCw size={18} />
+                        </button>
 
                         <button
                             onClick={onClose}
@@ -212,7 +223,7 @@ export default function FileViewer({ file, onClose }) {
                 {/* Viewer Area */}
                 <div
                     ref={containerRef}
-                    className="flex-1 overflow-auto flex justify-center bg-slate-950 relative custom-scrollbar"
+                    className="flex-1 overflow-auto flex flex-col items-center bg-slate-950 relative custom-scrollbar"
                     style={{ WebkitOverflowScrolling: 'touch' }}
                     onContextMenu={handleContextMenu}
                 >
@@ -246,7 +257,7 @@ export default function FileViewer({ file, onClose }) {
                     )}
 
                     {!error && signedUrl && fileType === 'pdf' && (
-                        <div className="py-8 px-4 flex flex-col gap-4">
+                        <div className="py-4 px-2 w-full flex flex-col items-center min-h-full">
                             <Document
                                 file={signedUrl}
                                 onLoadSuccess={onDocumentLoadSuccess}
@@ -255,15 +266,20 @@ export default function FileViewer({ file, onClose }) {
                                 className="flex flex-col gap-4 items-center"
                             >
                                 {numPages && Array.from(new Array(numPages), (_, index) => (
-                                    <div key={`page_${index + 1}`} className="shadow-2xl">
+                                    <div key={`page_${index + 1}`} className="shadow-2xl border border-white/5">
                                         <Page
                                             pageNumber={index + 1}
                                             scale={zoom}
+                                            rotate={rotation}
+                                            width={containerWidth ? Math.min(containerWidth * 0.95, 1200) : undefined}
                                             renderTextLayer={false}
                                             renderAnnotationLayer={false}
                                             className="bg-white"
                                             loading={
-                                                <div className="w-[595px] h-[842px] bg-white/5 animate-pulse flex items-center justify-center text-white/20">
+                                                <div 
+                                                    style={{ width: containerWidth ? containerWidth * 0.95 : '595px', height: '842px' }}
+                                                    className="bg-white/5 animate-pulse flex items-center justify-center text-white/20"
+                                                >
                                                     تحميل الصفحة {index + 1}...
                                                 </div>
                                             }

@@ -34,6 +34,20 @@ export default function Profile() {
             setLoading(false)
             return
         }
+
+        // 1. Try to Load Cached Data
+        const cachedData = localStorage.getItem(`mdoc_cache_profile_${userId}`)
+        if (cachedData) {
+            try {
+                const parsed = JSON.parse(cachedData)
+                setEmployee(parsed.employee)
+                setAnnouncements(parsed.announcements || [])
+                setUnreadMessages(parsed.unreadMessages || 0)
+                setCourseDeficit(parsed.courseDeficit || 0)
+                setLoading(false) // Show cached immediately
+            } catch (e) { console.warn("Cache Error", e) }
+        }
+
         fetchDashboardData()
     }, [userId, authLoading])
 
@@ -86,6 +100,20 @@ export default function Profile() {
             setLoading(false)
         }
     }
+
+    // Save to cache whenever data changes
+    useEffect(() => {
+        if (userId && employee) {
+            const dataToCache = {
+                employee,
+                announcements,
+                unreadMessages,
+                courseDeficit,
+                timestamp: new Date().toISOString()
+            }
+            localStorage.setItem(`mdoc_cache_profile_${userId}`, JSON.stringify(dataToCache))
+        }
+    }, [employee, announcements, unreadMessages, courseDeficit, userId])
 
     const fetchAnnouncements = async (location) => {
         try {

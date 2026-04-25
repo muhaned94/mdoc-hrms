@@ -128,8 +128,13 @@ export default function UserLayout() {
       `}>
         {/* Sidebar Header */}
         <div className="p-6 border-b dark:border-slate-700 hidden md:block">
-          <h1 className="text-2xl font-bold text-primary">MDOC HRMS</h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">بوابة الموظف</p>
+          <div className="flex items-center gap-3 mb-2">
+            <img src="/logo.png" alt="MDOC Logo" className="w-10 h-10 object-contain" />
+            <div>
+              <h1 className="text-xl font-bold text-primary">MDOC HRMS</h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400">بوابة الموظف</p>
+            </div>
+          </div>
         </div>
 
         {/* User Info Teaser */}

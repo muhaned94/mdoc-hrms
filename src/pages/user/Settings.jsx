@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
 import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun } from 'lucide-react'
 import { useSettings } from '../../context/SettingsContext'
+import { APP_VERSION } from '../../config'
 
 export default function Settings() {
   const { session, signOut, loading: authLoading } = useAuth()
@@ -258,6 +259,13 @@ export default function Settings() {
           </form>
         </div>
       )}
+
+      {/* Version Info */}
+      <div className="pt-8 pb-4 text-center">
+        <p className="text-[10px] text-slate-300 dark:text-slate-600 font-medium tracking-widest uppercase">
+          MDOC HRMS • الإصدار {APP_VERSION}
+        </p>
+      </div>
     </div>
   )
 }

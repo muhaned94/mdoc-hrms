@@ -16,13 +16,16 @@ import {
     Upload,
     GraduationCap,
     Clock,
-    GitGraph
+    GitGraph,
+    ArrowUpCircle,
+    Globe
 } from 'lucide-react'
 import { useRef } from 'react'
 import { supabase } from '../../lib/supabase'
+import { APP_VERSION } from '../../config'
 
 export default function Settings() {
-    const { settings, updateSetting, loading } = useSettings()
+    const { settings, updateSetting, loading, effectiveTheme, setUserTheme } = useSettings()
     const fileInputRef = useRef(null)
 
     const handleBackup = async () => {
@@ -167,22 +170,22 @@ export default function Settings() {
                         </div>
                         <button
                             onClick={() => {
-                                const newTheme = settings.theme === 'light' ? 'dark' : 'light'
-                                updateSetting('theme', newTheme)
+                                const newTheme = effectiveTheme === 'light' ? 'dark' : 'light'
+                                setUserTheme(newTheme, null) // Pass null as userId to use currentUserId from context
                             }}
                             dir="ltr"
                             className={`
                 relative w-14 h-7 rounded-full transition-colors duration-200 ease-in-out
-                ${settings.theme === 'dark' ? 'bg-blue-600' : 'bg-slate-200'}
+                ${effectiveTheme === 'dark' ? 'bg-blue-600' : 'bg-slate-200'}
               `}
                         >
                             <div
                                 className={`
                   absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out flex items-center justify-center
-                  ${settings.theme === 'dark' ? 'translate-x-7' : 'translate-x-0'}
+                  ${effectiveTheme === 'dark' ? 'translate-x-7' : 'translate-x-0'}
                 `}
                             >
-                                {settings.theme === 'dark' ? <Moon size={12} className="text-blue-600" /> : <Sun size={12} className="text-slate-400" />}
+                                {effectiveTheme === 'dark' ? <Moon size={12} className="text-blue-600" /> : <Sun size={12} className="text-slate-400" />}
                             </div>
                         </button>
                     </div>
@@ -317,6 +320,44 @@ export default function Settings() {
                             description="إتاحة الخيارين للموظف عند تسجيل الدخول"
                         />
                     </div>
+                    </div>
+                </div>
+
+                {/* App Updates Control */}
+                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 transition-colors">
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-lg text-red-600 dark:text-red-400">
+                            <ArrowUpCircle size={24} />
+                        </div>
+                        <h2 className="text-lg font-bold text-slate-800 dark:text-white">التحكم في تحديثات التطبيق</h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">أدنى إصدار مطلوب (Min Version)</label>
+                            <input
+                                type="text"
+                                value={settings.min_version || ''}
+                                onChange={(e) => updateSetting('min_version', e.target.value)}
+                                placeholder="مثال: 1.4"
+                                className="w-full p-3 border rounded-xl dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                            />
+                            <p className="text-[10px] text-slate-400 italic">المستخدمون بإصدار أقل من هذا سيتم حظر دخولهم ويطلب منهم التحديث.</p>
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-slate-700 dark:text-slate-300">رابط تحميل النسخة الجديدة</label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={settings.download_url || ''}
+                                    onChange={(e) => updateSetting('download_url', e.target.value)}
+                                    placeholder="https://..."
+                                    className="w-full p-3 pl-10 border rounded-xl dark:bg-slate-700 dark:border-slate-600 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                                />
+                                <Globe className="absolute left-3 top-3.5 text-slate-400" size={18} />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Backup */}
@@ -372,6 +413,13 @@ export default function Settings() {
                         )}
                     </div>
                 </div>
+            </div>
+
+            {/* Version Info */}
+            <div className="pt-10 pb-4 text-center">
+                <p className="text-[10px] text-slate-300 dark:text-slate-600 font-bold tracking-widest uppercase">
+                    MDOC HRMS Admin Portal • الإصدار {APP_VERSION}
+                </p>
             </div>
         </div>
     )
