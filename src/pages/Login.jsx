@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { Lock, Building2, ScanLine, Eye, EyeOff, Fingerprint } from 'lucide-react'
-import { Scanner } from '@yudiel/react-qr-scanner';
+import { Lock, Building2, ScanLine, Eye, EyeOff } from 'lucide-react'
 import QRCodeScannerComponent from '../components/QRCodeScanner';
 import { useSettings } from '../context/SettingsContext'
 
@@ -16,49 +15,25 @@ export default function Login() {
   const [showScanner, setShowScanner] = useState(false)
   const [rememberMe, setRememberMe] = useState(true)
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false)
-  const [canUseBiometrics, setCanUseBiometrics] = useState(false)
   const navigate = useNavigate()
-
-  useEffect(() => {
-    checkBiometrics()
-  }, [])
-
-  const checkBiometrics = async () => {
-    try {
-      // Import Biometric plugin dynamically to avoid crashes on web
-      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
-      const result = await NativeBiometric.isAvailable()
-      if (result.isAvailable) {
-        setCanUseBiometrics(true)
-      }
-    } catch (e) {
-      console.log('Biometrics not available or plugin not installed')
-      // Fallback for demo/web if needed
-      if (window.location.hostname === 'localhost') setCanUseBiometrics(true)
-    }
-  }
 
   useEffect(() => {
     // Load saved credentials
     const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
     const savedPassword = localStorage.getItem('mdoc_remember_password')
     const skipAutoLogin = localStorage.getItem('mdoc_skip_auto_login')
-    const biometricsEnabled = localStorage.getItem('mdoc_biometrics_enabled') === 'true'
 
     if (savedCompanyId && savedPassword) {
       setCompanyId(savedCompanyId)
       setPassword(savedPassword)
       setRememberMe(true)
       
-      // Auto-Login only if:
-      // 1. Not explicitly skipped (from Logout)
-      // 2. AND Biometrics are NOT enabled (because if enabled, we want them to use the fingerprint button)
-      if (!loading && !error && skipAutoLogin !== 'true' && !biometricsEnabled) {
+      // Auto-Login if not skipped
+      if (!loading && !error && skipAutoLogin !== 'true') {
         setIsAutoLoggingIn(true)
         handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
       }
       
-      // Clear the skip flag so future app opens DO auto-login
       if (skipAutoLogin === 'true') {
         localStorage.removeItem('mdoc_skip_auto_login')
       }
@@ -74,7 +49,6 @@ export default function Login() {
   const handleLogin = async (e, scannedCredentials = null) => {
     if (e) e.preventDefault()
 
-    // If scanned, use those credentials
     const loginCompanyId = scannedCredentials ? scannedCredentials.companyId : companyId
     const loginPassword = scannedCredentials ? scannedCredentials.password : password
 
@@ -87,7 +61,6 @@ export default function Login() {
     setError(null)
 
     try {
-      // 1. Try to Login via RPC (Secure Function)
       const { data: employee, error: rpcError } = await supabase
         .rpc('login_employee', {
           p_company_id: loginCompanyId,
@@ -100,7 +73,6 @@ export default function Login() {
         throw new Error('بيانات الدخول غير صحيحة')
       }
 
-      // 2. Create a "Virtual Session"
       const sessionData = {
         user: {
           id: employee.id,
@@ -110,17 +82,13 @@ export default function Login() {
             full_name: employee.full_name
           }
         },
-        access_token: 'marketing-token', // Dummy
+        access_token: 'marketing-token',
       }
 
-      // Save to LocalStorage (Simple Auth)
       localStorage.setItem('mdoc_session', JSON.stringify(sessionData))
-
-      // Update AuthContext listeners
       window.dispatchEvent(new Event('storage'))
       window.dispatchEvent(new Event('mdoc-auth-update'))
 
-      // Save credentials if Remember Me is checked
       if (rememberMe) {
         localStorage.setItem('mdoc_remember_company_id', loginCompanyId)
         localStorage.setItem('mdoc_remember_password', loginPassword)
@@ -140,69 +108,22 @@ export default function Login() {
       console.error(err)
     } finally {
       setLoading(false)
-      setShowScanner(false) // Close scanner if open
-    }
-  }
-
-  const handleBiometricLogin = async () => {
-    const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
-    const savedPassword = localStorage.getItem('mdoc_remember_password')
-
-    if (!savedCompanyId || !savedPassword) {
-      setError('يرجى تسجيل الدخول يدوياً أولاً وتفعيل "تذكر بياناتي" لتفعيل البصمة.')
-      return
-    }
-
-    try {
-      const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
-      
-      // Check availability first
-      const result = await NativeBiometric.isAvailable()
-      if (!result.isAvailable) {
-        setError('حساس البصمة غير متوفر أو غير مفعّل على هذا الجهاز.')
-        return
-      }
-
-      const verified = await NativeBiometric.verifyIdentity({
-        reason: "التحقق للدخول إلى نظام MDOC",
-        title: "تسجيل الدخول بالبصمة",
-        subtitle: "يرجى لمس الحساس",
-        description: "استخدم هويتك الرقمية للمتابعة",
-      }).then(() => true).catch((err) => {
-        console.error('Verify error:', err)
-        return false
-      })
-
-      if (verified) {
-        handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
-      } else {
-        setError('لم نتمكن من التحقق من البصمة. يرجى المحاولة مرة أخرى.')
-      }
-    } catch (e) {
-      console.error('Biometric Error:', e)
-      setError('عذراً، ميزة البصمة غير متوفرة على هذا المتصفح أو الجهاز.')
+      setShowScanner(false)
     }
   }
 
   const handleScan = (rawValue) => {
     try {
       if (!rawValue) return;
-      // rawValue should be a JSON string: {"companyId": "...", "password": "..."}
-      // Some scanners wrap the result in an object array, handled in our component.
-
-      // Simple validation if it's JSON
       const data = JSON.parse(rawValue);
-
       if (data && data.companyId && data.password) {
-        // Successfully parsed credentials
         handleLogin(null, data);
       } else {
-        setError("رمز QR غير صالح. تأكد من استخدام بطاقة الموظف الصحيحة.");
+        setError("رمز QR غير صالح.");
         setShowScanner(false);
       }
     } catch (e) {
-      console.error("Scan Error:", e);
-      setError("خطأ في قراءة الرمز. حاول مرة أخرى.");
+      setError("خطأ في قراءة الرمز.");
       setShowScanner(false);
     }
   }
@@ -210,14 +131,10 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4" dir="rtl">
       {isAutoLoggingIn && (
-        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center space-y-6 animate-in fade-in duration-500">
+        <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center space-y-6">
            <img src="/logo.png" alt="Logo" className="w-24 h-24 object-contain animate-bounce" />
            <div className="text-center">
-             <h2 className="text-xl font-bold text-slate-800">جاري تسجيل الدخول تلقائياً...</h2>
-             <p className="text-slate-500 text-sm mt-2">مرحباً بك مجدداً في MDOC HRMS</p>
-           </div>
-           <div className="w-48 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-             <div className="h-full bg-primary animate-progress-buffer"></div>
+             <h2 className="text-xl font-bold text-slate-800">جاري تسجيل الدخول...</h2>
            </div>
         </div>
       )}
@@ -234,14 +151,9 @@ export default function Login() {
             <img src="/logo.png" alt="MDOC Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-2xl font-bold text-slate-800">تسجيل الدخول</h1>
-          <p className="text-slate-500 mt-2">MDOC HRMS</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm text-center">
-            {error}
-          </div>
-        )}
+        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm text-center">{error}</div>}
 
         <form onSubmit={(e) => handleLogin(e)} className="space-y-6">
           {(settings.login_method === 'password' || settings.login_method === 'both') && (
@@ -253,9 +165,8 @@ export default function Login() {
                     type="text"
                     value={companyId}
                     onChange={(e) => setCompanyId(e.target.value)}
-                    className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    className="w-full pl-4 pr-10 py-3 rounded-lg border border-slate-200"
                     placeholder="أدخل رقم الشركة"
-                    required={!showScanner}
                   />
                   <Building2 className="absolute left-3 top-3.5 text-slate-400" size={18} />
                 </div>
@@ -268,83 +179,40 @@ export default function Login() {
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-12 pr-10 py-3 rounded-lg border border-slate-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                    className="w-full pl-12 pr-10 py-3 rounded-lg border border-slate-200"
                     placeholder="••••••••"
-                    required={!showScanner}
                   />
                   <Lock className="absolute right-3 top-3.5 text-slate-400" size={18} />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-3.5 text-slate-400 hover:text-primary transition-colors"
-                  >
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-3.5 text-slate-400">
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex flex-col gap-3 px-1">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="rememberMe"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-primary focus:ring-primary border-slate-300"
-                  />
-                  <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer select-none">
-                    تذكر بياناتي (تفعيل البصمة والدخول التلقائي)
-                  </label>
-                </div>
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="rememberMe" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4" />
+                <label htmlFor="rememberMe" className="text-sm text-slate-600">تذكر بياناتي</label>
               </div>
             </>
           )}
 
           <div className="flex flex-col gap-3">
             {(settings.login_method === 'password' || settings.login_method === 'both') && (
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary hover:bg-sky-600 text-white font-bold py-3 rounded-lg transition-colors duration-200 shadow-lg shadow-sky-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button type="submit" disabled={loading} className="w-full bg-primary text-white font-bold py-3 rounded-lg">
                 {loading ? 'جاري التحقق...' : 'تسجيل الدخول'}
               </button>
             )}
 
             {(settings.login_method === 'qr' || settings.login_method === 'both') && (
-              <button
-                type="button"
-                onClick={() => setShowScanner(true)}
-                className={`w-full font-bold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2
-                  ${settings.login_method === 'qr'
-                    ? 'bg-primary hover:bg-sky-600 text-white shadow-lg shadow-sky-500/30'
-                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
-                  }`}
-              >
+              <button type="button" onClick={() => setShowScanner(true)} className="w-full bg-slate-100 text-slate-700 font-bold py-3 rounded-lg flex items-center justify-center gap-2">
                 <ScanLine size={20} />
-                {settings.login_method === 'qr' ? 'اضغط للمسح الضوئي' : 'تسجيل الدخول بالباركود'}
-              </button>
-            )}
-
-            {canUseBiometrics && (
-              <button
-                type="button"
-                onClick={handleBiometricLogin}
-                className="w-full bg-slate-800 hover:bg-black text-white font-bold py-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg"
-              >
-                <Fingerprint size={20} />
-                تسجيل الدخول بالبصمة
+                تسجيل الدخول بالباركود
               </button>
             )}
           </div>
         </form>
         <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <button 
-            onClick={() => navigate('/privacy-policy')}
-            className="text-sm text-slate-400 hover:text-primary transition-colors"
-          >
-            سياسة الخصوصية
-          </button>
+          <button onClick={() => navigate('/privacy-policy')} className="text-sm text-slate-400">سياسة الخصوصية</button>
         </div>
       </div>
     </div>

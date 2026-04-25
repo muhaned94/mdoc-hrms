@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../context/AuthContext'
-import { Camera, Lock, Save, User, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun, Fingerprint } from 'lucide-react'
+import { Camera, Lock, Save, Loader, Settings as SettingsIcon, ShieldCheck, Moon, Sun } from 'lucide-react'
 import { useSettings } from '../../context/SettingsContext'
 import { APP_VERSION } from '../../config'
 
@@ -17,8 +17,6 @@ export default function Settings() {
   // Password State
   const [newPassword, setNewPassword] = useState('')
   const [changingPassword, setChangingPassword] = useState(false)
-  const [biometricsEnabled, setBiometricsEnabled] = useState(false)
-  const [canUseBiometrics, setCanUseBiometrics] = useState(false)
 
   const userId = session?.user?.id
 
@@ -41,12 +39,6 @@ export default function Settings() {
 
       if (error) throw error
       setEmployee(data)
-
-      // Check if biometrics are already enabled for this user
-      const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
-      if (savedCompanyId === data.company_id) {
-        setBiometricsEnabled(true)
-      }
     } catch (error) {
       console.error('Error fetching profile:', error)
     } finally {
@@ -54,77 +46,31 @@ export default function Settings() {
     }
   }
 
-  useEffect(() => {
-    const checkBiometricAvailability = async () => {
-      try {
-        const { NativeBiometric } = await import('@capgo/capacitor-native-biometric')
-        const result = await NativeBiometric.isAvailable()
-        if (result.isAvailable) setCanUseBiometrics(true)
-      } catch (e) {
-        if (window.location.hostname === 'localhost') setCanUseBiometrics(true)
-      }
-    }
-    checkBiometricAvailability()
-  }, [])
-
-  const handleToggleBiometrics = async (enabled) => {
-    console.log('Toggling biometrics:', enabled, 'Employee data:', employee)
-    if (enabled) {
-      if (employee?.company_id && employee?.visible_password) {
-        localStorage.setItem('mdoc_remember_company_id', employee.company_id)
-        localStorage.setItem('mdoc_remember_password', employee.visible_password)
-        localStorage.setItem('mdoc_biometrics_enabled', 'true')
-        setBiometricsEnabled(true)
-        alert('تم تفعيل الدخول بالبصمة بنجاح ✅ - سيتم استخدام بياناتك المحفوظة تلقائياً عند التحقق.')
-      } else {
-        console.error('Missing credentials:', { id: employee?.company_id, pass: !!employee?.visible_password })
-        alert('فشل تفعيل البصمة: تأكد من أن بياناتك كاملة أو أعد تسجيل الدخول.')
-      }
-    } else {
-      // Disable: Remove from localStorage
-      localStorage.removeItem('mdoc_remember_company_id')
-      localStorage.removeItem('mdoc_remember_password')
-      setBiometricsEnabled(false)
-      alert('تم تعطيل الدخول بالبصمة.')
-    }
-  }
-
   const handleAvatarUpload = async (event) => {
     try {
       setUploading(true)
-
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.')
       }
-
       const file = event.target.files[0]
       const fileExt = file.name.split('.').pop()
       const targetId = employee?.id || userId
-      if (!targetId) throw new Error('User ID is missing')
-
       const fileName = `${targetId}/${Math.random()}.${fileExt}`
-      const filePath = `${fileName}`
-
-      // 1. Upload to Storage (Buckets must be public or allowed for anon)
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file)
+        .upload(fileName, file)
 
       if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath)
-
-      // 2. Update DB via RPC (Bypasses RLS)
-      const { error: updateError } = await supabase
-        .rpc('update_employee_settings', {
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(fileName)
+      
+      const { error: updateError } = await supabase.rpc('update_employee_settings', {
           p_employee_id: targetId,
           p_avatar_url: publicUrl
         })
 
       if (updateError) throw updateError
-
       setEmployee(prev => ({ ...prev, avatar_url: publicUrl }))
-      alert('تم تحديث الصورة الشخصية بنجاح')
+      alert('تم تحديث الصورة بنجاح')
     } catch (error) {
       alert('فشل تحديث الصورة: ' + error.message)
     } finally {
@@ -136,24 +82,16 @@ export default function Settings() {
     e.preventDefault()
     setChangingPassword(true)
     try {
-      const targetId = employee?.id || userId
-      if (!targetId) throw new Error('User ID missing')
-
-      // Update via RPC
-      const { error } = await supabase
-        .rpc('update_employee_settings', {
-          p_employee_id: targetId,
+      const { error } = await supabase.rpc('update_employee_settings', {
+          p_employee_id: employee?.id || userId,
           p_visible_password: newPassword
         })
-
       if (error) throw error
-
-      alert('تم تغيير كلمة المرور بنجاح. يرجى تسجيل الدخول مرة أخرى.')
-      await signOut() // Force logout
+      alert('تم تغيير كلمة المرور بنجاح.')
+      await signOut()
       navigate('/login')
-      setNewPassword('')
     } catch (err) {
-      alert('فشل تغيير كلمة المرور: ' + err.message)
+      alert('فشل التغيير: ' + err.message)
     } finally {
       setChangingPassword(false)
     }
@@ -164,190 +102,55 @@ export default function Settings() {
     setUserTheme(newTheme, userId)
   }
 
-  if (loading || authLoading) return <div className="p-10 text-center text-slate-500">جاري التحميل...</div>
-
-  if (!employee) {
-    return (
-      <div className="p-8 text-center bg-red-50 text-red-600 rounded-lg">
-        عذراً، لم يتم العثور على بيانات الموظف. يرجى تسجيل الدخول مجدداً.
-      </div>
-    )
-  }
+  if (loading || authLoading) return <div className="p-10 text-center">جاري التحميل...</div>
 
   return (
     <div className="space-y-6">
-      {/* Unified Gradient Header */}
       <div className="bg-gradient-to-r from-sky-500 to-indigo-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden mb-8">
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-right">
-            <h1 className="text-3xl font-black mb-2 flex items-center gap-3 justify-center md:justify-start">
-              <SettingsIcon className="fill-current/20" size={32} />
-              إعدادات الحساب
-            </h1>
-            <p className="text-sky-100 font-medium opacity-90">إدارة الصورة الشخصية وكلمة المرور والمظهر</p>
-          </div>
-        </div>
-
-        {/* Decorations */}
-        <SettingsIcon className="absolute -bottom-6 -left-6 text-white/10 w-48 h-48 rotate-12" />
-        <ShieldCheck className="absolute -top-6 -right-6 text-white/10 w-32 h-32 -rotate-12" />
+        <h1 className="text-3xl font-black mb-2 flex items-center gap-3">
+          <SettingsIcon size={32} /> إعدادات الحساب
+        </h1>
+        <p className="opacity-90">إدارة الصورة الشخصية وكلمة المرور والمظهر</p>
       </div>
 
-      {/* Theme / Dark Mode Section */}
       <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-        <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
-          <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
-            {effectiveTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />}
-          </div>
-          المظهر
+        <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+          {effectiveTheme === 'dark' ? <Moon size={20} /> : <Sun size={20} />} المظهر
         </h3>
-
-        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl transition-colors">
-          <div>
-            <h4 className="font-medium text-slate-800 dark:text-slate-200">الوضع الليلي</h4>
-            <p className="text-sm text-slate-500 dark:text-slate-400">تغيير مظهر التطبيق بين الفاتح والداكن</p>
-          </div>
-          <button
-            onClick={handleThemeToggle}
-            dir="ltr"
-            className={`
-              relative w-16 h-8 rounded-full transition-all duration-300 ease-in-out shadow-inner
-              ${effectiveTheme === 'dark'
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600'
-                : 'bg-slate-200'
-              }
-            `}
-          >
-            <div
-              className={`
-                absolute top-1 left-1 w-6 h-6 rounded-full bg-white shadow-md transition-all duration-300 ease-in-out flex items-center justify-center
-                ${effectiveTheme === 'dark' ? 'translate-x-8' : 'translate-x-0'}
-              `}
-            >
-              {effectiveTheme === 'dark'
-                ? <Moon size={14} className="text-indigo-600" />
-                : <Sun size={14} className="text-amber-500" />
-              }
-            </div>
+        <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+          <h4 className="font-medium">الوضع الليلي</h4>
+          <button onClick={handleThemeToggle} className={`relative w-16 h-8 rounded-full transition-all ${effectiveTheme === 'dark' ? 'bg-indigo-600' : 'bg-slate-200'}`}>
+            <div className={`absolute top-1 left-1 w-6 h-6 rounded-full bg-white transition-all ${effectiveTheme === 'dark' ? 'translate-x-8' : 'translate-x-0'}`} />
           </button>
         </div>
-
-        <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 text-center">
-          {effectiveTheme === 'dark' ? '🌙 الوضع الداكن مفعّل' : '☀️ الوضع الفاتح مفعّل'}
-        </p>
       </div>
 
-      {/* Biometric Section */}
-      {canUseBiometrics && (
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
-            <div className="p-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-slate-700 dark:text-slate-300">
-              <Fingerprint size={20} />
-            </div>
-            الأمان والحماية
-          </h3>
-
-          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl transition-colors">
-            <div>
-              <h4 className="font-medium text-slate-800 dark:text-slate-200">الدخول بالبصمة / الوجه</h4>
-              <p className="text-sm text-slate-500 dark:text-slate-400">تفعيل الدخول السريع باستخدام المقاييس الحيوية</p>
-            </div>
-            <button
-              onClick={() => handleToggleBiometrics(!biometricsEnabled)}
-              dir="ltr"
-              className={`
-                relative w-14 h-7 rounded-full transition-all duration-200 ease-in-out
-                ${biometricsEnabled ? 'bg-green-500' : 'bg-slate-200 dark:bg-slate-600'}
-              `}
-            >
-              <div
-                className={`
-                  absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out
-                  ${biometricsEnabled ? 'translate-x-7' : 'translate-x-0'}
-                `}
-              />
-            </button>
-          </div>
-          
-          {!biometricsEnabled && (
-            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-[11px] text-blue-600 dark:text-blue-400 leading-relaxed">
-              * تفعيل هذه الخاصية سيقوم بحفظ بيانات الدخول على جهازك بشكل آمن ليتم استخدامها عند التحقق من بصمتك.
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Avatar Section */}
       {settings.allow_profile_picture_change && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
-            <Camera className="text-primary" size={20} />
-            تغيير الصورة الشخصية
-          </h3>
-
+          <h3 className="font-bold text-lg mb-6">تغيير الصورة الشخصية</h3>
           <div className="flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-32 h-32 rounded-full border-4 border-slate-100 dark:border-slate-700 bg-slate-200 dark:bg-slate-700 overflow-hidden shadow-inner">
-                {employee?.avatar_url ? (
-                  <img src={employee.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-400 dark:text-slate-500 font-bold text-4xl">
-                    {employee?.full_name?.charAt(0)}
-                  </div>
-                )}
-              </div>
-              <label className="absolute bottom-0 right-0 bg-primary hover:bg-sky-600 text-white p-2 rounded-full cursor-pointer shadow-lg transition-transform hover:scale-110">
-                <Camera size={20} />
-                <input type="file" className="hidden" accept="image/*" onChange={handleAvatarUpload} disabled={uploading} />
-              </label>
+            <div className="w-32 h-32 rounded-full border-4 border-slate-100 overflow-hidden">
+              {employee?.avatar_url ? <img src={employee.avatar_url} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-slate-200">{employee?.full_name?.charAt(0)}</div>}
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">اضغط على الكاميرا لتغيير الصورة</p>
+            <label className="bg-primary text-white p-2 rounded-full cursor-pointer"><Camera size={20} /><input type="file" className="hidden" onChange={handleAvatarUpload} /></label>
           </div>
         </div>
       )}
 
-      {/* Password Section */}
       {settings.allow_password_change && (
         <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
-          <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800 dark:text-white border-b dark:border-slate-700 pb-2">
-            <Lock className="text-amber-500" size={20} />
-            تغيير كلمة المرور
-          </h3>
+          <h3 className="font-bold text-lg mb-6">تغيير كلمة المرور</h3>
           <form onSubmit={handlePasswordChange} className="space-y-4">
-            <div>
-              <label className="text-sm text-slate-600 dark:text-slate-400 mb-1 block font-medium">كلمة المرور الجديدة</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  required
-                  minLength={6}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full p-3 border dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 dark:text-white font-mono focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
-                  placeholder="أدخل كلمة المرور الجديدة"
-                />
-                <Lock className="absolute left-3 top-3 text-slate-400 dark:text-slate-500" size={18} />
-              </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">يجب أن تكون كلمة المرور 6 أحرف على الأقل</p>
-            </div>
-
-            <button
-              type="submit"
-              disabled={changingPassword}
-              className="w-full bg-slate-800 dark:bg-slate-700 text-white py-3 rounded-lg hover:bg-slate-900 dark:hover:bg-slate-600 transition-colors flex items-center justify-center gap-2 font-medium"
-            >
-              {changingPassword ? <Loader className="animate-spin" size={20} /> : <Save size={20} />}
-              <span>حفظ كلمة المرور الجديدة</span>
+            <input type="text" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-3 border rounded-lg" placeholder="أدخل كلمة المرور الجديدة" />
+            <button type="submit" disabled={changingPassword} className="w-full bg-slate-800 text-white py-3 rounded-lg flex items-center justify-center gap-2">
+              {changingPassword ? <Loader className="animate-spin" /> : <Save />} حفظ التغييرات
             </button>
           </form>
         </div>
       )}
 
-      {/* Version Info */}
       <div className="pt-8 pb-4 text-center">
-        <p className="text-[10px] text-slate-300 dark:text-slate-600 font-medium tracking-widest uppercase">
-          MDOC HRMS • الإصدار {APP_VERSION}
-        </p>
+        <p className="text-[10px] text-slate-300">MDOC HRMS • الإصدار {APP_VERSION}</p>
       </div>
     </div>
   )

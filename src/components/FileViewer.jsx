@@ -223,7 +223,7 @@ export default function FileViewer({ file, onClose }) {
                 {/* Viewer Area */}
                 <div
                     ref={containerRef}
-                    className="flex-1 overflow-auto flex flex-col items-center bg-slate-950 relative custom-scrollbar"
+                    className="flex-1 overflow-auto bg-slate-950 relative custom-scrollbar"
                     style={{ WebkitOverflowScrolling: 'touch' }}
                     onContextMenu={handleContextMenu}
                 >
@@ -257,27 +257,33 @@ export default function FileViewer({ file, onClose }) {
                     )}
 
                     {!error && signedUrl && fileType === 'pdf' && (
-                        <div className="py-4 px-2 w-full flex flex-col items-center min-h-full">
+                        <div className="py-4 px-4 min-h-full min-w-full flex flex-col items-center" dir="ltr">
                             <Document
                                 file={signedUrl}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 onLoadError={onDocumentLoadError}
                                 loading={null}
-                                className="flex flex-col gap-4 items-center"
+                                className="flex flex-col gap-6 items-center"
                             >
                                 {numPages && Array.from(new Array(numPages), (_, index) => (
-                                    <div key={`page_${index + 1}`} className="shadow-2xl border border-white/5">
+                                    <div 
+                                        key={`page_${index + 1}`} 
+                                        className="shadow-2xl border border-white/5 bg-white transition-shadow duration-300"
+                                    >
                                         <Page
                                             pageNumber={index + 1}
                                             scale={zoom}
                                             rotate={rotation}
-                                            width={containerWidth ? Math.min(containerWidth * 0.95, 1200) : undefined}
+                                            width={containerWidth ? Math.min(containerWidth - 32, 1000) : undefined}
                                             renderTextLayer={false}
                                             renderAnnotationLayer={false}
                                             className="bg-white"
                                             loading={
                                                 <div 
-                                                    style={{ width: containerWidth ? containerWidth * 0.95 : '595px', height: '842px' }}
+                                                    style={{ 
+                                                        width: containerWidth ? Math.min(containerWidth - 32, 1000) : '595px', 
+                                                        height: '842px' 
+                                                    }}
                                                     className="bg-white/5 animate-pulse flex items-center justify-center text-white/20"
                                                 >
                                                     تحميل الصفحة {index + 1}...
