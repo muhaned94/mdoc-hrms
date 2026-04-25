@@ -187,17 +187,23 @@ export default function FileViewer({ file, onClose }) {
                     <div className="flex items-center gap-1 sm:gap-2">
                         <div className="flex bg-white/10 rounded-lg p-1">
                             <button
-                                onClick={() => setZoom(z => Math.max(0.5, z - 0.25))}
+                                onClick={() => setZoom(z => Math.max(0.25, z - 0.25))}
                                 className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors"
+                                title="تصغير"
                             >
                                 <ZoomOut size={18} />
                             </button>
-                            <span className="px-2 py-1.5 text-white/50 text-xs font-mono min-w-[3rem] text-center flex items-center justify-center border-l border-r border-white/10 mx-1">
-                                {Math.round(zoom * 100)}%
-                            </span>
                             <button
-                                onClick={() => setZoom(z => Math.min(3, z + 0.25))}
+                                onClick={resetView}
+                                className="px-2 py-1.5 text-white hover:bg-white/10 text-xs font-bold border-l border-r border-white/10 transition-colors"
+                                title="إعادة ضبط"
+                            >
+                                {Math.round(zoom * 100)}%
+                            </button>
+                            <button
+                                onClick={() => setZoom(z => Math.min(5, z + 0.25))}
                                 className="p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded transition-colors"
+                                title="تكبير"
                             >
                                 <ZoomIn size={18} />
                             </button>
@@ -224,6 +230,7 @@ export default function FileViewer({ file, onClose }) {
                 <div
                     ref={containerRef}
                     className="flex-1 overflow-auto bg-slate-950 relative custom-scrollbar"
+                    dir="rtl"
                     style={{ WebkitOverflowScrolling: 'touch' }}
                     onContextMenu={handleContextMenu}
                 >
@@ -257,31 +264,31 @@ export default function FileViewer({ file, onClose }) {
                     )}
 
                     {!error && signedUrl && fileType === 'pdf' && (
-                        <div className="py-4 px-4 min-h-full min-w-full flex flex-col items-center" dir="ltr">
+                        <div className="py-8 px-4 min-h-full w-fit mx-auto flex flex-col items-center">
                             <Document
                                 file={signedUrl}
                                 onLoadSuccess={onDocumentLoadSuccess}
                                 onLoadError={onDocumentLoadError}
                                 loading={null}
-                                className="flex flex-col gap-6 items-center"
+                                className="flex flex-col gap-8 items-center"
                             >
                                 {numPages && Array.from(new Array(numPages), (_, index) => (
                                     <div 
                                         key={`page_${index + 1}`} 
-                                        className="shadow-2xl border border-white/5 bg-white transition-shadow duration-300"
+                                        className="shadow-2xl border-4 border-slate-800 bg-white transition-shadow duration-300 rounded-sm overflow-hidden"
                                     >
                                         <Page
                                             pageNumber={index + 1}
                                             scale={zoom}
                                             rotate={rotation}
-                                            width={containerWidth ? Math.min(containerWidth - 32, 1000) : undefined}
+                                            width={containerWidth ? Math.min(containerWidth - 40, 1100) : undefined}
                                             renderTextLayer={false}
                                             renderAnnotationLayer={false}
                                             className="bg-white"
                                             loading={
                                                 <div 
                                                     style={{ 
-                                                        width: containerWidth ? Math.min(containerWidth - 32, 1000) : '595px', 
+                                                        width: containerWidth ? Math.min(containerWidth - 40, 1100) : '595px', 
                                                         height: '842px' 
                                                     }}
                                                     className="bg-white/5 animate-pulse flex items-center justify-center text-white/20"
