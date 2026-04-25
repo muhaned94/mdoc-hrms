@@ -320,7 +320,6 @@ export default function Settings() {
                             description="إتاحة الخيارين للموظف عند تسجيل الدخول"
                         />
                     </div>
-                    </div>
                 </div>
 
                 {/* App Updates Control */}
@@ -411,7 +410,6 @@ export default function Settings() {
                                 />
                             </div>
                         )}
-                    </div>
                 </div>
             </div>
 
