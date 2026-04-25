@@ -109,6 +109,8 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     await supabase.auth.signOut()
     localStorage.removeItem('mdoc_session')
+    // Flag to prevent auto-login on next page load
+    localStorage.setItem('mdoc_skip_auto_login', 'true')
     setSession(null)
     setUser(null)
     window.dispatchEvent(new Event('storage'))

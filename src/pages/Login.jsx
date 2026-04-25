@@ -42,15 +42,22 @@ export default function Login() {
     // Load saved credentials
     const savedCompanyId = localStorage.getItem('mdoc_remember_company_id')
     const savedPassword = localStorage.getItem('mdoc_remember_password')
+    const skipAutoLogin = localStorage.getItem('mdoc_skip_auto_login')
+
     if (savedCompanyId && savedPassword) {
       setCompanyId(savedCompanyId)
       setPassword(savedPassword)
       setRememberMe(true)
       
-      // Auto-Login if credentials found and not already loading
-      if (!loading && !error) {
+      // Auto-Login only if not explicitly skipped (from Logout)
+      if (!loading && !error && skipAutoLogin !== 'true') {
         setIsAutoLoggingIn(true)
         handleLogin(null, { companyId: savedCompanyId, password: savedPassword })
+      }
+      
+      // Clear the skip flag so future app opens DO auto-login
+      if (skipAutoLogin === 'true') {
+        localStorage.removeItem('mdoc_skip_auto_login')
       }
     }
   }, [])
