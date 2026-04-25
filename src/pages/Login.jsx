@@ -183,7 +183,6 @@ export default function Login() {
       setError('عذراً، ميزة البصمة غير متوفرة على هذا المتصفح أو الجهاز.')
     }
   }
-  }
 
   const handleScan = (rawValue) => {
     try {
